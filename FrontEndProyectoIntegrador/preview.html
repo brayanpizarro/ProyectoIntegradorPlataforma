@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma Fundación - Preview</title>
+    <style>
+        /* Estilos básicos para la preview */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: #f8fafc;
+            color: #1f2937;
+            line-height: 1.5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        /* Navbar */
+        .navbar {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .navbar-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: #2563eb;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .nav-button {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: #f3f4f6;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .nav-button:hover {
+            background: #e5e7eb;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .user-info {
+            text-align: right;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .user-email {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: #d1d5db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        /* Dashboard */
+        .dashboard {
+            padding: 0 1rem;
+        }
+        
+        .dashboard-header {
+            margin-bottom: 2rem;
+        }
+        
+        .dashboard-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .dashboard-subtitle {
+            color: #6b7280;
+        }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .stat-icon.blue {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+        
+        .stat-icon.green {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+        
+        .stat-icon.purple {
+            background: #f3e8ff;
+            color: #9333ea;
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        /* Generaciones Grid */
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+        
+        .generaciones-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .generacion-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: box-shadow 0.2s;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .generacion-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .generacion-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .generacion-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .generacion-icon {
+            width: 48px;
+            height: 48px;
+            background: #dbeafe;
+            color: #2563eb;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .generacion-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .generacion-details {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .generacion-stats {
+            text-align: right;
+        }
+        
+        .generacion-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2563eb;
+        }
+        
+        .generacion-label {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+        
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+        
+        .btn-success {
+            background: #16a34a;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #15803d;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .dashboard-title {
+                font-size: 1.5rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .generaciones-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+        
+        /* Preview Message */
+        .preview-notice {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Preview Notice -->
+    <div class="preview-notice">
+        🚧 <strong>Vista Previa del Frontend</strong> - Esta es una representación estática de la aplicación React desarrollada
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-content">
+                <div class="logo">
+                    <div class="logo-icon">PF</div>
+                    <div class="nav-links">
+                        <button class="nav-button">🏠 Inicio</button>
+                        <span style="color: #9ca3af;">• • • Espacio para más navegación</span>
+                    </div>
+                </div>
+                
+                <div class="user-profile">
+                    <div class="user-info">
+                        <div class="user-name">Juan Pérez</div>
+                        <div class="user-email">juan.perez@fundacion.cl</div>
+                    </div>
+                    <div class="user-avatar">👤</div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard -->
+    <main class="dashboard">
+        <div class="container">
+            <!-- Header -->
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">Panel de Control - Fundación</h1>
+                <p class="dashboard-subtitle">Gestiona los estudiantes y sus generaciones</p>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue">🎓</div>
+                    <div>
+                        <div class="stat-number">3</div>
+                        <div class="stat-label">Generaciones</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon green">👥</div>
+                    <div>
+                        <div class="stat-number">83</div>
+                        <div class="stat-label">Total Estudiantes</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon purple">👥</div>
+                    <div>
+                        <div class="stat-number">25</div>
+                        <div class="stat-label">Generación Actual</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generaciones Section -->
+            <h2 class="section-title">Generaciones por Año</h2>
+            
+            <div class="generaciones-grid">
+                <!-- Generación 2024 -->
+                <div class="generacion-card" onclick="showGeneracion(2024)">
+                    <div class="generacion-content">
+                        <div class="generacion-info">
+                            <div class="generacion-icon">📁</div>
+                            <div>
+                                <div class="generacion-title">Generación 2024</div>
+                                <div class="generacion-details">
+                                    <span>📅 Año 2024</span>
+                                    <span>👥 25 estudiantes</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="generacion-stats">
+                            <div class="generacion-number">25</div>
+                            <div class="generacion-label">estudiantes</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generación 2023 -->
+                <div class="generacion-card" onclick="showGeneracion(2023)">
+                    <div class="generacion-content">
+                        <div class="generacion-info">
+                            <div class="generacion-icon">📁</div>
+                            <div>
+                                <div class="generacion-title">Generación 2023</div>
+                                <div class="generacion-details">
+                                    <span>📅 Año 2023</span>
+                                    <span>👥 30 estudiantes</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="generacion-stats">
+                            <div class="generacion-number">30</div>
+                            <div class="generacion-label">estudiantes</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generación 2022 -->
+                <div class="generacion-card" onclick="showGeneracion(2022)">
+                    <div class="generacion-content">
+                        <div class="generacion-info">
+                            <div class="generacion-icon">📁</div>
+                            <div>
+                                <div class="generacion-title">Generación 2022</div>
+                                <div class="generacion-details">
+                                    <span>📅 Año 2022</span>
+                                    <span>👥 28 estudiantes</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="generacion-stats">
+                            <div class="generacion-number">28</div>
+                            <div class="generacion-label">estudiantes</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="showAlert('Nuevo Estudiante')">
+                    ➕ Nuevo Estudiante
+                </button>
+                
+                <button class="btn btn-success" onclick="showAlert('Nueva Generación')">
+                    ➕ Nueva Generación
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function showGeneracion(año) {
+            alert(`📂 Abriendo Generación ${año}\n\nEn la aplicación real, esto mostraría:\n• Lista de todos los estudiantes de ${año}\n• Información básica de cada estudiante\n• Botón para agregar nuevos estudiantes\n• Navegación a perfil detallado de estudiante`);
+        }
+
+        function showAlert(accion) {
+            let mensaje = '';
+            if (accion === 'Nuevo Estudiante') {
+                mensaje = '👤 Crear Nuevo Estudiante\n\nEn la aplicación real, esto abriría:\n• Formulario para ingresar datos del estudiante\n• Campos: nombre, RUT, fecha nacimiento, contacto, dirección\n• Selección de institución educativa\n• Asignación a generación';
+            } else if (accion === 'Nueva Generación') {
+                mensaje = '🎓 Crear Nueva Generación\n\nEn la aplicación real, esto abriría:\n• Formulario para crear nueva generación\n• Selección del año\n• Configuración inicial\n• Asignación de estudiantes';
+            }
+            alert(mensaje);
+        }
+
+        // Simulación de interacciones del perfil
+        document.querySelector('.user-avatar').addEventListener('click', function() {
+            alert('👤 Menú de Usuario\n\nOpciones disponibles:\n• ⚙️ Configurar perfil\n• 🚪 Cerrar sesión');
+        });
+
+        // Ejemplo de navegación de estudiante
+        function showEstudianteDetail() {
+            alert('👤 Perfil Detallado del Estudiante\n\nLa aplicación real mostraría:\n• Información completa del estudiante\n• Datos académicos\n• Historial de entrevistas\n• Botón "Nueva Entrevista" prominente\n• Enlaces a reportes y documentos');
+        }
+    </script>
+</body>
+</html>
