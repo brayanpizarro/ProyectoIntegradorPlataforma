@@ -104,7 +104,7 @@ export const EstudianteDetail = () => {
       <div style={{ padding: '2rem', textAlign: 'center' }}>
         <h2>Estudiante no encontrado</h2>
         <button
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate(-1)}
           style={{
             padding: '0.75rem 1.5rem',
             backgroundColor: '#3b82f6',
@@ -114,7 +114,7 @@ export const EstudianteDetail = () => {
             cursor: 'pointer'
           }}
         >
-          Volver al Dashboard
+          ← Volver
         </button>
       </div>
     );
