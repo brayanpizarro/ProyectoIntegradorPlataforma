@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 
@@ -13,7 +13,11 @@ const mockGeneraciones = [
   { año: 2018, estudiantes: 35, activos: 31, estado: 'finalizada' },
 ];
 
-export const Dashboard = () => {
+interface DashboardProps {
+  onAuthChange?: (authenticated: boolean) => void;
+}
+
+export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
   const navigate = useNavigate();
   const [usuario, setUsuario] = useState<any>(null);
   const [busqueda, setBusqueda] = useState('');
@@ -36,6 +40,13 @@ export const Dashboard = () => {
   const handleLogout = async () => {
     try {
       await authService.logout();
+      
+      // Notificar al componente padre que la autenticación cambió
+      if (onAuthChange) {
+        onAuthChange(false);
+      }
+      
+      // También navegar por si acaso
       navigate('/');
     } catch (error) {
       console.error('Error al cerrar sesión:', error);

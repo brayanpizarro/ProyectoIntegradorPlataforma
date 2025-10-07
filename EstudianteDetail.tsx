@@ -1,1 +1,0 @@
-﻿export const EstudianteDetail = () => <div>Estudiante</div>;
