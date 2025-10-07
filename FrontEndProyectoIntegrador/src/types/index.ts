@@ -18,7 +18,7 @@ export interface Usuario {
 }
 
 export interface Estudiante {
-  id: string;
+  id: number;  // Cambio: number en lugar de string
   nombres: string;
   apellidos: string;
   rut: string;
@@ -26,9 +26,22 @@ export interface Estudiante {
   telefono?: string;
   direccion?: string;
   fecha_nacimiento?: string;
+  institucion?: { nombre_institucion: string };  // Agregado
+  estado: string;  // Agregado
+  año_generacion: number;  // Agregado
+  carrera: string;  // Cambio: requerido
+  liceo?: string;  // Agregado
+  especialidad?: string;  // Agregado
+  promedio_liceo?: number;  // Agregado
+  universidad: string;  // Agregado
+  duracion_carrera?: string;  // Agregado
+  via_acceso?: string;  // Agregado
+  semestre?: number;  // Agregado
+  promedio: number;  // Agregado
+  beca: string;  // Agregado
+  region?: string;  // Agregado
   institucion_id?: string;
   año_ingreso?: number;
-  carrera?: string;
   activo?: boolean;
   fecha_creacion?: string;
   fecha_actualizacion?: string;

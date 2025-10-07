@@ -85,7 +85,7 @@ export const EstudianteDetail = () => {
 
   useEffect(() => {
     if (!authService.isAuthenticated()) {
-      navigate('/login');
+      navigate('/');
     }
   }, [navigate]);
 
@@ -150,7 +150,7 @@ export const EstudianteDetail = () => {
         <button
           onClick={() => {
             authService.logout();
-            navigate('/login');
+            navigate('/');
           }}
           style={{
             padding: '0.5rem 1rem',
@@ -255,109 +255,6 @@ export const EstudianteDetail = () => {
                 <p style={{ fontWeight: '500', margin: '0.25rem 0 0 0' }}>{estudiante.direccion}</p>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Información Académica */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
-          
-          {/* Liceo */}
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '0.5rem',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            padding: '2rem'
-          }}>
-            <h3 style={{ marginBottom: '1.5rem' }}>🏫 Liceo</h3>
-            
-            <div style={{ display: 'grid', gap: '1rem' }}>
-              <div>
-                <label style={{ fontSize: '0.875rem', color: '#6b7280', display: 'block' }}>Establecimiento</label>
-                <p style={{ fontWeight: '500', margin: '0.25rem 0 0 0' }}>{estudiante.liceo}</p>
-              </div>
-              
-              <div>
-                <label style={{ fontSize: '0.875rem', color: '#6b7280', display: 'block' }}>Especialidad</label>
-                <p style={{ fontWeight: '500', margin: '0.25rem 0 0 0' }}>{estudiante.especialidad}</p>
-              </div>
-              
-              <div>
-                <label style={{ fontSize: '0.875rem', color: '#6b7280', display: 'block' }}>Promedio</label>
-                <p style={{ fontWeight: '500', margin: '0.25rem 0 0 0' }}>{estudiante.promedio_liceo}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Universidad */}
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '0.5rem',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            padding: '2rem'
-          }}>
-            <h3 style={{ marginBottom: '1.5rem' }}>🎓 Universidad</h3>
-            
-            <div style={{ display: 'grid', gap: '1rem' }}>
-              <div>
-                <label style={{ fontSize: '0.875rem', color: '#6b7280', display: 'block' }}>Universidad</label>
-                <p style={{ fontWeight: '500', margin: '0.25rem 0 0 0' }}>{estudiante.universidad}</p>
-              </div>
-              
-              <div>
-                <label style={{ fontSize: '0.875rem', color: '#6b7280', display: 'block' }}>Carrera</label>
-                <p style={{ fontWeight: '500', margin: '0.25rem 0 0 0' }}>{estudiante.carrera}</p>
-              </div>
-              
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <label style={{ fontSize: '0.875rem', color: '#6b7280', display: 'block' }}>Duración</label>
-                  <p style={{ fontWeight: '500', margin: '0.25rem 0 0 0' }}>{estudiante.duracion_carrera}</p>
-                </div>
-                
-                <div>
-                  <label style={{ fontSize: '0.875rem', color: '#6b7280', display: 'block' }}>Vía de Acceso</label>
-                  <p style={{ fontWeight: '500', margin: '0.25rem 0 0 0' }}>{estudiante.via_acceso}</p>
-                </div>
-              </div>
-              
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <label style={{ fontSize: '0.875rem', color: '#6b7280', display: 'block' }}>Semestre</label>
-                  <p style={{ fontWeight: '500', margin: '0.25rem 0 0 0' }}>{estudiante.semestre}</p>
-                </div>
-                
-                <div>
-                  <label style={{ fontSize: '0.875rem', color: '#6b7280', display: 'block' }}>Promedio</label>
-                  <p style={{ 
-                    fontWeight: '500', 
-                    margin: '0.25rem 0 0 0',
-                    color: estudiante.promedio >= 6.0 ? '#10b981' : '#ef4444'
-                  }}>
-                    {estudiante.promedio}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Beneficios */}
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '0.5rem',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-          padding: '2rem',
-          marginBottom: '2rem'
-        }}>
-          <h3 style={{ marginBottom: '1.5rem' }}>🎁 Beneficios</h3>
-          
-          <div style={{
-            padding: '1rem',
-            backgroundColor: '#f3f4f6',
-            borderRadius: '0.375rem',
-            borderLeft: '4px solid #3b82f6'
-          }}>
-            <span style={{ fontWeight: '500' }}>{estudiante.beca}</span>
           </div>
         </div>
 
