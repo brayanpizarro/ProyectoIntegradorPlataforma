@@ -6,8 +6,10 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToOne,
 } from 'typeorm';
 import { Institucion } from '../../institucion/entities/institucion.entity';
+import { familia } from '../../familia/entities/familia.entity';
 
 export enum TipoEstudiante {
   MEDIA = 'media',
@@ -46,6 +48,10 @@ export class Estudiante {
   })
   @JoinColumn({ name: 'id_institucion' })
   institucion: Institucion;
+
+  @OneToOne(() => familia, (familia) => familia.estudiante, { nullable: true })
+  @JoinColumn({ name: 'id_familia' })
+  familia: familia;
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;

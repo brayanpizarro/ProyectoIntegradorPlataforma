@@ -69,6 +69,9 @@ export class Entrevista {
   @Prop()
   observaciones: string;
 
+  @Prop({ type: [String], default: [] })
+  temas_abordados: string[];
+
   @Prop({ type: [EtiquetaSchema], default: [] })
   etiquetas: Etiqueta[];
 }
