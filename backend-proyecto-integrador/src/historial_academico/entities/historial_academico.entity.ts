@@ -39,7 +39,7 @@ export class HistorialAcademico {
   updated_at: Date;
 
   // Relación con Estudiante
-  @ManyToOne(() => Estudiante, (estudiante) => estudiante.historial_academico)
+  @ManyToOne(() => Estudiante, (estudiante) => estudiante.historialesAcademicos)
   @JoinColumn({ name: 'id_estudiante' })
   estudiante: Estudiante;
 

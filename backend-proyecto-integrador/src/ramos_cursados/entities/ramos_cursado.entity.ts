@@ -39,8 +39,8 @@ export class RamosCursados {
   updated_at: Date;
 
   // Relación con Estudiante
-  @ManyToOne(() => Estudiante, (estudiante) => estudiante.ramos_cursados)
-  @JoinColumn({ name: 'id_estudiante' })
+  @ManyToOne(() => Estudiante, (estudiante) => estudiante.ramosCursados)
+  @JoinColumn({ name: 'id_Estudiante' })
   estudiante: Estudiante;
 
   @Column()

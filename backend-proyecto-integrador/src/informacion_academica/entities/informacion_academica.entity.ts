@@ -33,8 +33,8 @@ export class InformacionAcademica {
   updated_at: Date;
 
   // Relación con Estudiante
-  @OneToOne(() => Estudiante, (estudiante) => estudiante.informacion_academica)
-  @JoinColumn({ name: 'id_estudiante' })
+  @OneToOne(() => Estudiante, (estudiante) => estudiante.informacionAcademica)
+  @JoinColumn({ name: 'id_Estudiante' })
   estudiante: Estudiante;
 
   @Column()

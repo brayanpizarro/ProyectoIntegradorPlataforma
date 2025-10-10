@@ -7,9 +7,13 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToOne,
+  OneToMany,
 } from 'typeorm';
 import { Institucion } from '../../institucion/entities/institucion.entity';
-import { familia } from '../../familia/entities/familia.entity';
+import { Familia } from '../../familia/entities/familia.entity';
+import { RamosCursados } from 'src/ramos_cursados/entities/ramos_cursado.entity';
+import { HistorialAcademico } from 'src/historial_academico/entities/historial_academico.entity';
+import { InformacionAcademica } from 'src/informacion_academica/entities/informacion_academica.entity';
 
 export enum TipoEstudiante {
   MEDIA = 'media',
@@ -49,9 +53,20 @@ export class Estudiante {
   @JoinColumn({ name: 'id_institucion' })
   institucion: Institucion;
 
-  @OneToOne(() => familia, (familia) => familia.estudiante, { nullable: true })
+  @OneToOne(() => Familia, (familia) => familia.estudiante, { nullable: true })
   @JoinColumn({ name: 'id_familia' })
-  familia: familia;
+  familia: Familia;
+
+  @OneToMany(() => RamosCursados, (ramo) => ramo.estudiante)
+  ramosCursados: RamosCursados[];
+
+  @OneToMany(() => HistorialAcademico, (historial) => historial.estudiante)
+  historialesAcademicos: HistorialAcademico[];
+
+  @OneToOne(() => InformacionAcademica, (info) => info.estudiante, {
+    nullable: true,
+  })
+  informacionAcademica: InformacionAcademica;
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
