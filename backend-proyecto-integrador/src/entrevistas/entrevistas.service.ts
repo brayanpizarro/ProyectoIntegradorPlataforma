@@ -18,6 +18,7 @@ import {
   AgregarEtiquetaData,
   EtiquetaAcumulada,
   PrepararEntrevistaResponse,
+  EntrevistaFilters,
 } from './interfaces/entrevista.interface';
 
 @Injectable()
@@ -327,17 +328,42 @@ export class EntrevistasService {
 
   // MÉTODOS CRUD BÁSICOS
   async findAll(
-    filters: any = {},
+    filters: EntrevistaFilters = {},
     pagination: { page: number; limit: number } = { page: 1, limit: 10 },
-  ) {
+  ): Promise<{
+    data: Entrevista[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      pages: number;
+    };
+  }> {
     const { page, limit } = pagination;
     const skip = (page - 1) * limit;
 
-    const query = this.entrevistaModel.find(filters);
+    // Crear filtros seguros para MongoDB
+    const mongoFilters: Record<string, any> = {};
+
+    // Mapear filtros de forma segura
+    if (filters.estudianteId) {
+      mongoFilters.estudianteId = filters.estudianteId;
+    }
+    if (filters.año) {
+      mongoFilters.año = filters.año;
+    }
+    if (filters.tipo_entrevista) {
+      mongoFilters.tipo_entrevista = filters.tipo_entrevista;
+    }
+    if (filters.estado) {
+      mongoFilters.estado = filters.estado;
+    }
+
+    const query = this.entrevistaModel.find(mongoFilters);
 
     const [data, total] = await Promise.all([
       query.sort({ fecha: -1 }).skip(skip).limit(limit).exec(),
-      this.entrevistaModel.countDocuments(filters).exec(),
+      this.entrevistaModel.countDocuments(mongoFilters).exec(),
     ]);
 
     return {
