@@ -7,6 +7,11 @@ import {
   Unique,
 } from 'typeorm';
 
+export enum UserRole {
+  NORMAL = 'normal',
+  VISITA = 'visita',
+}
+
 @Entity('users')
 @Unique(['email'])
 export class User {
@@ -24,6 +29,13 @@ export class User {
 
   @Column({ default: true })
   isActive: boolean;
+  
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.NORMAL,
+  })
+  role: UserRole;
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;

@@ -5,8 +5,14 @@ import {
   MinLength,
   IsOptional,
   IsBoolean,
+  IsEnum,
 } from 'class-validator';
 import { Exclude, Expose } from 'class-transformer';
+
+export enum UserRole {
+  NORMAL = 'normal',
+  VISITA = 'visita',
+}
 
 @Exclude()
 export class CreateUserDto {
@@ -31,4 +37,9 @@ export class CreateUserDto {
   @IsOptional()
   @IsBoolean({ message: 'isActive debe ser un valor booleano' })
   isActive?: boolean = true;
+
+  @Expose()
+  @IsOptional()
+  @IsEnum(UserRole, { message: 'El rol debe ser "normal" o "visita"' })
+  role?: UserRole = UserRole.NORMAL;
 }

@@ -2,14 +2,19 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  OneToMany,
   ManyToOne,
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
-import { Academico } from '../../academico/entities/academico.entity';
-import { Reporte } from '../../reporte/entities/reporte.entity';
 import { Institucion } from '../../institucion/entities/institucion.entity';
 
-@Entity('estudiantes')
+export enum TipoEstudiante {
+  MEDIA = 'media',
+  UNIVERSITARIO = 'universitario',
+}
+
+@Entity('estudiante')
 export class Estudiante {
   @PrimaryGeneratedColumn('uuid')
   id_estudiante: string;
@@ -21,23 +26,30 @@ export class Estudiante {
   rut: string;
 
   @Column()
+  telefono: string;
+
+  @Column()
   fecha_de_nacimiento: Date;
 
   @Column()
-  contacto: string;
+  email: string;
 
-  @Column()
-  direccion: string;
+  @Column({
+    type: 'enum',
+    enum: TipoEstudiante,
+    default: TipoEstudiante.UNIVERSITARIO,
+  })
+  tipo_de_estudiante: TipoEstudiante;
 
-  @Column({ default: true })
-  estado: boolean;
-
-  @OneToMany(() => Academico, academico => academico.estudiante)
-  academicos: Academico[];
-
-  @OneToMany(() => Reporte, reporte => reporte.estudiante)
-  reportes: Reporte[];
-
-  @ManyToOne(() => Institucion, institucion => institucion.estudiantes)
+  @ManyToOne(() => Institucion, (institucion) => institucion.estudiantes, {
+    nullable: false,
+  })
+  @JoinColumn({ name: 'id_institucion' })
   institucion: Institucion;
+
+  @CreateDateColumn({ type: 'timestamp' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ type: 'timestamp' })
+  updatedAt: Date;
 }
