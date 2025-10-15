@@ -113,3 +113,34 @@ export interface HistorialEtiqueta {
     contexto?: string;
   }[];
 }
+
+// Interfaces para Estadísticas Detalladas
+export interface EstadisticasGenerales {
+  total_entrevistas: number;
+  estudiantes_atendidos: number;
+  duracion_promedio: number;
+  distribucion_por_tipo: { tipo: string; cantidad: number }[];
+  distribucion_por_estado: { estado: string; cantidad: number }[];
+  temas_mas_frecuentes: { tema: string; cantidad: number }[];
+  etiquetas_mas_usadas: { etiqueta: string; cantidad: number }[];
+}
+
+export interface TendenciasTemporales {
+  entrevistas_por_mes: { mes: string; cantidad: number }[];
+  duracion_promedio_por_mes: { mes: string; duracion: number }[];
+  temas_por_periodo: { periodo: string; temas: { tema: string; cantidad: number }[] }[];
+}
+
+export interface EstadisticasDetalladas {
+  generales: EstadisticasGenerales;
+  tendencias: TendenciasTemporales;
+  comparativa_periodos: {
+    actual: EstadisticasGenerales;
+    anterior: EstadisticasGenerales;
+    variacion_porcentual: {
+      total_entrevistas: number;
+      estudiantes_atendidos: number;
+      duracion_promedio: number;
+    };
+  };
+}

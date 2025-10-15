@@ -20,6 +20,7 @@ import type {
   AgregarEtiquetaData,
   PrepararEntrevistaResponse,
   HistorialEtiqueta,
+  EstadisticasDetalladas,
 } from './interfaces/entrevista.interface';
 
 @Controller('entrevistas')
@@ -104,5 +105,10 @@ export class EntrevistasController {
     @Param('etiqueta') etiqueta: string,
   ): Promise<HistorialEtiqueta> {
     return this.entrevistasService.getHistorialEtiqueta(idEstudiante, etiqueta);
+  }
+
+  @Get('estadisticas/resumen')
+  async getEstadisticasGenerales(): Promise<EstadisticasDetalladas> {
+    return this.entrevistasService.obtenerEstadisticas();
   }
 }

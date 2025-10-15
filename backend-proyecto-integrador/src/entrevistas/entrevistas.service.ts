@@ -19,6 +19,9 @@ import {
   EtiquetaAcumulada,
   PrepararEntrevistaResponse,
   EntrevistaFilters,
+  EstadisticasDetalladas,
+  EstadisticasGenerales,
+  TendenciasTemporales,
 } from './interfaces/entrevista.interface';
 
 @Injectable()
@@ -326,10 +329,11 @@ export class EntrevistasService {
       .map(([tema, frecuencia]) => ({ tema, frecuencia }));
   }
 
-  // MÉTODOS CRUD BÁSICOS
+  // MÉTODOS CRUD BÁSICOS Y BÚSQUEDA AVANZADA
   async findAll(
     filters: EntrevistaFilters = {},
     pagination: { page: number; limit: number } = { page: 1, limit: 10 },
+    search?: { tematica?: string; clasificacion?: string[] },
   ): Promise<{
     data: Entrevista[];
     pagination: {
@@ -357,6 +361,18 @@ export class EntrevistasService {
     }
     if (filters.estado) {
       mongoFilters.estado = filters.estado;
+    }
+
+    // Búsqueda por temática y clasificación
+    if (search?.tematica) {
+      mongoFilters.temas_abordados = { 
+        $regex: new RegExp(search.tematica, 'i') 
+      };
+    }
+    if (search?.clasificacion?.length) {
+      mongoFilters['etiquetas.nombre_etiqueta'] = {
+        $in: search.clasificacion
+      };
     }
 
     const query = this.entrevistaModel.find(mongoFilters);
@@ -572,5 +588,217 @@ export class EntrevistasService {
     };
 
     return estadisticas;
+  }
+
+  async obtenerEstadisticas(): Promise<EstadisticasDetalladas> {
+    const entrevistas = await this.entrevistaModel.find().exec();
+    const fechaActual = new Date();
+    const inicioMesActual = new Date(fechaActual.getFullYear(), fechaActual.getMonth(), 1);
+    const inicioMesAnterior = new Date(fechaActual.getFullYear(), fechaActual.getMonth() - 1, 1);
+
+    // Estadísticas del período actual
+    const estadisticasActuales = await this.calcularEstadisticasGenerales(
+      entrevistas.filter(e => new Date(e.fecha) >= inicioMesActual)
+    );
+
+    // Estadísticas del período anterior
+    const estadisticasAnteriores = await this.calcularEstadisticasGenerales(
+      entrevistas.filter(e => new Date(e.fecha) >= inicioMesAnterior && new Date(e.fecha) < inicioMesActual)
+    );
+
+    // Calcular tendencias
+    const tendencias = await this.calcularTendenciasTemporales(entrevistas);
+
+    // Calcular variaciones porcentuales
+    const variacionPorcentual = {
+      total_entrevistas: this.calcularVariacionPorcentual(
+        estadisticasActuales.total_entrevistas,
+        estadisticasAnteriores.total_entrevistas
+      ),
+      estudiantes_atendidos: this.calcularVariacionPorcentual(
+        estadisticasActuales.estudiantes_atendidos,
+        estadisticasAnteriores.estudiantes_atendidos
+      ),
+      duracion_promedio: this.calcularVariacionPorcentual(
+        estadisticasActuales.duracion_promedio,
+        estadisticasAnteriores.duracion_promedio
+      ),
+    };
+
+    return {
+      generales: estadisticasActuales,
+      tendencias,
+      comparativa_periodos: {
+        actual: estadisticasActuales,
+        anterior: estadisticasAnteriores,
+        variacion_porcentual: variacionPorcentual,
+      },
+    };
+  }
+
+  private async calcularEstadisticasGenerales(entrevistas: Entrevista[]): Promise<EstadisticasGenerales> {
+    const estudiantesUnicos = new Set(entrevistas.map(e => e.estudianteId)).size;
+    const duracionTotal = entrevistas.reduce((sum, e) => sum + (e.duracion_minutos || 0), 0);
+    
+    // Distribución por tipo
+    const distribucionTipo = this.calcularDistribucion(
+      entrevistas,
+      'tipo_entrevista',
+      'tipo'
+    ) as { tipo: string; cantidad: number }[];
+    
+    // Distribución por estado
+    const distribucionEstado = this.calcularDistribucion(
+      entrevistas,
+      'estado',
+      'estado'
+    ) as { estado: string; cantidad: number }[];
+    
+    // Temas más frecuentes
+    const temasFrecuentes = this.calcularFrecuenciaTemas(entrevistas);
+    
+    // Etiquetas más usadas
+    const etiquetasFrecuentes = this.contarFrecuenciaEtiquetas(entrevistas);
+
+    return {
+      total_entrevistas: entrevistas.length,
+      estudiantes_atendidos: estudiantesUnicos,
+      duracion_promedio: entrevistas.length ? duracionTotal / entrevistas.length : 0,
+      distribucion_por_tipo: distribucionTipo,
+      distribucion_por_estado: distribucionEstado,
+      temas_mas_frecuentes: temasFrecuentes,
+      etiquetas_mas_usadas: etiquetasFrecuentes,
+    };
+  }
+
+  private async calcularTendenciasTemporales(entrevistas: Entrevista[]): Promise<TendenciasTemporales> {
+    // Agrupar entrevistas por mes
+    const entrevistasPorMes = this.agruparPorMes(entrevistas);
+    
+    // Calcular duración promedio por mes
+    const duracionPorMes = this.calcularDuracionPromedioMensual(entrevistas);
+    
+    // Analizar temas por período
+    const temasPorPeriodo = this.analizarTemasPorPeriodo(entrevistas);
+
+    return {
+      entrevistas_por_mes: entrevistasPorMes,
+      duracion_promedio_por_mes: duracionPorMes,
+      temas_por_periodo: temasPorPeriodo,
+    };
+  }
+
+  private calcularVariacionPorcentual(actual: number, anterior: number): number {
+    if (anterior === 0) return actual > 0 ? 100 : 0;
+    return ((actual - anterior) / anterior) * 100;
+  }
+
+  private calcularDistribucion(
+    entrevistas: Entrevista[],
+    campo: keyof Entrevista,
+    tipoRetorno: 'tipo' | 'estado',
+  ): Array<{ tipo: string; cantidad: number } | { estado: string; cantidad: number }> {
+    const distribucion = entrevistas.reduce((acc, entrevista) => {
+      const valor = entrevista[campo] as string;
+      acc[valor] = (acc[valor] || 0) + 1;
+      return acc;
+    }, {} as { [key: string]: number });
+
+    return Object.entries(distribucion)
+      .map(([key, value]) => ({
+        [tipoRetorno]: key,
+        cantidad: value,
+      }))
+      .sort((a, b) => b.cantidad - a.cantidad);
+  }
+
+  private calcularFrecuenciaTemas(
+    entrevistas: Entrevista[],
+  ): { tema: string; cantidad: number }[] {
+    const temas = entrevistas.flatMap((e) => e.temas_abordados || []);
+    const resultado = this.contarFrecuencia(temas, 'tema');
+    return resultado.filter((r): r is { tema: string; cantidad: number } => 
+      'tema' in r
+    );
+  }
+
+  private calcularFrecuenciaEtiquetas(
+    entrevistas: Entrevista[],
+  ): { etiqueta: string; cantidad: number }[] {
+    const etiquetas = entrevistas.flatMap((e) =>
+      e.etiquetas.map((et) => et.nombre_etiqueta),
+    );
+    const resultado = this.contarFrecuencia(etiquetas, 'etiqueta');
+    return resultado.filter((r): r is { etiqueta: string; cantidad: number } => 
+      'etiqueta' in r
+    );
+  }
+
+  private contarFrecuencia(
+    items: string[],
+    tipo: 'tema' | 'etiqueta',
+  ): Array<{ tema: string; cantidad: number } | { etiqueta: string; cantidad: number }> {
+    const frecuencia = items.reduce((acc, item) => {
+      acc[item] = (acc[item] || 0) + 1;
+      return acc;
+    }, {} as { [key: string]: number });
+
+    return Object.entries(frecuencia)
+      .map(([key, value]) => ({
+        [tipo]: key,
+        cantidad: value,
+      }))
+      .sort((a, b) => b.cantidad - a.cantidad) as Array<
+        { tema: string; cantidad: number } | { etiqueta: string; cantidad: number }
+      >;
+  }
+
+  private agruparPorMes(entrevistas: Entrevista[]): { mes: string; cantidad: number }[] {
+    const porMes = entrevistas.reduce((acc, entrevista) => {
+      const mes = new Date(entrevista.fecha).toISOString().slice(0, 7); // YYYY-MM
+      acc[mes] = (acc[mes] || 0) + 1;
+      return acc;
+    }, {} as { [key: string]: number });
+
+    return Object.entries(porMes)
+      .map(([mes, cantidad]) => ({ mes, cantidad }))
+      .sort((a, b) => a.mes.localeCompare(b.mes));
+  }
+
+  private calcularDuracionPromedioMensual(entrevistas: Entrevista[]): { mes: string; duracion: number }[] {
+    const duracionesPorMes = entrevistas.reduce((acc, entrevista) => {
+      const mes = new Date(entrevista.fecha).toISOString().slice(0, 7);
+      if (!acc[mes]) acc[mes] = { total: 0, count: 0 };
+      acc[mes].total += entrevista.duracion_minutos || 0;
+      acc[mes].count++;
+      return acc;
+    }, {} as { [key: string]: { total: number; count: number } });
+
+    return Object.entries(duracionesPorMes)
+      .map(([mes, { total, count }]) => ({
+        mes,
+        duracion: total / count,
+      }))
+      .sort((a, b) => a.mes.localeCompare(b.mes));
+  }
+
+  private analizarTemasPorPeriodo(entrevistas: Entrevista[]): { periodo: string; temas: { tema: string; cantidad: number }[] }[] {
+    const temasPorPeriodo = entrevistas.reduce((acc, entrevista) => {
+      const periodo = new Date(entrevista.fecha).toISOString().slice(0, 7);
+      if (!acc[periodo]) acc[periodo] = [];
+      if (entrevista.temas_abordados) {
+        acc[periodo].push(...entrevista.temas_abordados);
+      }
+      return acc;
+    }, {} as { [key: string]: string[] });
+
+    return Object.entries(temasPorPeriodo)
+      .map(([periodo, temas]) => ({
+        periodo,
+        temas: this.calcularFrecuenciaTemas(
+          entrevistas.filter(e => new Date(e.fecha).toISOString().slice(0, 7) === periodo)
+        ),
+      }))
+      .sort((a, b) => a.periodo.localeCompare(b.periodo));
   }
 }
