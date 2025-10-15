@@ -9,18 +9,27 @@ import {
 } from 'class-validator';
 import { Exclude, Expose } from 'class-transformer';
 
-export enum UserRole {
-  NORMAL = 'normal',
-  VISITA = 'visita',
-}
+import { UserRole } from '../entities/user.entity';
 
 @Exclude()
 export class CreateUserDto {
   @Expose()
+  @IsString({ message: 'El nombre de usuario debe ser una cadena de texto' })
+  @IsNotEmpty({ message: 'El nombre de usuario es requerido' })
+  @MinLength(4, { message: 'El nombre de usuario debe tener al menos 4 caracteres' })
+  username: string;
+
+  @Expose()
   @IsString({ message: 'El nombre debe ser una cadena de texto' })
   @IsNotEmpty({ message: 'El nombre es requerido' })
   @MinLength(2, { message: 'El nombre debe tener al menos 2 caracteres' })
-  name: string;
+  nombre: string;
+
+  @Expose()
+  @IsString({ message: 'El apellido debe ser una cadena de texto' })
+  @IsNotEmpty({ message: 'El apellido es requerido' })
+  @MinLength(2, { message: 'El apellido debe tener al menos 2 caracteres' })
+  apellido: string;
 
   @Expose()
   @IsEmail({}, { message: 'El correo electrónico no es válido' })
@@ -35,11 +44,10 @@ export class CreateUserDto {
 
   @Expose()
   @IsOptional()
-  @IsBoolean({ message: 'isActive debe ser un valor booleano' })
-  isActive?: boolean = true;
+  @IsBoolean({ message: 'activo debe ser un valor booleano' })
+  activo?: boolean = true;
 
   @Expose()
-  @IsOptional()
-  @IsEnum(UserRole, { message: 'El rol debe ser "normal" o "visita"' })
-  role?: UserRole = UserRole.NORMAL;
+  @IsEnum(UserRole, { message: 'El rol debe ser "admin", "tutor" o "visita"' })
+  rol: UserRole = UserRole.VISITA;
 }
