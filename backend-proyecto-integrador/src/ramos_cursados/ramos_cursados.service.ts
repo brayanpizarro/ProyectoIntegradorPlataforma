@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { CreateRamosCursadoDto } from './dto/create-ramos_cursado.dto';
-import { UpdateRamosCursadoDto } from './dto/update-ramos_cursado.dto';
+import { CreateRamosCursadosDto } from './dto/create-ramos_cursado.dto';
+import { UpdateRamosCursadosDto } from './dto/update-ramos_cursado.dto';
 
 @Injectable()
 export class RamosCursadosService {
-  create(createRamosCursadoDto: CreateRamosCursadoDto) {
+  create(createRamosCursadosDto: CreateRamosCursadosDto) {
     return 'This action adds a new ramosCursado';
   }
 
@@ -16,7 +16,7 @@ export class RamosCursadosService {
     return `This action returns a #${id} ramosCursado`;
   }
 
-  update(id: number, updateRamosCursadoDto: UpdateRamosCursadoDto) {
+  update(id: number, updateRamosCursadosDto: UpdateRamosCursadosDto) {
     return `This action updates a #${id} ramosCursado`;
   }
 

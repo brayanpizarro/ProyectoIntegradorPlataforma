@@ -42,7 +42,4 @@ export class Familia {
   @OneToOne(() => Estudiante, (estudiante) => estudiante.familia)
   @JoinColumn({ name: 'id_estudiante' })
   estudiante: Estudiante;
-
-  @Column()
-  id_estudiante: number;
 }

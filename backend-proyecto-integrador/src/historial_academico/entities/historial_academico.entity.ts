@@ -29,7 +29,7 @@ export class HistorialAcademico {
   @Column({ default: 0 })
   ramos_reprobados: number;
 
-  @Column({ type: 'decimal', precision: 3, scale: 1, nullable: true })
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   promedio_semestre: number;
 
   @CreateDateColumn()
@@ -42,7 +42,4 @@ export class HistorialAcademico {
   @ManyToOne(() => Estudiante, (estudiante) => estudiante.historialesAcademicos)
   @JoinColumn({ name: 'id_estudiante' })
   estudiante: Estudiante;
-
-  @Column()
-  id_estudiante: number;
 }

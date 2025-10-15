@@ -54,7 +54,6 @@ export class Estudiante {
   institucion: Institucion;
 
   @OneToOne(() => Familia, (familia) => familia.estudiante, { nullable: true })
-  @JoinColumn({ name: 'id_familia' })
   familia: Familia;
 
   @OneToMany(() => RamosCursados, (ramo) => ramo.estudiante)

@@ -26,7 +26,7 @@ export class RamosCursados {
   @Column({ type: 'json', nullable: true })
   notas_parciales: any;
 
-  @Column({ type: 'decimal', precision: 3, scale: 1, nullable: true })
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   promedio_final: number;
 
   @Column({ nullable: true })
@@ -40,9 +40,6 @@ export class RamosCursados {
 
   // Relación con Estudiante
   @ManyToOne(() => Estudiante, (estudiante) => estudiante.ramosCursados)
-  @JoinColumn({ name: 'id_Estudiante' })
+  @JoinColumn({ name: 'id_estudiante' })
   estudiante: Estudiante;
-
-  @Column()
-  id_estudiante: number;
 }

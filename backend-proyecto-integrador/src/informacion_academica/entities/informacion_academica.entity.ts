@@ -14,7 +14,7 @@ export class InformacionAcademica {
   @PrimaryGeneratedColumn()
   id_info_academico: number;
 
-  @Column({ type: 'decimal', precision: 3, scale: 1, nullable: true })
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   promedio_media: number;
 
   @Column({ nullable: true })
@@ -34,9 +34,6 @@ export class InformacionAcademica {
 
   // Relación con Estudiante
   @OneToOne(() => Estudiante, (estudiante) => estudiante.informacionAcademica)
-  @JoinColumn({ name: 'id_Estudiante' })
+  @JoinColumn({ name: 'id_estudiante' })
   estudiante: Estudiante;
-
-  @Column()
-  id_estudiante: number;
 }

@@ -21,6 +21,55 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
+## Setup rápido de Base de Datos (PostgreSQL y MongoDB)
+
+Este backend puede usar PostgreSQL (TypeORM) y MongoDB (Mongoose). Las conexiones se configuran por variables de entorno.
+
+### PostgreSQL (local)
+
+1) Asegúrate que el servicio PostgreSQL esté activo (puerto 5432) y que exista la base `proyecto_integrador`.
+
+2) Exporta tus credenciales reales en PowerShell (ajusta la contraseña a la que definiste al instalar Postgres):
+
+```powershell
+$env:POSTGRES_HOST = "localhost"; $env:POSTGRES_PORT = "5432"; $env:POSTGRES_USER = "postgres"; $env:POSTGRES_PASSWORD = "<TU_PASSWORD>"; $env:POSTGRES_DB = "proyecto_integrador"
+```
+
+3) Probar inserción/consultas de ejemplo:
+
+```powershell
+npm run db:test
+```
+
+Si ves `password authentication failed`, revisa que `<TU_PASSWORD>` coincida con la contraseña del usuario `postgres`.
+
+### MongoDB (local o Atlas)
+
+- Local por defecto: `mongodb://localhost:27017/proyecto_integrador`
+- Atlas: define `MONGODB_URI` con tu connection string.
+
+PowerShell (Atlas):
+
+```powershell
+$env:MONGODB_URI = "mongodb+srv://<usuario>:<password>@<cluster>.mongodb.net/proyecto_integrador?retryWrites=true&w=majority"
+```
+
+Para probar solo Mongo sin requerir Postgres en ejecución:
+
+```powershell
+$env:DISABLE_TYPEORM = "true"; npm run mongo:test
+```
+
+### Test de entidades sin BD (opcional)
+
+Valida las entidades y relaciones sin conectar a ninguna base:
+
+```powershell
+npm run test:entities
+```
+
+---
+
 ## Description
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
