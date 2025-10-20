@@ -1,10 +1,12 @@
-// Tipos principales basados en las entidades del backend NestJS
+// TIPOS COMPATIBLES CON BACKEND Y FRONTEND EXISTENTE
+// Mantiene la funcionalidad del frontend actual mientras se adapta al backend real
 
+// Tipos de usuario - Actualizado para coincidir con backend
 export interface Usuario {
   id: string;
-  nombres: string;
-  apellidos: string;
-  rut: string;
+  nombres?: string;
+  apellidos?: string;
+  rut?: string;
   email: string;
   tipo: 'admin' | 'academico' | 'estudiante';
   rol?: string;
@@ -17,34 +19,150 @@ export interface Usuario {
   fecha_actualizacion?: string;
 }
 
+// ESTUDIANTE - ESTRUCTURA HÍBRIDA: Backend real + Frontend actual
 export interface Estudiante {
-  id: number;  // Cambio: number en lugar de string
-  nombres: string;
-  apellidos: string;
+  // Campos del backend real (estructura principal)
+  id_estudiante: string | number;  // ✅ FLEXIBLE: Backend UUID o frontend number
+  nombre: string;         // ✅ Backend usa nombre completo
   rut: string;
-  email: string;
   telefono?: string;
+  fecha_de_nacimiento?: Date | string;
+  email?: string;
+  tipo_de_estudiante: 'ESCOLAR' | 'UNIVERSITARIO' | 'EGRESADO' | 'RETIRADO';  // ✅ EXPANDIDO
+  
+  // Campos del frontend actual (compatibilidad)
+  id?: number;            // 🔄 Para mantener compatibilidad con frontend actual
+  nombres?: string;       // 🔄 Para compatibilidad - se puede derivar de 'nombre'
+  apellidos?: string;     // 🔄 Para compatibilidad - se puede derivar de 'nombre'
+  estado?: string;        // 🔄 Para compatibilidad con filtros actuales
+  año_generacion?: number; // 🔄 Para lógica de generaciones actual
+  carrera?: string;       // 🔄 Se puede derivar de institucion.carrera_especialidad
+  universidad?: string;   // 🔄 Se puede derivar de institucion.nombre
+  promedio?: number;      // 🔄 Se puede derivar de informacionAcademica.promedio_media
+  beca?: string;          // 🔄 Se puede derivar de informacionAcademica.beneficios
+  
+  // Relaciones del backend (nuevas funcionalidades)
+  institucion?: Institucion;
+  familia?: Familia;
+  ramosCursados?: RamosCursados[];
+  historialesAcademicos?: HistorialAcademico[];
+  informacionAcademica?: InformacionAcademica;
+  
+  // Campos opcionales para migración gradual
   direccion?: string;
-  fecha_nacimiento?: string;
-  institucion?: { nombre_institucion: string };  // Agregado
-  estado: string;  // Agregado
-  año_generacion: number;  // Agregado
-  carrera: string;  // Cambio: requerido
-  liceo?: string;  // Agregado
-  especialidad?: string;  // Agregado
-  promedio_liceo?: number;  // Agregado
-  universidad: string;  // Agregado
-  duracion_carrera?: string;  // Agregado
-  via_acceso?: string;  // Agregado
-  semestre?: number;  // Agregado
-  promedio: number;  // Agregado
-  beca: string;  // Agregado
-  region?: string;  // Agregado
+  liceo?: string;
+  especialidad?: string;
+  promedio_liceo?: number;
+  duracion_carrera?: string;
+  via_acceso?: string;
+  semestre?: number;
+  region?: string;
   institucion_id?: string;
   año_ingreso?: number;
   activo?: boolean;
   fecha_creacion?: string;
   fecha_actualizacion?: string;
+}
+
+// NUEVAS INTERFACES DEL BACKEND - Basadas en el schema real
+// Estas interfaces extienden la funcionalidad sin romper la existente
+
+export interface Institucion {
+  id_institucion?: string;         // ✅ Campo real del backend
+  nombre?: string;                 // ✅ Renombrado de nombre_institucion para simplicidad
+  tipo_institucion?: string;
+  nivel_educativo?: string;
+  carrera_especialidad?: string;
+  anio_de_ingreso?: string | number; // ✅ FLEXIBLE: string o number
+  anio_de_egreso?: string;
+  
+  // Campos para compatibilidad con frontend actual
+  id?: string;                    // 🔄 Para compatibilidad
+  nombre_institucion?: string;    // 🔄 Para compatibilidad backend
+  direccion?: string;
+  telefono?: string;
+  email?: string;
+  tipo?: string;
+  activo?: boolean;
+  fecha_creacion?: string;
+  fecha_actualizacion?: string;
+}
+
+export interface Familia {
+  id_familia: string;
+  madre_nombre?: string;
+  madre_edad?: number;
+  padre_nombre?: string;
+  padre_edad?: number;
+  hermanos?: { nombre: string; edad: number }[];
+  observaciones?: string;
+  estudiante: Estudiante;
+}
+
+export interface RamosCursados {
+  id_ramos_cursados: string;
+  semestre: number;
+  nombre_ramo: string;
+  notas_parciales: number[];
+  promedio_final: number;
+  estado: string;
+  nivel_educativo: string;
+  estudiante: Estudiante;
+}
+
+export interface HistorialAcademico {
+  id_historial_academico: string;
+  año: number;
+  semestre: number;
+  nivel_educativo: string;
+  ramos_aprobados: number;
+  ramos_reprobados: number;
+  promedio_semestre: number;
+  estudiante: Estudiante;
+}
+
+export interface InformacionAcademica {
+  id_informacion_academica?: string;
+  promedio_media?: number;
+  via_acceso?: string;
+  beneficios?: { tipo: string; monto: number };
+  status_actual?: string;
+  estudiante?: Estudiante;
+  
+  // ✅ CAMPOS ADICIONALES que busca el código
+  carrera?: string;
+  promedio_actual?: number;
+}
+
+// ENTREVISTAS - MongoDB Schema del backend
+export interface Entrevista {
+  _id: string;
+  estudianteId: string;
+  usuarioId: string;
+  fecha: Date;
+  nombre_Tutor: string;
+  año: number;
+  numero_Entrevista: number;
+  duracion_minutos: number;
+  tipo_entrevista: string;
+  estado: string;
+  observaciones: string;
+  temas_abordados: string[];
+  etiquetas: EtiquetaEntrevista[];
+}
+
+export interface EtiquetaEntrevista {
+  nombre_etiqueta: string;
+  textos: TextoEtiqueta[];
+  primera_vez: Date;
+  ultima_vez: Date;
+  frecuencia: number;
+}
+
+export interface TextoEtiqueta {
+  contenido: string;
+  fecha: Date;
+  contexto: string;
 }
 
 export interface Academico {
@@ -57,18 +175,6 @@ export interface Academico {
   direccion?: string;
   especialidad?: string;
   institucion_id?: string;
-  activo?: boolean;
-  fecha_creacion?: string;
-  fecha_actualizacion?: string;
-}
-
-export interface Institucion {
-  id: string;
-  nombre: string;
-  direccion?: string;
-  telefono?: string;
-  email?: string;
-  tipo?: string;
   activo?: boolean;
   fecha_creacion?: string;
   fecha_actualizacion?: string;
@@ -144,14 +250,25 @@ export interface AuthResponse {
   tipo: 'admin' | 'academico' | 'estudiante';
 }
 
-// Tipos para estadísticas y dashboard
+// Tipos para estadísticas y dashboard - ACTUALIZADAS PARA BACKEND
 export interface EstadisticasAdmin {
+  // Métricas básicas (mantiene compatibilidad)
   total_usuarios: number;
   total_estudiantes: number;
   total_academicos: number;
   total_instituciones: number;
   total_asignaturas: number;
   total_reportes: number;
+  
+  // Nuevas métricas del backend real
+  estudiantes_por_tipo: {
+    ESCOLAR: number;
+    UNIVERSITARIO: number;
+    EGRESADO: number;
+  };
+  promedio_general: number;
+  total_entrevistas?: number;
+  total_familias?: number;
 }
 
 // Tipos para filtros

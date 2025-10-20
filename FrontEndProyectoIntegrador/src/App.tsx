@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { authService } from './services/authService';
 import { LoginAdminForm } from './components/LoginForm/LoginAdminForm';
 import { Dashboard } from './pages/Dashboard';
 import GeneracionViewSimple from './pages/GeneracionViewSimple';
 import { EstudianteDetail } from './pages/EstudianteDetail';
+import { EntrevistaWorkspace } from './pages/EntrevistaWorkspace';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -77,6 +78,14 @@ function App() {
           element={
             isAuthenticated ? 
               <EstudianteDetail /> : 
+              <Navigate to="/" replace />
+          }
+        />
+        <Route 
+          path="/entrevista/:id" 
+          element={
+            isAuthenticated ? 
+              <EntrevistaWorkspace /> : 
               <Navigate to="/" replace />
           }
         />
