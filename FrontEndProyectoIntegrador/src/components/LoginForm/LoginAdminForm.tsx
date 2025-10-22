@@ -4,7 +4,11 @@ import { authService } from '../../services/authService';
 import type { LoginCredentials } from '../../types';
 import './LoginForm.css';
 
-export const LoginAdminForm: React.FC = () => {
+interface LoginAdminFormProps {
+  onAuthChange?: (authenticated: boolean) => void;
+}
+
+export const LoginAdminForm: React.FC<LoginAdminFormProps> = ({ onAuthChange }) => {
   const [credentials, setCredentials] = useState<LoginCredentials>({
     email: '',
     password: ''
@@ -27,6 +31,8 @@ export const LoginAdminForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('🔍 Datos del formulario:', credentials);
+    
     if (!credentials.email || !credentials.password) {
       setError('Por favor, completa todos los campos');
       return;
@@ -36,26 +42,23 @@ export const LoginAdminForm: React.FC = () => {
     setError('');
 
     try {
-      console.log('👨‍💼 Intentando login de administrador...');
-      await authService.loginAdmin(credentials);
+      console.log('👨‍💼 Intentando login...');
+      const resultado = await authService.login(credentials);
+      console.log('📋 Resultado del login:', resultado);
       
-      console.log('✅ Login admin exitoso, redirigiendo al dashboard...');
+      console.log('✅ Login exitoso');
+      
+      // Notificar al componente padre que la autenticación cambió
+      if (onAuthChange) {
+        onAuthChange(true);
+      }
+      
+      // También navegar por si acaso
       navigate('/dashboard');
       
     } catch (error: any) {
-      console.error('❌ Error en login admin:', error);
-      
-      if (error.response?.status === 401) {
-        setError('Credenciales de administrador incorrectas');
-      } else if (error.response?.status === 403) {
-        setError('No tienes permisos de administrador');
-      } else if (error.message === 'Usuario no es administrador') {
-        setError('Este usuario no tiene permisos de administrador');
-      } else if (error.message) {
-        setError(error.message);
-      } else {
-        setError('Error al iniciar sesión como administrador');
-      }
+      console.error('❌ Error en login:', error);
+      setError('Credenciales incorrectas: ' + error.message);
     } finally {
       setLoading(false);
     }

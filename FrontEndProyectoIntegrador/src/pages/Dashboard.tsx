@@ -1,49 +1,161 @@
-﻿import { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
+import { apiService } from '../services/apiService'; // ✅ NUEVO: Servicio API real
+import type { Estudiante, EstadisticasAdmin } from '../types'; // ✅ CORREGIDO: Import de tipos
 
-// Datos mock de generaciones ampliados
+// ✅ MANTIENE: Datos mock como fallback (preserva funcionalidad existente)
 const mockGeneraciones = [
-  { año: 2024, estudiantes: 45, activos: 42, estado: 'activa' },
-  { año: 2023, estudiantes: 38, activos: 35, estado: 'activa' },
-  { año: 2022, estudiantes: 41, activos: 38, estado: 'activa' },
-  { año: 2021, estudiantes: 33, activos: 30, estado: 'activa' },
-  { año: 2020, estudiantes: 29, activos: 25, estado: 'finalizada' },
-  { año: 2019, estudiantes: 22, activos: 18, estado: 'finalizada' },
-  { año: 2018, estudiantes: 35, activos: 31, estado: 'finalizada' },
+  { año: 2024, estudiantes: 45, activos: 42, estado: 'activa' as const },
+  { año: 2023, estudiantes: 38, activos: 35, estado: 'activa' as const },
+  { año: 2022, estudiantes: 41, activos: 38, estado: 'activa' as const },
+  { año: 2021, estudiantes: 33, activos: 30, estado: 'activa' as const },
+  { año: 2020, estudiantes: 29, activos: 25, estado: 'finalizada' as const },
+  { año: 2019, estudiantes: 22, activos: 18, estado: 'finalizada' as const },
+  { año: 2018, estudiantes: 35, activos: 31, estado: 'finalizada' as const },
 ];
 
-export const Dashboard = () => {
+interface DashboardProps {
+  onAuthChange?: (authenticated: boolean) => void;
+}
+
+// ✅ NUEVA: Interfaz para generaciones calculadas desde datos reales
+interface GeneracionCalculada {
+  año: number;
+  estudiantes: number;
+  activos: number;
+  estado: 'activa' | 'finalizada';
+  estudiantesData: Estudiante[]; // ✅ NUEVO: Datos completos para navegación
+}
+
+export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
   const navigate = useNavigate();
   const [usuario, setUsuario] = useState<any>(null);
   const [busqueda, setBusqueda] = useState('');
   const [filtroEstado, setFiltroEstado] = useState<'todas' | 'activas' | 'finalizadas'>('todas');
   const [ordenarPor, setOrdenarPor] = useState<'año' | 'estudiantes'>('año');
+  
+  // ✅ NUEVO: Estados para datos del backend
+  const [estadisticas, setEstadisticas] = useState<EstadisticasAdmin | null>(null);
+  const [generaciones, setGeneraciones] = useState<GeneracionCalculada[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  // ✅ ACTUALIZADO: Cargar datos del backend + usuario
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchData = async () => {
       try {
+        setLoading(true);
+        setError(null);
+
+        // Cargar usuario (mantiene lógica existente)
         const user = await authService.getCurrentUser();
         setUsuario(user);
+
+        // ✅ NUEVO: Cargar datos del backend
+        try {
+          console.log('📊 Cargando datos del backend...');
+          
+          // Cargar en paralelo para mejor performance
+          const [estudiantesData, estadisticasData] = await Promise.all([
+            apiService.getEstudiantes(),
+            apiService.getEstadisticas()
+          ]);
+
+          setEstadisticas(estadisticasData);
+          
+          // ✅ NUEVO: Calcular generaciones desde datos reales
+          const generacionesCalculadas = calcularGeneracionesDesdeEstudiantes(estudiantesData);
+          setGeneraciones(generacionesCalculadas);
+          
+          console.log('✅ Datos del backend cargados exitosamente');
+          
+        } catch (apiError) {
+          console.warn('⚠️ Backend no disponible, usando datos mock');
+          // ✅ FALLBACK: Usar datos mock (preserva funcionalidad)
+          setGeneraciones(mockGeneraciones.map(g => ({
+            ...g,
+            estudiantesData: [] // Sin datos completos en mock
+          })));
+        }
+
       } catch (error) {
-        console.error('Error al obtener usuario:', error);
-        navigate('/');
+        console.error('Error al cargar datos:', error);
+        setError('Error al cargar los datos del dashboard');
+        // Mantener funcionalidad básica con mock
+        setGeneraciones(mockGeneraciones.map(g => ({
+          ...g,
+          estudiantesData: []
+        })));
+      } finally {
+        setLoading(false);
       }
     };
-    fetchUser();
+
+    fetchData();
   }, [navigate]);
 
+  // ✅ NUEVA: Función para calcular generaciones desde estudiantes reales
+  const calcularGeneracionesDesdeEstudiantes = (estudiantesData: Estudiante[]): GeneracionCalculada[] => {
+    // Agrupar estudiantes por año de ingreso
+    const estudiantesPorAño = estudiantesData.reduce((acc, estudiante) => {
+      // Obtener año de múltiples fuentes para compatibilidad
+      const año = 
+        estudiante.institucion?.anio_de_ingreso || 
+        estudiante.año_generacion?.toString() || 
+        estudiante.año_ingreso?.toString() || 
+        '2024';
+      
+      const añoNum = parseInt(año.toString()); // ✅ CORREGIDO: convertir a string primero
+      
+      if (!acc[añoNum]) {
+        acc[añoNum] = [];
+      }
+      acc[añoNum].push(estudiante);
+      return acc;
+    }, {} as Record<number, Estudiante[]>);
+
+    // Convertir a array de generaciones
+    return Object.entries(estudiantesPorAño)
+      .map(([año, estudiantesAño]) => {
+        const añoNum = parseInt(año);
+        const currentYear = new Date().getFullYear();
+        
+        // Calcular activos (estudiantes con estado activo)
+        const activos = estudiantesAño.filter(e => 
+          e.informacionAcademica?.status_actual === 'Activo' ||
+          e.estado === 'Activo' ||
+          e.tipo_de_estudiante === 'UNIVERSITARIO'
+        ).length;
+
+        return {
+          año: añoNum,
+          estudiantes: estudiantesAño.length,
+          activos,
+          estado: (añoNum >= currentYear - 2 ? 'activa' : 'finalizada') as 'activa' | 'finalizada', // ✅ CORREGIDO: sintaxis correcta
+          estudiantesData: estudiantesAño
+        };
+      })
+      .sort((a, b) => b.año - a.año); // Más recientes primero
+  };
+
+  // ✅ MANTIENE: Lógica de logout existente
   const handleLogout = async () => {
     try {
       await authService.logout();
+      
+      if (onAuthChange) {
+        onAuthChange(false);
+      }
+      
       navigate('/');
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
     }
   };
 
-  // Lógica de filtrado y búsqueda
-  const generacionesFiltradas = mockGeneraciones.filter(generacion => {
+  // ✅ ACTUALIZADA: Lógica de filtrado para nuevas generaciones
+  const generacionesFiltradas = generaciones.filter(generacion => {
     // Filtro por búsqueda (año)
     const coincideBusqueda = busqueda === '' || 
       generacion.año.toString().includes(busqueda);
@@ -56,7 +168,7 @@ export const Dashboard = () => {
     return coincideBusqueda && coincideEstado;
   });
 
-  // Ordenamiento
+  // ✅ MANTIENE: Lógica de ordenamiento existente
   const generacionesOrdenadas = [...generacionesFiltradas].sort((a, b) => {
     if (ordenarPor === 'año') {
       return b.año - a.año; // Más recientes primero
@@ -65,8 +177,65 @@ export const Dashboard = () => {
     }
   });
 
-  const totalEstudiantes = generacionesOrdenadas.reduce((sum, gen) => sum + gen.estudiantes, 0);
+  // ✅ ACTUALIZADO: Cálculos de totales (puede usar estadísticas del backend)
+  const totalEstudiantes = estadisticas?.total_estudiantes || 
+    generacionesOrdenadas.reduce((sum, gen) => sum + gen.estudiantes, 0);
   const totalActivos = generacionesOrdenadas.reduce((sum, gen) => sum + gen.activos, 0);
+
+  // ✅ NUEVO: Manejo de estados de carga y error
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f5f5f5'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ 
+            fontSize: '3rem', 
+            marginBottom: '1rem',
+            animation: 'spin 1s linear infinite'
+          }}>⏳</div>
+          <h2>Cargando Dashboard...</h2>
+          <p style={{ color: '#6b7280' }}>Conectando con el backend</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ✅ NUEVO: Manejo de error si existe
+  if (error) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f5f5f5'
+      }}>
+        <div style={{ textAlign: 'center', maxWidth: '400px', padding: '2rem' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
+          <h2>Error al cargar datos</h2>
+          <p style={{ color: '#6b7280', marginBottom: '1rem' }}>{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            style={{
+              padding: '0.5rem 1rem',
+              backgroundColor: '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0.375rem',
+              cursor: 'pointer'
+            }}
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>

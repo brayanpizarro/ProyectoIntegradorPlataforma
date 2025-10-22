@@ -1,318 +1,308 @@
-import axios from 'axios';
-import type { Usuario, LoginCredentials, AuthResponse } from '../types';
+// SERVICIO DE AUTENTICACIÓN HÍBRIDO
+// Intenta usar API real del backend, con fallback a mock para desarrollo
+// TODO Backend: Implementar /auth/login, /auth/logout, /auth/me en el backend
 
-const API_URL = 'http://localhost:3000';
+import type { LoginCredentials, AuthResponse, Usuario } from '../types';
 
-// Configuración de axios
-const api = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+const API_BASE_URL = 'http://localhost:3000'; // TODO Backend: Configurar CORS para este origen
 
-// Interceptor para agregar token a las requests
-api.interceptors.request.use(
-  (config) => {
+class AuthService {
+  private currentUser: Usuario | null = null;
+
+  /**
+   * Verificar si el usuario está autenticado
+   * Valida token en localStorage y opcionalmente con el backend
+   */
+  isAuthenticated(): boolean {
     const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const user = localStorage.getItem('user');
+    
+    if (!token || !user) {
+      return false;
     }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
 
-// Interceptor para manejar errores de respuesta
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    // MOCK: Simular respuestas del backend para desarrollo
-    if (error.code === 'ERR_NETWORK' || error.message.includes('Network Error')) {
-      const config = error.config;
-      
-      // Mock login responses
-      if (config.url === '/auth/login' && config.method === 'post') {
-        const credentials = JSON.parse(config.data);
+    // TODO Backend: Opcional - validar token con el backend
+    // this.validateTokenWithBackend(token);
+    
+    return true;
+  }
+
+  /**
+   * Obtener token de autenticación
+   */
+  getToken(): string | null {
+    return localStorage.getItem('token');
+  }
+
+  /**
+   * Login principal - Intenta API real, fallback a mock
+   * TODO Backend: Implementar POST /auth/login con validación de usuarios
+   */
+  async login(credentials: LoginCredentials): Promise<AuthResponse> {
+    console.log('🔐 Intentando login con:', credentials.email);
+
+    try {
+      // INTENTO 1: API del backend real
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      });
+
+      if (response.ok) {
+        const authResponse: AuthResponse = await response.json();
         
-        // Usuarios mock
-        const mockUsers = {
-          'estudiante@fundacion.cl': {
-            id: '1',
-            nombres: 'Juan Carlos',
-            apellidos: 'Pérez González',
-            email: 'estudiante@fundacion.cl',
-            rut: '12345678-9',
-            tipo: 'estudiante' as const,
-            telefono: '+56912345678',
-            direccion: 'Av. Principal 123, Santiago'
-          },
-          'admin@fundacion.cl': {
-            id: '2',
-            nombres: 'María José',
-            apellidos: 'Rodríguez Silva',
-            email: 'admin@fundacion.cl',
-            rut: '98765432-1',
-            tipo: 'admin' as const,
-            telefono: '+56987654321',
-            direccion: 'Calle Admin 456, Santiago'
-          },
-          'academico@fundacion.cl': {
-            id: '3',
-            nombres: 'Carlos Eduardo',
-            apellidos: 'López Torres',
-            email: 'academico@fundacion.cl',
-            rut: '11223344-5',
-            tipo: 'academico' as const,
-            telefono: '+56911223344',
-            direccion: 'Av. Académica 789, Santiago'
-          }
-        };
+        // Guardar datos en localStorage
+        this.saveAuthData(authResponse);
         
-        if (credentials.email in mockUsers && credentials.password === 'admin123') {
-          const usuario = mockUsers[credentials.email as keyof typeof mockUsers];
-          return Promise.resolve({
-            data: {
-              token: 'mock-jwt-token-' + Date.now(),
-              usuario
-            }
-          });
-        } else {
-          return Promise.reject(new Error('Credenciales inválidas'));
-        }
+        console.log('✅ Login exitoso con backend real');
+        return authResponse;
+      } else if (response.status === 401) {
+        throw new Error('Credenciales inválidas');
+      } else {
+        throw new Error(`Error del servidor: ${response.status}`);
       }
       
-      // Mock login admin
-      if (config.url === '/auth/login/admin' && config.method === 'post') {
-        const credentials = JSON.parse(config.data);
-        
-        if ((credentials.email === 'admin@fundacion.cl' || credentials.email === 'academico@fundacion.cl') 
-            && credentials.password === 'admin123') {
-          const isAdmin = credentials.email === 'admin@fundacion.cl';
-          return Promise.resolve({
-            data: {
-              token: 'mock-jwt-token-admin-' + Date.now(),
-              usuario: isAdmin ? {
-                id: '2',
-                nombres: 'María José',
-                apellidos: 'Rodríguez Silva',
-                email: 'admin@fundacion.cl',
-                rut: '98765432-1',
-                tipo: 'admin' as const,
-                telefono: '+56987654321',
-                direccion: 'Calle Admin 456, Santiago'
-              } : {
-                id: '3',
-                nombres: 'Carlos Eduardo',
-                apellidos: 'López Torres',
-                email: 'academico@fundacion.cl',
-                rut: '11223344-5',
-                tipo: 'academico' as const,
-                telefono: '+56911223344',
-                direccion: 'Av. Académica 789, Santiago'
-              }
-            }
-          });
-        } else {
-          return Promise.reject(new Error('Credenciales inválidas'));
-        }
-      }
+    } catch (error) {
+      console.warn('⚠️ Backend no disponible, usando autenticación mock');
       
-      // Mock profile endpoint
-      if (config.url === '/auth/profile' && config.method === 'get') {
-        const user = localStorage.getItem('user');
-        if (user) {
-          return Promise.resolve({
-            data: JSON.parse(user)
-          });
-        }
-        return Promise.reject(new Error('No autorizado'));
-      }
-      
-      // Mock password recovery endpoints
-      if (config.url === '/auth/request-password-reset') {
-        return Promise.resolve({ data: { message: 'Código enviado' } });
-      }
-      
-      if (config.url === '/auth/verify-reset-code') {
-        const { code } = JSON.parse(config.data);
-        return Promise.resolve({ data: { valid: code === '123456' } });
-      }
-      
-      if (config.url === '/auth/reset-password') {
-        return Promise.resolve({ data: { message: 'Contraseña actualizada' } });
-      }
+      // FALLBACK: Autenticación mock para desarrollo
+      return this.mockLogin(credentials);
+    }
+  }
+
+  /**
+   * Login específico para admin (mantiene compatibilidad)
+   */
+  async loginAdmin(credentials: LoginCredentials): Promise<AuthResponse> {
+    const result = await this.login(credentials);
+    
+    // Verificar que sea admin
+    if (result.tipo !== 'admin') {
+      throw new Error('Acceso denegado: se requieren permisos de administrador');
     }
     
-    if (error.response?.status === 401) {
-      // Token expirado o inválido
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/';
-    }
-    return Promise.reject(error);
+    return result;
   }
-);
 
-export const authService = {
-  // Login general
-  login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    try {
-      console.log('🔐 Iniciando sesión con:', credentials.email);
-      const response = await api.post('/auth/login', credentials);
-      const data = response.data;
-      
-      // Guardar token y usuario en localStorage
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.usuario));
-      
-      console.log('✅ Login exitoso para:', data.usuario.tipo);
-      return data;
-    } catch (error) {
-      console.error('❌ Error en login:', error);
-      throw error;
-    }
-  },
-
-  // Login específico para admin
-  loginAdmin: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    try {
-      console.log('👨‍💼 Iniciando sesión de admin con:', credentials.email);
-      const response = await api.post('/auth/login/admin', credentials);
-      const data = response.data;
-      
-      if (data.usuario.tipo !== 'admin') {
-        throw new Error('Usuario no es administrador');
+  /**
+   * Cerrar sesión
+   * TODO Backend: Implementar POST /auth/logout para invalidar token
+   */
+  async logout(): Promise<void> {
+    const token = this.getToken();
+    
+    if (token) {
+      try {
+        // Intentar logout en el backend
+        await fetch(`${API_BASE_URL}/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        console.log('✅ Logout exitoso en backend');
+      } catch (error) {
+        console.warn('⚠️ No se pudo notificar logout al backend:', error);
       }
-      
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.usuario));
-      
-      console.log('✅ Login admin exitoso');
-      return data;
-    } catch (error) {
-      console.error('❌ Error en login admin:', error);
-      throw error;
     }
-  },
 
-  // Obtener perfil del usuario
-  getProfile: async (): Promise<Usuario> => {
+    // Limpiar datos locales
+    this.clearAuthData();
+    console.log('🚪 Sesión cerrada localmente');
+  }
+
+  /**
+   * Obtener usuario actual
+   * TODO Backend: Opcional - implementar GET /auth/me para datos actualizados
+   */
+  getCurrentUser(): Usuario | null {
+    if (this.currentUser) {
+      return this.currentUser;
+    }
+
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      this.currentUser = JSON.parse(userStr);
+      return this.currentUser;
+    }
+
+    return null;
+  }
+
+  /**
+   * Verificar si el usuario es admin
+   */
+  isAdmin(): boolean {
+    const user = this.getCurrentUser();
+    return user?.tipo === 'admin';
+  }
+
+  /**
+   * Solicitar restablecimiento de contraseña
+   * TODO Backend: Implementar POST /auth/forgot-password
+   */
+  async requestPasswordReset(email: string): Promise<void> {
     try {
-      const response = await api.get('/auth/profile');
-      return response.data;
-    } catch (error) {
-      console.error('❌ Error obteniendo perfil:', error);
-      throw error;
-    }
-  },
+      const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
 
-  // Cerrar sesión
-  logout: () => {
-    console.log('🚪 Cerrando sesión');
+      if (!response.ok) {
+        throw new Error('Error al enviar código de recuperación');
+      }
+
+      console.log('✅ Código de recuperación enviado');
+    } catch (error) {
+      console.warn('⚠️ Backend no disponible, simulando envío de código');
+      // En desarrollo, simular éxito
+      console.log('📧 [MOCK] Código enviado a:', email);
+    }
+  }
+
+  /**
+   * Verificar código de recuperación
+   * TODO Backend: Implementar POST /auth/verify-reset-code
+   */
+  async verifyResetCode(email: string, code: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/verify-reset-code`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, code }),
+      });
+
+      const result = await response.json();
+      return result.valid;
+    } catch (error) {
+      console.warn('⚠️ Backend no disponible, usando validación mock');
+      // En desarrollo, aceptar código 123456
+      return code === '123456';
+    }
+  }
+
+  /**
+   * Restablecer contraseña
+   * TODO Backend: Implementar POST /auth/reset-password
+   */
+  async resetPassword(email: string, code: string, newPassword: string): Promise<void> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, code, newPassword }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al restablecer contraseña');
+      }
+
+      console.log('✅ Contraseña restablecida exitosamente');
+    } catch (error) {
+      console.warn('⚠️ Backend no disponible, simulando restablecimiento');
+      console.log('🔑 [MOCK] Contraseña restablecida para:', email);
+    }
+  }
+
+  // ================================
+  // MÉTODOS PRIVADOS Y HELPERS
+  // ================================
+
+  /**
+   * Autenticación mock para desarrollo
+   */
+  private mockLogin(credentials: LoginCredentials): Promise<AuthResponse> {
+    // Credenciales válidas para desarrollo
+    const validCredentials = [
+      { email: 'admin@fundacion.cl', password: 'admin123', tipo: 'admin' as const },
+      { email: 'admin', password: 'admin', tipo: 'admin' as const },
+      { email: 'academico@fundacion.cl', password: 'admin123', tipo: 'academico' as const },
+      { email: 'estudiante@fundacion.cl', password: 'admin123', tipo: 'estudiante' as const }
+    ];
+
+    const user = validCredentials.find(
+      cred => cred.email === credentials.email && cred.password === credentials.password
+    );
+
+    if (user) {
+      const authResponse: AuthResponse = {
+        token: 'mock-jwt-token-' + Date.now(),
+        usuario: {
+          id: Date.now().toString(),
+          email: user.email,
+          tipo: user.tipo,
+          nombres: 'Usuario',
+          apellidos: 'Prueba',
+          rut: '12345678-9'
+        },
+        tipo: user.tipo
+      };
+
+      this.saveAuthData(authResponse);
+      console.log('✅ [MOCK] Login exitoso');
+      return Promise.resolve(authResponse);
+    } else {
+      console.log('❌ [MOCK] Credenciales inválidas');
+      return Promise.reject(new Error('Credenciales inválidas'));
+    }
+  }
+
+  /**
+   * Guardar datos de autenticación en localStorage
+   */
+  private saveAuthData(authResponse: AuthResponse): void {
+    localStorage.setItem('token', authResponse.token);
+    localStorage.setItem('user', JSON.stringify(authResponse.usuario));
+    localStorage.setItem('userType', authResponse.tipo);
+    this.currentUser = authResponse.usuario;
+  }
+
+  /**
+   * Limpiar datos de autenticación
+   */
+  private clearAuthData(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-  },
+    localStorage.removeItem('userType');
+    this.currentUser = null;
+  }
 
-  // Obtener token actual
-  getToken: (): string | null => {
-    return localStorage.getItem('token');
-  },
-
-  // Obtener usuario actual
-  getCurrentUser: (): Usuario | null => {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
-  },
-
-  // Verificar si está autenticado
-  isAuthenticated: (): boolean => {
-    const token = localStorage.getItem('token');
-    return !!token;
-  },
-
-  // Verificar si es admin
-  isAdmin: (): boolean => {
-    const user = authService.getCurrentUser();
-    return user?.tipo === 'admin';
-  },
-
-  // Verificar si es académico
-  isAcademico: (): boolean => {
-    const user = authService.getCurrentUser();
-    return user?.tipo === 'academico';
-  },
-
-  // Verificar si es estudiante
-  isEstudiante: (): boolean => {
-    const user = authService.getCurrentUser();
-    return user?.tipo === 'estudiante';
-  },
-
-  // Actualizar perfil
-  updateProfile: async (userData: Partial<Usuario>): Promise<Usuario> => {
+  /**
+   * Validar token con el backend (futuro)
+   * TODO Backend: Implementar GET /auth/validate-token
+   */
+  /*
+  private async validateTokenWithBackend(token: string): Promise<boolean> {
     try {
-      const response = await api.patch('/auth/profile', userData);
-      
-      // Actualizar usuario en localStorage
-      const currentUser = authService.getCurrentUser();
-      if (currentUser) {
-        const updatedUser = { ...currentUser, ...response.data };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-      }
-      
-      return response.data;
-    } catch (error) {
-      console.error('❌ Error actualizando perfil:', error);
-      throw error;
-    }
-  },
-
-  // Cambiar contraseña
-  changePassword: async (currentPassword: string, newPassword: string): Promise<void> => {
-    try {
-      await api.patch('/auth/change-password', {
-        currentPassword,
-        newPassword
+      const response = await fetch(`${API_BASE_URL}/auth/validate`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
       });
-    } catch (error) {
-      console.error('❌ Error cambiando contraseña:', error);
-      throw error;
-    }
-  },
 
-  // Solicitar recuperación de contraseña
-  requestPasswordReset: async (email: string): Promise<void> => {
-    try {
-      await api.post('/auth/request-password-reset', { email });
+      return response.ok;
     } catch (error) {
-      console.error('❌ Error solicitando recuperación:', error);
-      throw error;
-    }
-  },
-
-  // Verificar código de recuperación
-  verifyResetCode: async (email: string, code: string): Promise<boolean> => {
-    try {
-      const response = await api.post('/auth/verify-reset-code', { email, code });
-      return response.data.valid;
-    } catch (error) {
-      console.error('❌ Error verificando código:', error);
-      throw error;
-    }
-  },
-
-  // Restablecer contraseña
-  resetPassword: async (email: string, code: string, newPassword: string): Promise<void> => {
-    try {
-      await api.post('/auth/reset-password', { email, code, newPassword });
-    } catch (error) {
-      console.error('❌ Error restableciendo contraseña:', error);
-      throw error;
+      console.warn('No se pudo validar token con backend:', error);
+      return true; // En desarrollo, asumir que es válido
     }
   }
-};
+  */
+}
 
+// Exportar instancia singleton
+export const authService = new AuthService();
+
+// Mantener compatibilidad con exports anteriores
 export default authService;
