@@ -25,7 +25,7 @@ export class RamosCursadosController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateRamosCursadosDto: UpdateRamosCursadosDto) {
     return this.ramosCursadosService.update(+id, updateRamosCursadosDto);
-  }
+ }
 
   @Delete(':id')
   remove(@Param('id') id: string) {

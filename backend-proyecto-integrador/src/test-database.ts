@@ -170,7 +170,7 @@ async function testBasicQueries() {
       AppDataSource.manager.count(Familia),
       AppDataSource.manager.count(RamosCursados),
       AppDataSource.manager.count(HistorialAcademico),
-      InformacionAcademica),
+      AppDataSource.manager.count(InformacionAcademica),
     ]);
 
     console.log('[INFO] Estadísticas de la base de datos:');

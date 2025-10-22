@@ -13,26 +13,18 @@ import { EntrevistasModule } from './entrevistas/entrevistas.module';
 
 @Module({
   imports: [
-    // PostgreSQL (configurable por variables de entorno)
-    ...(process.env.DISABLE_TYPEORM === 'true'
-      ? []
-      : [
-          TypeOrmModule.forRoot({
-            type: 'postgres',
-            host: process.env.POSTGRES_HOST || 'localhost',
-            port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
-            username: process.env.POSTGRES_USER || 'postgres',
-            password: process.env.POSTGRES_PASSWORD || 'password',
-            database: process.env.POSTGRES_DB || 'proyecto_integrador',
-            autoLoadEntities: true,
-            synchronize: true, // Solo desarrollo
-            logging: true,
-          }),
-        ]),
-
-    // MongoDB (local por defecto, Atlas si defines MONGODB_URI)
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: process.env.POSTGRES_HOST || 'db',  // 👈 importante
+      port: Number(process.env.POSTGRES_PORT) || 5432,
+      username: process.env.POSTGRES_USER || 'postgres',
+      password: process.env.POSTGRES_PASSWORD || 'postgres',
+      database: process.env.POSTGRES_DB || 'myapp',
+      entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      synchronize: true,
+    }),
     MongooseModule.forRoot(
-      process.env.MONGODB_URI || 'mongodb://localhost:27017/proyecto_integrador',
+      process.env.MONGODB_URI || 'mongodb://mongo:27017/entrevistas', // 👈 importante
     ),
 
     // Tus módulos

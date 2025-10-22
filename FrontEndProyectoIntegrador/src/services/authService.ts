@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { Usuario, LoginCredentials, AuthResponse } from '../types';
 
-const API_URL = 'http://localhost:3000';
+const API_URL = 'http://backend:3000';
 
 // Configuración de axios
 const api = axios.create({

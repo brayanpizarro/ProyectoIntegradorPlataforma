@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { Estudiante, FiltrosEstudiante } from '../types';
 import { authService } from './authService';
 
-const API_URL = 'http://localhost:3000';
+const API_URL = 'http://backend:3000';
 
 // Crear instancia de axios con configuración base
 const api = axios.create({

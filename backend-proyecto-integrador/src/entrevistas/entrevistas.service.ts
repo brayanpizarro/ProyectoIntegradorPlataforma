@@ -640,25 +640,17 @@ export class EntrevistasService {
     const estudiantesUnicos = new Set(entrevistas.map(e => e.estudianteId)).size;
     const duracionTotal = entrevistas.reduce((sum, e) => sum + (e.duracion_minutos || 0), 0);
     
-    // Distribución por tipo
-    const distribucionTipo = this.calcularDistribucion(
-      entrevistas,
-      'tipo_entrevista',
-      'tipo'
-    ) as { tipo: string; cantidad: number }[];
+    // Distribución por tipo - usando método específico
+    const distribucionTipo = this.calcularDistribucionPorTipo(entrevistas);
     
-    // Distribución por estado
-    const distribucionEstado = this.calcularDistribucion(
-      entrevistas,
-      'estado',
-      'estado'
-    ) as { estado: string; cantidad: number }[];
+    // Distribución por estado - usando método específico
+    const distribucionEstado = this.calcularDistribucionPorEstado(entrevistas);
     
     // Temas más frecuentes
     const temasFrecuentes = this.calcularFrecuenciaTemas(entrevistas);
     
     // Etiquetas más usadas
-    const etiquetasFrecuentes = this.contarFrecuenciaEtiquetas(entrevistas);
+    const etiquetasFrecuentes = this.calcularFrecuenciaEtiquetas(entrevistas);
 
     return {
       total_entrevistas: entrevistas.length,
@@ -693,22 +685,31 @@ export class EntrevistasService {
     return ((actual - anterior) / anterior) * 100;
   }
 
-  private calcularDistribucion(
+  private calcularDistribucionPorTipo(
     entrevistas: Entrevista[],
-    campo: keyof Entrevista,
-    tipoRetorno: 'tipo' | 'estado',
-  ): Array<{ tipo: string; cantidad: number } | { estado: string; cantidad: number }> {
+  ): { tipo: string; cantidad: number }[] {
     const distribucion = entrevistas.reduce((acc, entrevista) => {
-      const valor = entrevista[campo] as string;
+      const valor = entrevista.tipo_entrevista;
       acc[valor] = (acc[valor] || 0) + 1;
       return acc;
     }, {} as { [key: string]: number });
 
     return Object.entries(distribucion)
-      .map(([key, value]) => ({
-        [tipoRetorno]: key,
-        cantidad: value,
-      }))
+      .map(([tipo, cantidad]) => ({ tipo, cantidad }))
+      .sort((a, b) => b.cantidad - a.cantidad);
+  }
+
+  private calcularDistribucionPorEstado(
+    entrevistas: Entrevista[],
+  ): { estado: string; cantidad: number }[] {
+    const distribucion = entrevistas.reduce((acc, entrevista) => {
+      const valor = entrevista.estado;
+      acc[valor] = (acc[valor] || 0) + 1;
+      return acc;
+    }, {} as { [key: string]: number });
+
+    return Object.entries(distribucion)
+      .map(([estado, cantidad]) => ({ estado, cantidad }))
       .sort((a, b) => b.cantidad - a.cantidad);
   }
 

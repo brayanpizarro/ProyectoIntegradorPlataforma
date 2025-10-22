@@ -1,5 +1,5 @@
 // Configuración de la API
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://backend:3000';
 
 // Helper para hacer peticiones HTTP
 async function apiRequest(endpoint: string, options: RequestInit = {}) {
