@@ -50,4 +50,8 @@ export class CreateEstudianteDto {
   @IsOptional()
   @IsUUID()
   institucionId?: string;
+  // Revisar si es necesario la generacion, asumo que se refiere al año de egreso
+  @Expose()
+  @IsString()
+  generacion: string;
 }

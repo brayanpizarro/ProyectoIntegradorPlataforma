@@ -14,7 +14,7 @@ class AuthService {
    * Valida token en localStorage y opcionalmente con el backend
    */
   isAuthenticated(): boolean {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accesstoken');
     const user = localStorage.getItem('user');
     
     if (!token || !user) {

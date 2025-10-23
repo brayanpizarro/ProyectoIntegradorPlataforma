@@ -252,6 +252,15 @@ export interface AuthResponse {
 
 // Tipos para estadísticas y dashboard - ACTUALIZADAS PARA BACKEND
 export interface EstadisticasAdmin {
+
+  //Tipo de datos reales entregado por el backend
+  generacionesTotal: number;
+  estudiantesTotal: number;
+  generaciones: Array<{
+    generacion: string;
+    total: number;
+  }>;
+
   // Métricas básicas (mantiene compatibilidad)
   total_usuarios: number;
   total_estudiantes: number;

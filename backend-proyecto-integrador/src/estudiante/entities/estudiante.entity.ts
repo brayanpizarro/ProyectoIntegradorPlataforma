@@ -46,6 +46,9 @@ export class Estudiante {
     default: TipoEstudiante.UNIVERSITARIO,
   })
   tipo_de_estudiante: TipoEstudiante;
+  // Ver si la generacion es algo que se pone al crear al estudiante o despues
+  @Column()
+  generacion: string;
 
   @ManyToOne(() => Institucion, (institucion) => institucion.estudiantes, {
     nullable: false,

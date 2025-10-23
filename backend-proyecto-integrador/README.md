@@ -22,7 +22,8 @@ npm run dev
     "email": "admin@admin.cl",
     "password": "admin123",
     "nombre": "admin",
-    "apellido": "nimda"
+    "apellido": "nimda",
+    "rol": "admin" // En caso de no especificar, es visita por default
 }
 ```
 

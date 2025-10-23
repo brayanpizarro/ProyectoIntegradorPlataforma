@@ -459,6 +459,11 @@ class ApiService {
     const estudiantes = this.getMockEstudiantes();
     
     return {
+      //Para efectos del mock y mientras que aun se conecta al backend
+      generacionesTotal: 0,
+      estudiantesTotal: 0,
+      generaciones: [],
+
       total_usuarios: 10,
       total_estudiantes: estudiantes.length,
       total_academicos: 5,
