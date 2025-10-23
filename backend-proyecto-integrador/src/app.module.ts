@@ -1,5 +1,5 @@
-// src/app.module.ts
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MongooseModule } from '@nestjs/mongoose';
 import { EstudianteModule } from './estudiante/estudiante.module';
@@ -10,24 +10,44 @@ import { InformacionAcademicaModule } from './informacion_academica/informacion_
 import { InstitucionModule } from './institucion/institucion.module';
 import { UsersModule } from './users/users.module';
 import { EntrevistasModule } from './entrevistas/entrevistas.module';
+import { AuthModule } from './auth/auth.module';
+import { appConfig, databaseConfig, jwtConfig } from './config';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.POSTGRES_HOST || 'db',  // 👈 importante
-      port: Number(process.env.POSTGRES_PORT) || 5432,
-      username: process.env.POSTGRES_USER || 'postgres',
-      password: process.env.POSTGRES_PASSWORD || 'postgres',
-      database: process.env.POSTGRES_DB || 'myapp',
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true,
+    
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [appConfig, databaseConfig, jwtConfig],
+      envFilePath: ['.env.local', '.env'],
     }),
-    MongooseModule.forRoot(
-      process.env.MONGODB_URI || 'mongodb://mongo:27017/entrevistas', // 👈 importante
-    ),
 
-    // Tus módulos
+    // TypeORM con ConfigService
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get('database.postgres.host'),
+        port: configService.get('database.postgres.port'),
+        username: configService.get('database.postgres.username'),
+        password: configService.get('database.postgres.password'),
+        database: configService.get('database.postgres.database'),
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        synchronize: configService.get('database.postgres.synchronize'),
+        logging: configService.get('database.postgres.logging'),
+      }),
+    }),
+
+    // MongoDB con ConfigService
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get('database.mongodb.uri'),
+      }),
+    }),
+
     EstudianteModule,
     FamiliaModule,
     RamosCursadosModule,
@@ -36,6 +56,7 @@ import { EntrevistasModule } from './entrevistas/entrevistas.module';
     InstitucionModule,
     UsersModule,
     EntrevistasModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

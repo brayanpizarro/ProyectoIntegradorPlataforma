@@ -47,6 +47,9 @@ export class User {
   @Column({ nullable: true })
   ultimo_login: Date;
 
+  @Column({ nullable: true, type: 'text' })
+  refreshToken: string;
+
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
 

@@ -2,10 +2,9 @@
 // Intenta usar API real del backend, con fallback a mock para desarrollo
 // TODO Backend: Implementar /auth/login, /auth/logout, /auth/me en el backend
 
-const API_URL = 'http://backend:3000';
 import type { LoginCredentials, AuthResponse, Usuario } from '../types';
 
-const API_BASE_URL = 'http://backend:3000'; // TODO Backend: Configurar CORS para este origen
+const API_BASE_URL = 'http://localhost:3000'; // TODO Backend: Configurar CORS para este origen
 
 class AuthService {
   private currentUser: Usuario | null = null;
@@ -32,7 +31,7 @@ class AuthService {
    * Obtener token de autenticación
    */
   getToken(): string | null {
-    return localStorage.getItem('token');
+    return localStorage.getItem('accesstoken');
   }
 
   /**
@@ -81,7 +80,7 @@ class AuthService {
     const result = await this.login(credentials);
     
     // Verificar que sea admin
-    if (result.tipo !== 'admin') {
+    if (result.user.rol !== 'admin') {
       throw new Error('Acceso denegado: se requieren permisos de administrador');
     }
     
@@ -139,7 +138,7 @@ class AuthService {
    */
   isAdmin(): boolean {
     const user = this.getCurrentUser();
-    return user?.tipo === 'admin';
+    return user?.tipo === 'admin'; //ver si hay que cambiar a rol
   }
 
   /**
@@ -226,10 +225,10 @@ class AuthService {
   private mockLogin(credentials: LoginCredentials): Promise<AuthResponse> {
     // Credenciales válidas para desarrollo
     const validCredentials = [
-      { email: 'admin@fundacion.cl', password: 'admin123', tipo: 'admin' as const },
-      { email: 'admin', password: 'admin', tipo: 'admin' as const },
-      { email: 'academico@fundacion.cl', password: 'admin123', tipo: 'academico' as const },
-      { email: 'estudiante@fundacion.cl', password: 'admin123', tipo: 'estudiante' as const }
+      { email: 'admin@fundacion.cl', password: 'admin123', rol: 'admin' as const },
+      { email: 'admin', password: 'admin', rol: 'admin' as const },
+      { email: 'academico@fundacion.cl', password: 'admin123', rol: 'academico' as const },
+      { email: 'estudiante@fundacion.cl', password: 'admin123', rol: 'estudiante' as const }
     ];
 
     const user = validCredentials.find(
@@ -238,16 +237,16 @@ class AuthService {
 
     if (user) {
       const authResponse: AuthResponse = {
-        token: 'mock-jwt-token-' + Date.now(),
-        usuario: {
+        accessToken: 'mock-jwt-token-' + Date.now(),
+        refreshToken: 'mock-jwt-refresh-token-' + Date.now(),
+        user: {
           id: Date.now().toString(),
           email: user.email,
-          tipo: user.tipo,
+          rol: user.rol,
           nombres: 'Usuario',
           apellidos: 'Prueba',
           rut: '12345678-9'
-        },
-        tipo: user.tipo
+        }
       };
 
       this.saveAuthData(authResponse);
@@ -263,10 +262,10 @@ class AuthService {
    * Guardar datos de autenticación en localStorage
    */
   private saveAuthData(authResponse: AuthResponse): void {
-    localStorage.setItem('token', authResponse.token);
-    localStorage.setItem('user', JSON.stringify(authResponse.usuario));
-    localStorage.setItem('userType', authResponse.tipo);
-    this.currentUser = authResponse.usuario;
+    localStorage.setItem('accesstoken', authResponse.accessToken);
+    localStorage.setItem('refreshtoken', authResponse.refreshToken);
+    localStorage.setItem('user', JSON.stringify(authResponse.user));
+    this.currentUser = authResponse.user;
   }
 
   /**

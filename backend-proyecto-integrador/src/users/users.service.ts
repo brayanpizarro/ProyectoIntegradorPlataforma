@@ -134,6 +134,12 @@ export class UsersService {
     });
   }
 
+  async updateRefreshToken(id: number, refreshToken: string | null): Promise<void> {
+    await this.usersRepository.update(id, {
+      refreshToken: refreshToken || undefined,
+    });
+  }
+
   async validateUser(username: string, password: string): Promise<User | null> {
     const user = await this.usersRepository.findOne({ where: { username } });
     if (user && (await bcrypt.compare(password, user.password))) {

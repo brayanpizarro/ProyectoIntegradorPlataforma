@@ -8,8 +8,8 @@ export interface Usuario {
   apellidos?: string;
   rut?: string;
   email: string;
-  tipo: 'admin' | 'academico' | 'estudiante';
-  rol?: string;
+  tipo?: 'admin' | 'academico' | 'estudiante';
+  rol: string;
   password?: string;
   telefono?: string;
   direccion?: string;
@@ -245,9 +245,9 @@ export interface LoginCredentials {
 }
 
 export interface AuthResponse {
-  token: string;
-  usuario: Usuario;
-  tipo: 'admin' | 'academico' | 'estudiante';
+  accessToken: string;
+  refreshToken: string;
+  user: Usuario;
 }
 
 // Tipos para estadísticas y dashboard - ACTUALIZADAS PARA BACKEND
