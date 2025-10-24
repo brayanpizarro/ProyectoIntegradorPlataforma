@@ -85,7 +85,7 @@ class ApiService {
    */
   async getEstudiantes(): Promise<Estudiante[]> {
     try {
-      return await this.request<Estudiante[]>('/estudiante');
+      return await this.request<Estudiante[]>('/estudiantes');//quitar 's'
     } catch (error) {
       console.warn('🔄 Backend no disponible, usando datos mock para estudiantes');
       return this.getMockEstudiantes();
