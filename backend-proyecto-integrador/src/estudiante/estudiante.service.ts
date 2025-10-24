@@ -29,18 +29,19 @@ export class EstudianteService {
       .groupBy('estudiante.generacion')
       .getRawMany(); // retorna array de objs { generacion: string, total: number }
 
-    gensInfo.map((r) => ({
+    // ⚠️ FIX: El map() no estaba asignando el resultado
+    const generaciones = gensInfo.map((r) => ({
       generacion: r.generacion,
       total: parseInt(r.total, 10),
     }));
 
-    const totalGens = gensInfo.length;
-    const totalStudents = gensInfo.reduce((sum, r) => sum + r.total, 0);
+    const totalGens = generaciones.length;
+    const totalStudents = generaciones.reduce((sum, r) => sum + r.total, 0);
 
     return {
       generacionesTotal: totalGens,
       estudiantesTotal: totalStudents,
-      generaciones: gensInfo,
+      generaciones: generaciones,
     };
 
     /* VER SI AGREGAR ESTO, QUE SIGNIFICA ACTIVO
