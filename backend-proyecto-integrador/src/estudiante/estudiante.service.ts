@@ -28,8 +28,7 @@ export class EstudianteService {
       .addSelect('COUNT(estudiante.id_estudiante)', 'total')
       .groupBy('estudiante.generacion')
       .getRawMany(); // retorna array de objs { generacion: string, total: number }
-
-    // ⚠️ FIX: El map() no estaba asignando el resultado
+      
     const generaciones = gensInfo.map((r) => ({
       generacion: r.generacion,
       total: parseInt(r.total, 10),
