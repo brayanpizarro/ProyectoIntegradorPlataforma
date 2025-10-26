@@ -5,15 +5,15 @@ import { apiService } from '../services/apiService'; // ✅ NUEVO: Servicio API 
 import type { Estudiante, EstadisticasAdmin } from '../types'; // ✅ CORREGIDO: Import de tipos
 
 // ✅ MANTIENE: Datos mock como fallback (preserva funcionalidad existente)
-const mockGeneraciones = [
-  { año: 2024, estudiantes: 45, activos: 42, estado: 'activa' as const },
-  { año: 2023, estudiantes: 38, activos: 35, estado: 'activa' as const },
-  { año: 2022, estudiantes: 41, activos: 38, estado: 'activa' as const },
-  { año: 2021, estudiantes: 33, activos: 30, estado: 'activa' as const },
-  { año: 2020, estudiantes: 29, activos: 25, estado: 'finalizada' as const },
-  { año: 2019, estudiantes: 22, activos: 18, estado: 'finalizada' as const },
-  { año: 2018, estudiantes: 35, activos: 31, estado: 'finalizada' as const },
-];
+const mockGeneraciones = 
+  { generacionesTotal: 7, estudiantesTotal: 150, generaciones: [
+  {generacion: '2024', total: 45},
+  { generacion: '2023', total: 38},
+  { generacion: '2022', total: 41},
+  { generacion: '2021', total: 33},
+  { generacion: '2020', total: 29},
+  { generacion: '2019', total: 22},
+  { generacion: '2018', total: 35}], estudiantesData: []};
 
 interface DashboardProps {
   onAuthChange?: (authenticated: boolean) => void;
@@ -21,10 +21,14 @@ interface DashboardProps {
 
 // ✅ NUEVA: Interfaz para generaciones calculadas desde datos reales
 interface GeneracionCalculada {
-  año: number;
-  estudiantes: number;
-  activos: number;
-  estado: 'activa' | 'finalizada';
+  generacionesTotal: number;
+  estudiantesTotal: number;
+  activos?: number;
+  generaciones: Array<{
+    generacion: string;
+    total: number;
+  }>;
+  estado?: 'activa' | 'finalizada';
   estudiantesData: Estudiante[]; // ✅ NUEVO: Datos completos para navegación
 }
 
@@ -37,7 +41,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
   
   // ✅ NUEVO: Estados para datos del backend
   const [estadisticas, setEstadisticas] = useState<EstadisticasAdmin | null>(null);
-  const [generaciones, setGeneraciones] = useState<GeneracionCalculada[]>([]);
+  const [generaciones, setGeneraciones] = useState<GeneracionCalculada | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,36 +61,25 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
           console.log('📊 Cargando datos del backend...');
           
           // Cargar en paralelo para mejor performance
-          const [estudiantesData, estadisticasData] = await Promise.all([
-            apiService.getEstudiantes(),
+          const [ estadisticasData] = await Promise.all([
             apiService.getEstadisticas()
           ]);
+          
+          estadisticasData.generaciones = handleGenerations(estadisticasData);
 
           setEstadisticas(estadisticasData);
           
-          // ✅ NUEVO: Calcular generaciones desde datos reales
-          const generacionesCalculadas = calcularGeneracionesDesdeEstudiantes(estudiantesData);
-          setGeneraciones(generacionesCalculadas);
-          
           console.log('✅ Datos del backend cargados exitosamente');
-          
         } catch (apiError) {
           console.warn('⚠️ Backend no disponible, usando datos mock');
-          // ✅ FALLBACK: Usar datos mock (preserva funcionalidad)
-          setGeneraciones(mockGeneraciones.map(g => ({
-            ...g,
-            estudiantesData: [] // Sin datos completos en mock
-          })));
+          setEstadisticas(mockGeneraciones);
         }
 
       } catch (error) {
         console.error('Error al cargar datos:', error);
         setError('Error al cargar los datos del dashboard');
         // Mantener funcionalidad básica con mock
-        setGeneraciones(mockGeneraciones.map(g => ({
-          ...g,
-          estudiantesData: []
-        })));
+        setGeneraciones(mockGeneraciones);
       } finally {
         setLoading(false);
       }
@@ -94,50 +87,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
 
     fetchData();
   }, [navigate]);
-
-  // ✅ NUEVA: Función para calcular generaciones desde estudiantes reales
-  const calcularGeneracionesDesdeEstudiantes = (estudiantesData: Estudiante[]): GeneracionCalculada[] => {
-    // Agrupar estudiantes por año de ingreso
-    const estudiantesPorAño = estudiantesData.reduce((acc, estudiante) => {
-      // Obtener año de múltiples fuentes para compatibilidad
-      const año = 
-        estudiante.institucion?.anio_de_ingreso || 
-        estudiante.año_generacion?.toString() || 
-        estudiante.año_ingreso?.toString() || 
-        '2024';
-      
-      const añoNum = parseInt(año.toString()); // ✅ CORREGIDO: convertir a string primero
-      
-      if (!acc[añoNum]) {
-        acc[añoNum] = [];
-      }
-      acc[añoNum].push(estudiante);
-      return acc;
-    }, {} as Record<number, Estudiante[]>);
-
-    // Convertir a array de generaciones
-    return Object.entries(estudiantesPorAño)
-      .map(([año, estudiantesAño]) => {
-        const añoNum = parseInt(año);
-        const currentYear = new Date().getFullYear();
-        
-        // Calcular activos (estudiantes con estado activo)
-        const activos = estudiantesAño.filter(e => 
-          e.informacionAcademica?.status_actual === 'Activo' ||
-          e.estado === 'Activo' ||
-          e.tipo_de_estudiante === 'UNIVERSITARIO'
-        ).length;
-
-        return {
-          año: añoNum,
-          estudiantes: estudiantesAño.length,
-          activos,
-          estado: (añoNum >= currentYear - 2 ? 'activa' : 'finalizada') as 'activa' | 'finalizada', // ✅ CORREGIDO: sintaxis correcta
-          estudiantesData: estudiantesAño
-        };
-      })
-      .sort((a, b) => b.año - a.año); // Más recientes primero
-  };
 
   // ✅ MANTIENE: Lógica de logout existente
   const handleLogout = async () => {
@@ -154,33 +103,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
     }
   };
 
-  // ✅ ACTUALIZADA: Lógica de filtrado para nuevas generaciones
-  const generacionesFiltradas = generaciones.filter(generacion => {
-    // Filtro por búsqueda (año)
-    const coincideBusqueda = busqueda === '' || 
-      generacion.año.toString().includes(busqueda);
-    
-    // Filtro por estado
-    const coincideEstado = filtroEstado === 'todas' || 
-      (filtroEstado === 'activas' && generacion.estado === 'activa') ||
-      (filtroEstado === 'finalizadas' && generacion.estado === 'finalizada');
-    
-    return coincideBusqueda && coincideEstado;
-  });
-
-  // ✅ MANTIENE: Lógica de ordenamiento existente
-  const generacionesOrdenadas = [...generacionesFiltradas].sort((a, b) => {
-    if (ordenarPor === 'año') {
-      return b.año - a.año; // Más recientes primero
+  const handleGenerations = (data: EstadisticasAdmin) => {
+    if (estadisticas) {
+      const aux = estadisticas.generaciones
+      aux.sort((a, b) => b.total - a.total);
+      return aux;
     } else {
-      return b.estudiantes - a.estudiantes; // Más estudiantes primero
+      return [];
     }
-  });
-
-  // ✅ ACTUALIZADO: Cálculos de totales (puede usar estadísticas del backend)
-  const totalEstudiantes = estadisticas?.total_estudiantes || 
-    generacionesOrdenadas.reduce((sum, gen) => sum + gen.estudiantes, 0);
-  const totalActivos = generacionesOrdenadas.reduce((sum, gen) => sum + gen.activos, 0);
+  
+  }
 
   // ✅ NUEVO: Manejo de estados de carga y error
   if (loading) {
@@ -260,7 +192,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
               <div className="text-4xl">📚</div>
               <div>
                 <p className="text-sm text-gray-600">Total Generaciones</p>
-                <p className="text-3xl font-bold">{mockGeneraciones.length}</p>
+                <p className="text-3xl font-bold">{estadisticas?.generaciones.length || generaciones?.generaciones.length}</p>
               </div>
             </div>
           </div>
@@ -270,7 +202,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
               <div className="text-4xl">👥</div>
               <div>
                 <p className="text-sm text-gray-600">Total Estudiantes</p>
-                <p className="text-3xl font-bold">{totalEstudiantes}</p>
+                <p className="text-3xl font-bold">{estadisticas?.estudiantesTotal || generaciones?.estudiantesTotal}</p>
               </div>
             </div>
           </div>
@@ -280,7 +212,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
               <div className="text-4xl">✅</div>
               <div>
                 <p className="text-sm text-gray-600">Estudiantes Activos</p>
-                <p className="text-3xl font-bold">{totalActivos}</p>
+                <p className="text-3xl font-bold">{0   /* Que es activo?*/}</p>
               </div>
             </div>
           </div>
@@ -355,7 +287,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
 
           {/* Resultados de búsqueda */}
           <div className="mt-4 px-4 py-3 bg-gray-100 rounded-md text-sm text-gray-600">
-            <strong>{generacionesOrdenadas.length}</strong> generación(es) encontrada(s)
+            <strong>{estadisticas?.generaciones.length}</strong> generación(es) encontrada(s)
             {busqueda && (
               <span> • Búsqueda: "{busqueda}"</span>
             )}
@@ -383,10 +315,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {generacionesOrdenadas.map((generacion) => (
+            {estadisticas?.generaciones.map((generacion) => (
               <div
-                key={generacion.año}
-                onClick={() => navigate(`/generacion/${generacion.año}`)}
+                key={generacion.generacion}
+                onClick={() => navigate(`/generacion/${generacion.generacion}`)}
                 className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5"
               >
                 <div className="flex items-center justify-between mb-4">
@@ -394,15 +326,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
                     <div className="text-4xl">🎓</div>
                     <div>
                       <h4 className="text-xl font-bold">
-                        Generación {generacion.año}
+                        Generación {generacion.generacion}
                       </h4>
                       <p className="text-sm text-gray-600">
-                        Año {generacion.año}
+                        Año {generacion.generacion}
                       </p>
                     </div>
                   </div>
                   
-                  {/* Indicador de estado */}
+                  {/* 
                   <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                     generacion.estado === 'activa' 
                       ? 'bg-green-100 text-green-800' 
@@ -410,12 +342,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
                   }`}>
                     {generacion.estado === 'activa' ? '🟢 Activa' : '🟡 Finalizada'}
                   </span>
+                  */}
+                  
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
                   <div className="text-center">
                     <p className="text-2xl font-bold">
-                      {generacion.estudiantes}
+                      {generacion.total}
                     </p>
                     <p className="text-xs text-gray-600">
                       Total Estudiantes
@@ -423,7 +357,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
                   </div>
                   <div className="text-center">
                     <p className="text-2xl font-bold text-green-500">
-                      {generacion.activos}
+                      0
                     </p>
                     <p className="text-xs text-gray-600">
                       Activos
@@ -435,7 +369,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
           </div>
 
           {/* Mensaje cuando no hay resultados */}
-          {generacionesOrdenadas.length === 0 && (
+          {estadisticas?.generaciones.length === 0 && (
             <div className="bg-white p-12 rounded-lg shadow-sm border border-gray-200 text-center">
               <div className="text-6xl mb-4">🔍</div>
               <h3 className="text-xl font-bold mb-2">

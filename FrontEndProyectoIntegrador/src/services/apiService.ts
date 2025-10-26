@@ -208,7 +208,7 @@ class ApiService {
       return await this.request<EstadisticasAdmin>('/estadisticas');
     } catch (error) {
       console.warn('🔄 Backend no disponible, calculando estadísticas desde mock');
-      return this.getMockEstadisticas();
+      throw error;
     }
   }
 

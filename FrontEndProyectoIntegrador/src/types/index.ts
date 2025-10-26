@@ -262,20 +262,20 @@ export interface EstadisticasAdmin {
   }>;
 
   // Métricas básicas (mantiene compatibilidad)
-  total_usuarios: number;
-  total_estudiantes: number;
-  total_academicos: number;
-  total_instituciones: number;
-  total_asignaturas: number;
-  total_reportes: number;
+  total_usuarios?: number;
+  total_estudiantes?: number;
+  total_academicos?: number;
+  total_instituciones?: number;
+  total_asignaturas?: number;
+  total_reportes?: number;
   
   // Nuevas métricas del backend real
-  estudiantes_por_tipo: {
+  estudiantes_por_tipo?: {
     ESCOLAR: number;
     UNIVERSITARIO: number;
     EGRESADO: number;
   };
-  promedio_general: number;
+  promedio_general?: number;
   total_entrevistas?: number;
   total_familias?: number;
 }
