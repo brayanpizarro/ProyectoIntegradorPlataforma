@@ -7,14 +7,20 @@ import {
   Unique,
 } from 'typeorm';
 
-@Entity('users')
-@Unique(['email'])
-export class User {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+export enum UserRole {
+  ADMIN = 'admin',
+  TUTOR = 'tutor',
+  VISITA = 'visita',
+}
 
-  @Column()
-  name: string;
+@Entity('users')
+@Unique(['email', 'username'])
+export class User {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ length: 50, unique: true })
+  username: string;
 
   @Column({ length: 100, unique: true })
   email: string;
@@ -22,8 +28,27 @@ export class User {
   @Column()
   password: string;
 
+  @Column()
+  nombre: string;
+
+  @Column()
+  apellido: string;
+
   @Column({ default: true })
-  isActive: boolean;
+  activo: boolean;
+  
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.VISITA,
+  })
+  rol: UserRole;
+
+  @Column({ nullable: true })
+  ultimo_login: Date;
+
+  @Column({ nullable: true, type: 'text' })
+  refreshToken: string;
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;

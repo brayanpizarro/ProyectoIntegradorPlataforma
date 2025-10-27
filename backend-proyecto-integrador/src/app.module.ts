@@ -1,37 +1,62 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { UsersModule } from './users/users.module';
-import { User } from './users/entities/user.entity';
+import { MongooseModule } from '@nestjs/mongoose';
 import { EstudianteModule } from './estudiante/estudiante.module';
-import { IstitucionModule } from './istitucion/istitucion.module';
+import { FamiliaModule } from './familia/familia.module';
+import { RamosCursadosModule } from './ramos_cursados/ramos_cursados.module';
+import { HistorialAcademicoModule } from './historial_academico/historial_academico.module';
+import { InformacionAcademicaModule } from './informacion_academica/informacion_academica.module';
 import { InstitucionModule } from './institucion/institucion.module';
-import { AcademicoModule } from './academico/academico.module';
-import { ReporteModule } from './reporte/reporte.module';
-import { AsignaturaModule } from './asignatura/asignatura.module';
+import { UsersModule } from './users/users.module';
+import { EntrevistasModule } from './entrevistas/entrevistas.module';
+import { AuthModule } from './auth/auth.module';
+import { appConfig, databaseConfig, jwtConfig } from './config';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'tu_contraseña',
-      database: 'tu_base_de_datos',
-      entities: [User],
-      synchronize: true, // Solo usar en desarrollo
+    
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [appConfig, databaseConfig, jwtConfig],
+      envFilePath: ['.env.local', '.env'],
     }),
-    UsersModule,
+
+    // TypeORM con ConfigService
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get('database.postgres.host'),
+        port: configService.get('database.postgres.port'),
+        username: configService.get('database.postgres.username'),
+        password: configService.get('database.postgres.password'),
+        database: configService.get('database.postgres.database'),
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        synchronize: configService.get('database.postgres.synchronize'),
+        logging: configService.get('database.postgres.logging'),
+      }),
+    }),
+
+    // MongoDB con ConfigService
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get('database.mongodb.uri'),
+      }),
+    }),
+
     EstudianteModule,
-    IstitucionModule,
+    FamiliaModule,
+    RamosCursadosModule,
+    HistorialAcademicoModule,
+    InformacionAcademicaModule,
     InstitucionModule,
-    AcademicoModule,
-    ReporteModule,
-    AsignaturaModule,
+    UsersModule,
+    EntrevistasModule,
+    AuthModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

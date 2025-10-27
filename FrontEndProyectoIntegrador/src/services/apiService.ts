@@ -85,7 +85,7 @@ class ApiService {
    */
   async getEstudiantes(): Promise<Estudiante[]> {
     try {
-      return await this.request<Estudiante[]>('/estudiante');
+      return await this.request<Estudiante[]>('/estudiantes');//quitar 's'
     } catch (error) {
       console.warn('🔄 Backend no disponible, usando datos mock para estudiantes');
       return this.getMockEstudiantes();
@@ -208,7 +208,7 @@ class ApiService {
       return await this.request<EstadisticasAdmin>('/estadisticas');
     } catch (error) {
       console.warn('🔄 Backend no disponible, calculando estadísticas desde mock');
-      return this.getMockEstadisticas();
+      throw error;
     }
   }
 
@@ -459,6 +459,11 @@ class ApiService {
     const estudiantes = this.getMockEstudiantes();
     
     return {
+      //Para efectos del mock y mientras que aun se conecta al backend
+      generacionesTotal: 0,
+      estudiantesTotal: 0,
+      generaciones: [],
+
       total_usuarios: 10,
       total_estudiantes: estudiantes.length,
       total_academicos: 5,

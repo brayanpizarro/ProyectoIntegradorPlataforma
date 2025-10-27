@@ -8,8 +8,8 @@ export interface Usuario {
   apellidos?: string;
   rut?: string;
   email: string;
-  tipo: 'admin' | 'academico' | 'estudiante';
-  rol?: string;
+  tipo?: 'admin' | 'academico' | 'estudiante';
+  rol: string;
   password?: string;
   telefono?: string;
   direccion?: string;
@@ -245,28 +245,37 @@ export interface LoginCredentials {
 }
 
 export interface AuthResponse {
-  token: string;
-  usuario: Usuario;
-  tipo: 'admin' | 'academico' | 'estudiante';
+  accessToken: string;
+  refreshToken: string;
+  user: Usuario;
 }
 
 // Tipos para estadísticas y dashboard - ACTUALIZADAS PARA BACKEND
 export interface EstadisticasAdmin {
+
+  //Tipo de datos reales entregado por el backend
+  generacionesTotal: number;
+  estudiantesTotal: number;
+  generaciones: Array<{
+    generacion: string;
+    total: number;
+  }>;
+
   // Métricas básicas (mantiene compatibilidad)
-  total_usuarios: number;
-  total_estudiantes: number;
-  total_academicos: number;
-  total_instituciones: number;
-  total_asignaturas: number;
-  total_reportes: number;
+  total_usuarios?: number;
+  total_estudiantes?: number;
+  total_academicos?: number;
+  total_instituciones?: number;
+  total_asignaturas?: number;
+  total_reportes?: number;
   
   // Nuevas métricas del backend real
-  estudiantes_por_tipo: {
+  estudiantes_por_tipo?: {
     ESCOLAR: number;
     UNIVERSITARIO: number;
     EGRESADO: number;
   };
-  promedio_general: number;
+  promedio_general?: number;
   total_entrevistas?: number;
   total_familias?: number;
 }

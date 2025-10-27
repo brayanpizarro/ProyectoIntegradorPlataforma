@@ -1,1 +1,0 @@
-﻿export const GeneracionView = () => <div>Generacion</div>;
