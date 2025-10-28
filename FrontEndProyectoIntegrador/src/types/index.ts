@@ -28,8 +28,10 @@ export interface Estudiante {
   telefono?: string;
   fecha_de_nacimiento?: Date | string;
   email?: string;
-  tipo_de_estudiante: 'ESCOLAR' | 'UNIVERSITARIO' | 'EGRESADO' | 'RETIRADO';  // ✅ EXPANDIDO
-  
+  tipo_de_estudiante: 'media' | 'universitario';// | 'EGRESADO' | 'RETIRADO';  // ✅ EXPANDIDO
+  generacion?: string;
+  institucion?: Institucion;
+
   // Campos del frontend actual (compatibilidad)
   id?: number;            // 🔄 Para mantener compatibilidad con frontend actual
   nombres?: string;       // 🔄 Para compatibilidad - se puede derivar de 'nombre'
@@ -42,7 +44,7 @@ export interface Estudiante {
   beca?: string;          // 🔄 Se puede derivar de informacionAcademica.beneficios
   
   // Relaciones del backend (nuevas funcionalidades)
-  institucion?: Institucion;
+
   familia?: Familia;
   ramosCursados?: RamosCursados[];
   historialesAcademicos?: HistorialAcademico[];

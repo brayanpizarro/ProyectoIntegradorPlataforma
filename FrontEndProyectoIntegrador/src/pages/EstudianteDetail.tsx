@@ -2,19 +2,29 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { encontrarEstudiantePorId } from '../data/mockData';
+import { apiService } from '../services/apiService';
 
 export const EstudianteDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [estudiante, setEstudiante] = useState<any>(null);
 
   useEffect(() => {
     if (!authService.isAuthenticated()) {
       navigate('/');
     }
+    const fetchEstudiante = async () => {
+      try {
+        const data = await apiService.getEstudiantePorId(id || '');
+        setEstudiante(data);
+      } catch (error) {
+        setEstudiante(encontrarEstudiantePorId(id || ''));
+      }
+    }
+    fetchEstudiante();
   }, [navigate]);
 
-  const estudiante = encontrarEstudiantePorId(id || '0');
 
   const handleActualizarDatos = () => {
     setMostrarFormulario(true);
