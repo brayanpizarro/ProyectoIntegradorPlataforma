@@ -7,8 +7,10 @@ export { EntrevistasService } from './entrevistas.service';
 // Module
 export { EntrevistasModule } from './entrevistas.module';
 
-// Schemas
-export type { Entrevista } from './schemas/entrevista.schema';
+// Entities
+export { Entrevista } from './entities/entrevista.entity';
+export { Etiqueta } from './entities/etiqueta.entity';
+export { Texto } from './entities/texto.entity';
 
 // DTOs
 export type { CreateEntrevistaDto } from './dto/create-entrevista.dto';

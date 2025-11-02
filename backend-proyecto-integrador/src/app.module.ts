@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { MongooseModule } from '@nestjs/mongoose';
 import { EstudianteModule } from './estudiante/estudiante.module';
 import { FamiliaModule } from './familia/familia.module';
 import { RamosCursadosModule } from './ramos_cursados/ramos_cursados.module';
@@ -36,15 +35,6 @@ import { appConfig, databaseConfig, jwtConfig } from './config';
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: configService.get('database.postgres.synchronize'),
         logging: configService.get('database.postgres.logging'),
-      }),
-    }),
-
-    // MongoDB con ConfigService
-    MongooseModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        uri: configService.get('database.mongodb.uri'),
       }),
     }),
 
