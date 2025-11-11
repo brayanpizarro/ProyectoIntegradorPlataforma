@@ -411,6 +411,7 @@ body {
 /* Scrollbar personalizado */
 ::-webkit-scrollbar {
   width: 6px;
+  height: 6px; /* ✅ Para scrollbar horizontal */
 }
 
 ::-webkit-scrollbar-track {
@@ -424,4 +425,22 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* ✅ Scrollbar para barra de pestañas */
+.tabs-scrollbar::-webkit-scrollbar {
+  height: 4px; /* Más delgado para pestañas */
+}
+
+.tabs-scrollbar::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+
+.tabs-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
+.tabs-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #3b82f6;
 }

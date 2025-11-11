@@ -264,7 +264,9 @@ export const EntrevistaWorkspace: React.FC = () => {
       <div style={{
         flex: 1,
         display: 'flex',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        height: 'calc(100vh - 64px)', // ✅ Altura fija (100vh - navbar)
+        maxHeight: 'calc(100vh - 64px)'
       }}>
         {/* SIDEBAR IZQUIERDO */}
         <Sidebar 
@@ -275,7 +277,15 @@ export const EntrevistaWorkspace: React.FC = () => {
         />
         
         {/* ÁREA DE PESTAÑAS */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ 
+          flex: 1, 
+          display: 'flex', 
+          flexDirection: 'column',
+          width: 'calc(100% - 280px)', // ✅ Ancho fijo: 100% - sidebar
+          maxWidth: 'calc(100% - 280px)', // ✅ No puede crecer más
+          minWidth: '400px', // ✅ Ancho mínimo
+          overflow: 'hidden' // ✅ Evitar desbordamiento
+        }}>
           <TabManager
             workspace={workspace}
             onCloseTab={closeTab}
