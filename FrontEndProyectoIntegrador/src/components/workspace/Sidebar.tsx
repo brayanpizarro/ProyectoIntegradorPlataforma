@@ -26,10 +26,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <div style={{
       width: '280px',
+      minWidth: '280px', // ✅ Ancho mínimo fijo
+      maxWidth: '280px', // ✅ Ancho máximo fijo
       backgroundColor: 'white',
       borderRight: '1px solid #e2e8f0',
       padding: '1rem',
-      overflowY: 'auto'
+      overflowY: 'auto',
+      flexShrink: 0 // ✅ No se comprime
     }}>
       {/* ✅ TÍTULO DEL SIDEBAR */}
       <div style={{

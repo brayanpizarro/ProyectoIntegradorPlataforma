@@ -44,20 +44,24 @@ export const TabManager: React.FC<TabManagerProps> = ({
     tabs: Tab[];
     panelId: 'left' | 'right';
     isActive: boolean;
-  }> = ({ tabs, panelId, isActive }) => {
+    isSplitView: boolean; // ✅ Pasar como prop
+  }> = ({ tabs, panelId, isActive, isSplitView }) => {
     const activeTab = tabs.find(tab => tab.isActive);
 
     return (
       <div 
         style={{
-          flex: 1,
+          flex: isSplitView ? 1 : 1, // ✅ Flex para ocupar espacio disponible
           display: 'flex',
           flexDirection: 'column',
           border: isActive ? '2px solid #3b82f6' : '1px solid #e2e8f0',
           borderRadius: '0.5rem',
           backgroundColor: 'white',
           overflow: 'hidden',
-          minWidth: '300px' // ✅ Ancho mínimo para evitar que se comprima demasiado
+          minWidth: isSplitView ? '300px' : 'auto', // ✅ Ancho mínimo solo en split
+          maxWidth: isSplitView ? 'calc(50% - 0.5rem)' : '100%', // ✅ Ancho máximo
+          width: isSplitView ? 'auto' : '100%', // ✅ Ancho completo cuando no hay split
+          height: '100%' // ✅ Altura fija
         }}
         onClick={(e) => {
           // Solo activar panel si el click no es en un input/textarea/button
@@ -98,17 +102,24 @@ export const TabManager: React.FC<TabManagerProps> = ({
         </div>
 
         {/* ✅ BARRA DE PESTAÑAS */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          backgroundColor: '#f8fafc',
-          borderBottom: '1px solid #e2e8f0',
-          padding: '0 0.5rem',
-          minHeight: '48px',
-          gap: '0.25rem',
-          overflowX: 'auto', // ✅ Scroll horizontal cuando hay muchas pestañas
-          maxWidth: '100%'
-        }}>
+        <div 
+          className="tabs-scrollbar"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            backgroundColor: '#f8fafc',
+            borderBottom: '1px solid #e2e8f0',
+            padding: '0 0.5rem',
+            height: '48px', // ✅ Altura fija
+            minHeight: '48px',
+            maxHeight: '48px', // ✅ No se puede agrandar
+            gap: '0.25rem',
+            overflowX: 'auto', // ✅ Scroll horizontal cuando hay muchas pestañas
+            overflowY: 'hidden', // ✅ Sin scroll vertical
+            maxWidth: '100%',
+            flexShrink: 0 // ✅ No se comprime
+          }}
+        >
           {tabs.length === 0 ? (
             // Placeholder cuando no hay pestañas
             <div style={{
@@ -233,7 +244,12 @@ export const TabManager: React.FC<TabManagerProps> = ({
         </div>
 
         {/* ✅ CONTENIDO DE LA PESTAÑA ACTIVA */}
-        <div style={{ flex: 1, overflow: 'hidden' }}>
+        <div style={{ 
+          flex: 1, 
+          overflow: 'auto', // ✅ Scroll cuando el contenido es grande
+          height: '100%',
+          maxHeight: 'calc(100% - 96px)' // ✅ Altura fija (100% - header - tabs)
+        }}>
           {activeTab ? (
             activeTab.type === 'note' ? (
               <NoteEditor
@@ -278,7 +294,10 @@ export const TabManager: React.FC<TabManagerProps> = ({
       display: 'flex',
       flexDirection: 'column',
       padding: '1rem',
-      gap: '1rem'
+      gap: '1rem',
+      height: '100%', // ✅ Altura completa del contenedor padre
+      maxHeight: '100%', // ✅ No exceder altura del padre
+      overflow: 'hidden' // ✅ Evitar que se agrande
     }}>
       {/* ✅ CONTROLES DE VISTA */}
       {workspace.splitView && (
@@ -290,7 +309,11 @@ export const TabManager: React.FC<TabManagerProps> = ({
           backgroundColor: '#e0f2fe',
           border: '1px solid #0891b2',
           borderRadius: '0.5rem',
-          fontSize: '0.875rem'
+          fontSize: '0.875rem',
+          height: '48px', // ✅ Altura fija
+          minHeight: '48px',
+          maxHeight: '48px',
+          flexShrink: 0 // ✅ No se comprime
         }}>
           <div style={{
             display: 'flex',
@@ -325,13 +348,16 @@ export const TabManager: React.FC<TabManagerProps> = ({
         flex: 1,
         display: 'flex',
         gap: '1rem',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        minHeight: '400px', // ✅ Altura mínima
+        width: '100%' // ✅ Ancho completo
       }}>
         {/* Panel izquierdo (siempre presente) */}
         <TabPanel
           tabs={workspace.leftTabs}
           panelId="left"
           isActive={workspace.activePanel === 'left'}
+          isSplitView={workspace.splitView}
         />
         
         {/* Panel derecho (solo en split view) */}
@@ -340,6 +366,7 @@ export const TabManager: React.FC<TabManagerProps> = ({
             tabs={workspace.rightTabs}
             panelId="right"
             isActive={workspace.activePanel === 'right'}
+            isSplitView={workspace.splitView}
           />
         )}
       </div>
@@ -354,7 +381,11 @@ export const TabManager: React.FC<TabManagerProps> = ({
         alignItems: 'center',
         justifyContent: 'space-between',
         fontSize: '0.75rem',
-        color: '#64748b'
+        color: '#64748b',
+        height: '48px', // ✅ Altura fija
+        minHeight: '48px',
+        maxHeight: '48px',
+        flexShrink: 0 // ✅ No se comprime
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <span>
