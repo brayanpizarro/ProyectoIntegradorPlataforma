@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Entrevista, EntrevistaSchema } from './schemas/entrevista.schema';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Entrevista } from './entities/entrevista.entity';
+import { Etiqueta } from './entities/etiqueta.entity';
+import { Texto } from './entities/texto.entity';
 import { EntrevistasService } from './entrevistas.service';
 import { EntrevistasController } from './entrevistas.controller';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: Entrevista.name, schema: EntrevistaSchema },
-    ]),
+    TypeOrmModule.forFeature([Entrevista, Etiqueta, Texto]),
   ],
   providers: [EntrevistasService],
   controllers: [EntrevistasController],

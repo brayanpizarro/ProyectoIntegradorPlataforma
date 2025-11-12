@@ -22,6 +22,11 @@ export class EstudianteController {
     return this.estudianteService.findStadistics();
   }
 
+  @Get('generacion/:generation')
+  findByGeneration(@Param('generation') generation: string) {
+    return this.estudianteService.findByGeneration(generation);
+  }
+
 // Revisar las de abajo
   @Get(':id')
   findOne(@Param('id') id: string) {

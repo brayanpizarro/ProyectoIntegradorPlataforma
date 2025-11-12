@@ -1,5 +1,7 @@
-import React, { useState, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useParams, useNavigate, data } from 'react-router-dom';
+import { apiService } from '../services/apiService';
+import type { Estudiante as EstudianteIndex } from '../types/index.ts';
 
 interface Estudiante {
   id: number;
@@ -12,6 +14,7 @@ interface Estudiante {
   universidad: string;
   promedio: number;
 }
+
 
 // Datos mock de estudiantes por generación
 const studentsByGeneration: Record<number, Estudiante[]> = {
@@ -55,7 +58,7 @@ const GeneracionViewSimple: React.FC = () => {
   const [sortField, setSortField] = useState<keyof Estudiante>('apellidos');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
-  const students = studentsByGeneration[generationId] || [];
+  const [students, setStudents] = useState<any[]>([]);
   
   // Obtener opciones únicas para los filtros
   const carreras = [...new Set(students.map(student => student.carrera))];
@@ -129,6 +132,19 @@ const GeneracionViewSimple: React.FC = () => {
       default: return '#757575';
     }
   };
+
+  useEffect(() => {
+    console.log('Fetching students for generation example');
+    const fetchStudents = async () => {
+      try {
+        const dataStudents = await apiService.EstudiantesPorGeneracion(id || '')
+        setStudents(dataStudents);
+      } catch (error) {
+        setStudents(studentsByGeneration[generationId] || []);
+      }
+    }
+    fetchStudents();
+  }, []);
 
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>

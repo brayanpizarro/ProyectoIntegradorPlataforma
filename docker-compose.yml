@@ -11,35 +11,24 @@ services:
       - /app/node_modules
     depends_on:
       - db
-      - mongo
     environment:
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: myapp
-      MONGODB_URI: mongodb://mongo:27017/entrevistas
     command: npm run start:dev
   db:
     image: postgres:16-alpine
     container_name: dev-postgres
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: password
       POSTGRES_DB: myapp
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
-
-  mongo:
-    image: mongo:7
-    container_name: dev-mongo
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodata:/data/db
+      - "5433:5432"
 
 volumes:
   pgdata:
-  mongodata:

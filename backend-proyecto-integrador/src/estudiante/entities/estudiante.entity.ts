@@ -14,6 +14,7 @@ import { Familia } from '../../familia/entities/familia.entity';
 import { RamosCursados } from 'src/ramos_cursados/entities/ramos_cursado.entity';
 import { HistorialAcademico } from 'src/historial_academico/entities/historial_academico.entity';
 import { InformacionAcademica } from 'src/informacion_academica/entities/informacion_academica.entity';
+import { Entrevista } from '../../entrevistas/entities/entrevista.entity';
 
 export enum TipoEstudiante {
   MEDIA = 'media',
@@ -69,6 +70,9 @@ export class Estudiante {
     nullable: true,
   })
   informacionAcademica: InformacionAcademica;
+
+  @OneToMany(() => Entrevista, (entrevista) => entrevista.estudiante)
+  entrevistas: Entrevista[];
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
