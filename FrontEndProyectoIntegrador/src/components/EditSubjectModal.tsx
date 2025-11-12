@@ -124,10 +124,10 @@ export const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
                 })}
                 label="Estado de la Materia"
               >
-                <MenuItem value="pendiente">⏳ Pendiente</MenuItem>
-                <MenuItem value="cursando">📚 Cursando</MenuItem>
-                <MenuItem value="aprobado">✅ Aprobado</MenuItem>
-                <MenuItem value="reprobado">❌ Reprobado</MenuItem>
+                <MenuItem value="pendiente">Pendiente</MenuItem>
+                <MenuItem value="cursando">Cursando</MenuItem>
+                <MenuItem value="aprobado">Aprobado</MenuItem>
+                <MenuItem value="reprobado">Reprobado</MenuItem>
               </Select>
             </FormControl>
 

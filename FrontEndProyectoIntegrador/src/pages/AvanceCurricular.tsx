@@ -11,6 +11,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import IconButton from '@mui/material/IconButton';
+import Button from '@mui/material/Button';
 import Fab from '@mui/material/Fab';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
@@ -18,15 +19,21 @@ import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import type { DropResult } from '@hello-pangea/dnd';
 import { SemesterCard, SubjectCard, StatsCard } from '../components/CurricularComponents';
 import { EditSubjectModal } from '../components/EditSubjectModal';
 import { AddSubjectModal } from '../components/AddSubjectModal';
+import { SemesterModal } from '../components/SemesterModal';
+import { CreateSemesterModal } from '../components/CreateSemesterModal';
 
 //  INTERFACES PARA AVANCE CURRICULAR
 interface MallaCurricular {
   semestre: number;
+  fechaInicio?: string;
+  fechaFin?: string;
+  periodo?: string; // Ej: "2024-1", "2024-2"
   ramos: {
     id?: number;
     codigo: string;
@@ -67,6 +74,9 @@ export const AvanceCurricular: React.FC = () => {
   const [selectedSemestre, setSelectedSemestre] = useState<number>(1);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [isSemesterModalOpen, setIsSemesterModalOpen] = useState(false);
+  const [editingSemester, setEditingSemester] = useState<MallaCurricular | null>(null);
+  const [isCreateSemesterModalOpen, setIsCreateSemesterModalOpen] = useState(false);
 
   // CARGAR DATOS DEL ESTUDIANTE
   useEffect(() => {
@@ -121,6 +131,9 @@ export const AvanceCurricular: React.FC = () => {
     const mallaMock: MallaCurricular[] = [
       {
         semestre: 1,
+        periodo: '2021-1',
+        fechaInicio: '2021-03-01',
+        fechaFin: '2021-07-30',
         ramos: [
           { codigo: 'DCCB-00106', nombre: 'CÁLCULO I', creditos: 6, prerequisitos: [], estado: 'aprobado', nota: 6.1 },
           { codigo: 'DCCB-00107', nombre: 'ÁLGEBRA I', creditos: 6, prerequisitos: [], estado: 'aprobado', nota: 6.4 },
@@ -132,6 +145,9 @@ export const AvanceCurricular: React.FC = () => {
       },
       {
         semestre: 2,
+        periodo: '2021-2',
+        fechaInicio: '2021-08-15',
+        fechaFin: '2021-12-20',
         ramos: [
           { codigo: 'DCCB-00216', nombre: 'MECÁNICA', creditos: 6, prerequisitos: [], estado: 'aprobado', nota: 4.7 },
           { codigo: 'DCCB-00265', nombre: 'CÁLCULO II', creditos: 6, prerequisitos: ['DCCB-00106'], estado: 'aprobado', nota: 4.5 },
@@ -386,6 +402,67 @@ export const AvanceCurricular: React.FC = () => {
     setIsAddModalOpen(true);
   };
 
+  const handleEditSemester = (semester: MallaCurricular) => {
+    setEditingSemester(semester);
+    setIsSemesterModalOpen(true);
+  };
+
+  const handleSaveSemester = (updatedSemester: MallaCurricular) => {
+    setMallaCurricular(prev => prev.map(semestre =>
+      semestre.semestre === updatedSemester.semestre
+        ? updatedSemester
+        : semestre
+    ));
+    setIsSemesterModalOpen(false);
+    setEditingSemester(null);
+    setSnackbarMessage('✅ Semestre actualizado exitosamente');
+    setSnackbarOpen(true);
+  };
+
+  const handleDeleteSemester = (semesterNumber: number) => {
+    setMallaCurricular(prev => {
+      // 1. Eliminar el semestre seleccionado
+      const filteredSemesters = prev.filter(semestre => 
+        semestre.semestre !== semesterNumber
+      );
+      
+      // 2. Renumerar los semestres posteriores al eliminado
+      const renumberedSemesters = filteredSemesters.map(semestre => {
+        if (semestre.semestre > semesterNumber) {
+          return {
+            ...semestre,
+            semestre: semestre.semestre - 1
+          };
+        }
+        return semestre;
+      });
+      
+      return renumberedSemesters;
+    });
+    
+    setSnackbarMessage(`🗑️ Semestre ${semesterNumber} eliminado y semestres renumerados`);
+    setSnackbarOpen(true);
+  };
+
+  const handleCreateSemester = (newSemesterData: { fechaInicio?: string; fechaFin?: string; periodo?: string; }) => {
+    const nextSemesterNumber = Math.max(...mallaCurricular.map(s => s.semestre)) + 1;
+    
+    const newSemester: MallaCurricular = {
+      semestre: nextSemesterNumber,
+      ...newSemesterData,
+      ramos: []
+    };
+    
+    setMallaCurricular(prev => [...prev, newSemester].sort((a, b) => a.semestre - b.semestre));
+    setIsCreateSemesterModalOpen(false);
+    setSnackbarMessage(`✅ Semestre ${nextSemesterNumber} creado exitosamente`);
+    setSnackbarOpen(true);
+  };
+
+  const openCreateSemesterModal = () => {
+    setIsCreateSemesterModalOpen(true);
+  };
+
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
 
@@ -463,7 +540,25 @@ export const AvanceCurricular: React.FC = () => {
             <Grid key={semestre.semestre} size={{ xs: 12, sm: 6, md: 4, lg: 2.4, xl: 1.2 }}>
               <SemesterCard>
                 <div className="semester-header">
-                  {getNumeroSemestre(semestre.semestre)}
+                  <div className="semester-title">
+                    {getNumeroSemestre(semestre.semestre)}
+                  </div>
+                  {semestre.periodo && (
+                    <div className="semester-info">
+                      {semestre.periodo}
+                    </div>
+                  )}
+                  
+                  <IconButton
+                    className="semester-config-button"
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditSemester(semestre);
+                    }}
+                  >
+                    <SettingsIcon fontSize="small" />
+                  </IconButton>
                 </div>
                 <Droppable droppableId={`semestre-${semestre.semestre}`}>
                   {(provided, snapshot) => (
@@ -694,7 +789,23 @@ export const AvanceCurricular: React.FC = () => {
               </p>
             </div>
           </div>
-          <div style={{ fontSize: '32px' }}>📊</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={openCreateSemesterModal}
+              sx={{
+                backgroundColor: '#10b981',
+                '&:hover': { backgroundColor: '#059669' },
+                borderRadius: '8px',
+                textTransform: 'none',
+                fontWeight: 'bold',
+              }}
+            >
+              Agregar Semestre
+            </Button>
+            <div style={{ fontSize: '32px' }}>📊</div>
+          </div>
         </div>
       </div>
 
@@ -831,6 +942,23 @@ export const AvanceCurricular: React.FC = () => {
         onClose={() => setIsAddModalOpen(false)}
         onSave={handleAddSubject}
         semestre={selectedSemestre}
+      />
+
+      {/* ⚙️ MODAL DE CONFIGURAR SEMESTRE */}
+      <SemesterModal
+        open={isSemesterModalOpen}
+        onClose={() => setIsSemesterModalOpen(false)}
+        semester={editingSemester}
+        onSave={handleSaveSemester}
+        onDelete={handleDeleteSemester}
+      />
+
+      {/* ➕ MODAL DE CREAR SEMESTRE */}
+      <CreateSemesterModal
+        open={isCreateSemesterModalOpen}
+        onClose={() => setIsCreateSemesterModalOpen(false)}
+        onSave={handleCreateSemester}
+        currentMaxSemester={Math.max(...mallaCurricular.map(s => s.semestre), 0)}
       />
 
       {/*  NOTIFICACIONES */}

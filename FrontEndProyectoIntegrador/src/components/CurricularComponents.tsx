@@ -23,6 +23,33 @@ export const SemesterCard = styled(Paper)(({ theme }) => ({
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
+    position: 'relative',
+    '&:hover .semester-config-button': {
+      opacity: 1,
+    },
+  },
+  '& .semester-title': {
+    flex: 1,
+    textAlign: 'center',
+  },
+  '& .semester-config-button': {
+    position: 'absolute',
+    right: 4,
+    opacity: 0,
+    transition: 'opacity 0.2s ease',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    width: 24,
+    height: 24,
+    '&:hover': {
+      backgroundColor: 'rgba(255, 255, 255, 1)',
+      transform: 'scale(1.1)',
+    },
+  },
+  '& .semester-info': {
+    fontSize: '0.75rem',
+    color: '#666',
+    textAlign: 'center',
+    marginTop: '4px',
   },
   '& .add-subject-button': {
     position: 'absolute',
@@ -102,7 +129,8 @@ export const SubjectCard = styled(Paper, {
     borderRadius: '4px',
     backgroundColor: colors.background,
     border: `1px solid ${colors.border}`,
-    borderLeft: `4px solid ${colors.borderLeft}`,
+    borderLeft: `6px solid ${colors.borderLeft}`,
+    borderBottom: `4px solid ${colors.borderLeft}`,
     minHeight: '80px',
     display: 'flex',
     flexDirection: 'column',
@@ -110,9 +138,18 @@ export const SubjectCard = styled(Paper, {
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     position: 'relative',
+    boxShadow: `
+      inset -2px 0 0 0 rgba(0,0,0,0.1),
+      inset 0 -2px 0 0 rgba(0,0,0,0.1),
+      2px 2px 4px rgba(0,0,0,0.1)
+    `,
     '&:hover': {
-      transform: 'translateX(4px)',
-      boxShadow: `0 2px 8px ${colors.border}40`,
+      transform: 'translateX(2px) translateY(-2px)',
+      boxShadow: `
+        inset -3px 0 0 0 rgba(0,0,0,0.15),
+        inset 0 -3px 0 0 rgba(0,0,0,0.15),
+        4px 4px 8px rgba(0,0,0,0.2)
+      `,
       '& .edit-button': {
         opacity: 1,
       },
