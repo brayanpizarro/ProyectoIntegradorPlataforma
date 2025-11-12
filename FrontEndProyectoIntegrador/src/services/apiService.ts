@@ -11,6 +11,7 @@ import type {
 
 // CONFIGURACIÓN
 const API_BASE_URL = 'http://localhost:3000'; // TODO Backend: Configurar CORS para este origen
+const USE_MOCK_DATA = true; // Cambiar a false para usar backend real
 
 interface ApiRequestOptions extends RequestInit {
   requireAuth?: boolean;

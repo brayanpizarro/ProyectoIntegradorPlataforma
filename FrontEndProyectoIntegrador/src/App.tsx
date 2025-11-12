@@ -6,6 +6,7 @@ import { Dashboard } from './pages/Dashboard';
 import GeneracionViewSimple from './pages/GeneracionViewSimple';
 import { EstudianteDetail } from './pages/EstudianteDetail';
 import { EntrevistaWorkspace } from './pages/EntrevistaWorkspace';
+import { AvanceCurricular } from './pages/AvanceCurricular';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -86,6 +87,14 @@ function App() {
           element={
             isAuthenticated ? 
               <EntrevistaWorkspace /> : 
+              <Navigate to="/" replace />
+          }
+        />
+        <Route 
+          path="/avance-curricular/:id" 
+          element={
+            isAuthenticated ? 
+              <AvanceCurricular /> : 
               <Navigate to="/" replace />
           }
         />

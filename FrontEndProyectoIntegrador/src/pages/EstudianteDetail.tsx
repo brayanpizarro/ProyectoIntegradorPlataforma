@@ -165,6 +165,20 @@ export const EstudianteDetail = () => {
         >
           💬 Ingresar a Entrevista
         </button>
+
+        <button
+          onClick={() => navigate(`/avance-curricular/${estudiante.id}`)}
+          style={{
+            padding: '1rem 2rem',
+            backgroundColor: '#8b5cf6',
+            color: 'white',
+            border: 'none',
+            borderRadius: '0.5rem',
+            cursor: 'pointer'
+          }}
+        >
+          🎓 Avance Curricular
+        </button>
       </div>
 
       {mostrarFormulario && (
