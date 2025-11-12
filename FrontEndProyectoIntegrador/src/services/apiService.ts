@@ -85,7 +85,7 @@ class ApiService {
    */
   async getEstudiantes(): Promise<Estudiante[]> {
     try {
-      return await this.request<Estudiante[]>('/estudiante');
+      return await this.request<Estudiante[]>('/estudiantes');//quitar 's'
     } catch (error) {
       console.warn('🔄 Backend no disponible, usando datos mock para estudiantes');
       return this.getMockEstudiantes();
@@ -208,7 +208,7 @@ class ApiService {
       return await this.request<EstadisticasAdmin>('/estadisticas');
     } catch (error) {
       console.warn('🔄 Backend no disponible, calculando estadísticas desde mock');
-      return this.getMockEstadisticas();
+      throw error;
     }
   }
 
@@ -216,7 +216,7 @@ class ApiService {
    * Obtener estudiantes filtrados por año de ingreso (para generaciones)
    * TODO Backend: Optimizar query con filtros en base de datos
    */
-  async getEstudiantesByGeneracion(año: string): Promise<Estudiante[]> {
+  async MockEstudiantesPorGeneracion(año: string): Promise<Estudiante[]> {
     try {
       return await this.request<Estudiante[]>(`/estudiante/generacion/${año}`);
     } catch (error) {
@@ -227,6 +227,23 @@ class ApiService {
       );
     }
   }
+
+  async EstudiantesPorGeneracion(año: string): Promise<Estudiante[]> {
+    try {
+      return await this.request<Estudiante[]>(`/estudiante/generacion/${año}`);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getEstudiantePorId(id: string) {
+    try {
+      return await this.request<Estudiante>(`/estudiante/${id}`);
+    } catch (error) {
+      throw error;
+    }
+  }
+
 
   // ================================
   // DATOS MOCK PARA DESARROLLO
@@ -241,7 +258,7 @@ class ApiService {
         telefono: '+56912345678',
         fecha_de_nacimiento: new Date('2000-01-01'),
         email: 'juan.perez@test.com',
-        tipo_de_estudiante: 'UNIVERSITARIO',
+        tipo_de_estudiante: 'universitario',
         
         // Campos de compatibilidad para frontend actual
         id: 1,
@@ -279,7 +296,7 @@ class ApiService {
         telefono: '+56987654321',
         fecha_de_nacimiento: new Date('1999-05-15'),
         email: 'maria.garcia@test.com',
-        tipo_de_estudiante: 'UNIVERSITARIO',
+        tipo_de_estudiante: 'universitario',
         
         // Campos de compatibilidad
         id: 2,
@@ -317,7 +334,7 @@ class ApiService {
         telefono: '+56911222333',
         fecha_de_nacimiento: new Date('2001-03-20'),
         email: 'carlos.hernandez@test.com',
-        tipo_de_estudiante: 'ESCOLAR',
+        tipo_de_estudiante: 'media',
         
         // Campos de compatibilidad
         id: 3,
@@ -459,6 +476,11 @@ class ApiService {
     const estudiantes = this.getMockEstudiantes();
     
     return {
+      //Para efectos del mock y mientras que aun se conecta al backend
+      generacionesTotal: 0,
+      estudiantesTotal: 0,
+      generaciones: [],
+
       total_usuarios: 10,
       total_estudiantes: estudiantes.length,
       total_academicos: 5,
@@ -466,9 +488,9 @@ class ApiService {
       total_asignaturas: 15,
       total_reportes: 25,
       estudiantes_por_tipo: {
-        ESCOLAR: estudiantes.filter(e => e.tipo_de_estudiante === 'ESCOLAR').length,
-        UNIVERSITARIO: estudiantes.filter(e => e.tipo_de_estudiante === 'UNIVERSITARIO').length,
-        EGRESADO: estudiantes.filter(e => e.tipo_de_estudiante === 'EGRESADO').length,
+        ESCOLAR: estudiantes.filter(e => e.tipo_de_estudiante === 'media').length,
+        UNIVERSITARIO: estudiantes.filter(e => e.tipo_de_estudiante === 'universitario').length,
+        EGRESADO: estudiantes.filter(e => e.tipo_de_estudiante === 'universitario').length,
       },
       promedio_general: 78.8,
       total_entrevistas: 10,

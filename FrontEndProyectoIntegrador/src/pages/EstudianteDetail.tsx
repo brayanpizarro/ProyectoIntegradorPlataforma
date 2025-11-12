@@ -2,6 +2,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { encontrarEstudiantePorId } from '../data/mockData';
+import { apiService } from '../services/apiService';
 
 type SeccionActiva = 'personal' | 'familiar' | 'informe' | 'desempeno';
 
@@ -15,9 +16,17 @@ export const EstudianteDetail = () => {
     if (!authService.isAuthenticated()) {
       navigate('/');
     }
+    const fetchEstudiante = async () => {
+      try {
+        const data = await apiService.getEstudiantePorId(id || '');
+        setEstudiante(data);
+      } catch (error) {
+        setEstudiante(encontrarEstudiantePorId(id || ''));
+      }
+    }
+    fetchEstudiante();
   }, [navigate]);
 
-  const estudiante = encontrarEstudiantePorId(id || '0');
 
   const formatearFecha = (fecha: any) => {
     if (!fecha) return 'No especificado';

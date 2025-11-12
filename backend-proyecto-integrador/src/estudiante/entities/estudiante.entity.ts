@@ -2,14 +2,26 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  OneToMany,
   ManyToOne,
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToOne,
+  OneToMany,
 } from 'typeorm';
-import { Academico } from '../../academico/entities/academico.entity';
-import { Reporte } from '../../reporte/entities/reporte.entity';
 import { Institucion } from '../../institucion/entities/institucion.entity';
+import { Familia } from '../../familia/entities/familia.entity';
+import { RamosCursados } from 'src/ramos_cursados/entities/ramos_cursado.entity';
+import { HistorialAcademico } from 'src/historial_academico/entities/historial_academico.entity';
+import { InformacionAcademica } from 'src/informacion_academica/entities/informacion_academica.entity';
+import { Entrevista } from '../../entrevistas/entities/entrevista.entity';
 
-@Entity('estudiantes')
+export enum TipoEstudiante {
+  MEDIA = 'media',
+  UNIVERSITARIO = 'universitario',
+}
+
+@Entity('estudiante')
 export class Estudiante {
   @PrimaryGeneratedColumn('uuid')
   id_estudiante: string;
@@ -21,23 +33,50 @@ export class Estudiante {
   rut: string;
 
   @Column()
+  telefono: string;
+
+  @Column()
   fecha_de_nacimiento: Date;
 
   @Column()
-  contacto: string;
+  email: string;
 
+  @Column({
+    type: 'enum',
+    enum: TipoEstudiante,
+    default: TipoEstudiante.UNIVERSITARIO,
+  })
+  tipo_de_estudiante: TipoEstudiante;
+  // Ver si la generacion es algo que se pone al crear al estudiante o despues
   @Column()
-  direccion: string;
+  generacion: string;
 
-  @Column({ default: true })
-  estado: boolean;
-
-  @OneToMany(() => Academico, academico => academico.estudiante)
-  academicos: Academico[];
-
-  @OneToMany(() => Reporte, reporte => reporte.estudiante)
-  reportes: Reporte[];
-
-  @ManyToOne(() => Institucion, institucion => institucion.estudiantes)
+  @ManyToOne(() => Institucion, (institucion) => institucion.estudiantes, {
+    nullable: false,
+  })
+  @JoinColumn({ name: 'id_institucion' })
   institucion: Institucion;
+
+  @OneToOne(() => Familia, (familia) => familia.estudiante, { nullable: true })
+  familia: Familia;
+
+  @OneToMany(() => RamosCursados, (ramo) => ramo.estudiante)
+  ramosCursados: RamosCursados[];
+
+  @OneToMany(() => HistorialAcademico, (historial) => historial.estudiante)
+  historialesAcademicos: HistorialAcademico[];
+
+  @OneToOne(() => InformacionAcademica, (info) => info.estudiante, {
+    nullable: true,
+  })
+  informacionAcademica: InformacionAcademica;
+
+  @OneToMany(() => Entrevista, (entrevista) => entrevista.estudiante)
+  entrevistas: Entrevista[];
+
+  @CreateDateColumn({ type: 'timestamp' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ type: 'timestamp' })
+  updatedAt: Date;
 }
