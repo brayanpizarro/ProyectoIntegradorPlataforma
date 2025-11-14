@@ -22,11 +22,15 @@ import AddIcon from '@mui/icons-material/Add';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import type { DropResult } from '@hello-pangea/dnd';
-import { SemesterCard, SubjectCard, StatsCard } from '../components/CurricularComponents';
-import { EditSubjectModal } from '../components/EditSubjectModal';
-import { AddSubjectModal } from '../components/AddSubjectModal';
-import { SemesterModal } from '../components/SemesterModal';
-import { CreateSemesterModal } from '../components/CreateSemesterModal';
+import { 
+  SemesterCard, 
+  SubjectCard, 
+  StatsCard,
+  EditSubjectModal,
+  AddSubjectModal,
+  SemesterModal,
+  CreateSemesterModal 
+} from '../components/AvanceCurricular';
 
 //  INTERFACES PARA AVANCE CURRICULAR
 interface MallaCurricular {
@@ -66,7 +70,7 @@ export const AvanceCurricular: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [vistaActiva, setVistaActiva] = useState<'malla' | 'progreso' | 'estadisticas'>('malla');
   
-  // 🎯 Estados para funcionalidad de edición
+  //  Estados para funcionalidad de edición
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingSubject, setEditingSubject] = useState<MallaCurricular['ramos'][0] | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);

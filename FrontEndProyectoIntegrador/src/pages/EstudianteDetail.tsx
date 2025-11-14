@@ -1,18 +1,28 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { authService } from '../services/authService';
+import PermissionService from '../services/permissionService';
 import { encontrarEstudiantePorId } from '../data/mockData';
+import type { Usuario } from '../types';
 
 export const EstudianteDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [currentUser, setCurrentUser] = useState<Usuario | null>(null);
 
   useEffect(() => {
     if (!authService.isAuthenticated()) {
       navigate('/');
+      return;
     }
+    const user = authService.getCurrentUser();
+    setCurrentUser(user);
   }, [navigate]);
+
+  const canManageStudents = PermissionService.canManageStudents(currentUser);
+  const canViewInterviews = PermissionService.canViewInterviews(currentUser);
+  const canManageInterviews = PermissionService.canManageInterviews(currentUser);
 
   const estudiante = encontrarEstudiantePorId(id || '0');
 
@@ -136,35 +146,40 @@ export const EstudianteDetail = () => {
         borderRadius: '0.5rem',
         boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
         display: 'flex',
-        gap: '1rem'
+        gap: '1rem',
+        flexWrap: 'wrap'
       }}>
-        <button
-          onClick={handleActualizarDatos}
-          style={{
-            padding: '1rem 2rem',
-            backgroundColor: '#3b82f6',
-            color: 'white',
-            border: 'none',
-            borderRadius: '0.5rem',
-            cursor: 'pointer'
-          }}
-        >
-          📝 Actualizar Datos
-        </button>
+        {canManageStudents && (
+          <button
+            onClick={handleActualizarDatos}
+            style={{
+              padding: '1rem 2rem',
+              backgroundColor: '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0.5rem',
+              cursor: 'pointer'
+            }}
+          >
+            📝 Actualizar Datos
+          </button>
+        )}
         
-        <button
-          onClick={handleIngresarEntrevista}
-          style={{
-            padding: '1rem 2rem',
-            backgroundColor: '#10b981',
-            color: 'white',
-            border: 'none',
-            borderRadius: '0.5rem',
-            cursor: 'pointer'
-          }}
-        >
-          💬 Ingresar a Entrevista
-        </button>
+        {canManageInterviews && (
+          <button
+            onClick={handleIngresarEntrevista}
+            style={{
+              padding: '1rem 2rem',
+              backgroundColor: '#10b981',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0.5rem',
+              cursor: 'pointer'
+            }}
+          >
+            💬 Ingresar a Entrevista
+          </button>
+        )}
 
         <button
           onClick={() => navigate(`/avance-curricular/${estudiante.id}`)}
@@ -179,6 +194,20 @@ export const EstudianteDetail = () => {
         >
           🎓 Avance Curricular
         </button>
+
+        {!canViewInterviews && (
+          <div style={{
+            padding: '1rem',
+            backgroundColor: '#fef3c7',
+            borderRadius: '0.5rem',
+            border: '1px solid #fbbf24',
+            color: '#92400e',
+            fontSize: '0.875rem',
+            width: '100%'
+          }}>
+            ℹ️ Como invitado, puedes ver la información del estudiante pero no tienes acceso a las entrevistas.
+          </div>
+        )}
       </div>
 
       {mostrarFormulario && (

@@ -2,7 +2,8 @@
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { apiService } from '../services/apiService'; // ✅ NUEVO: Servicio API real
-import type { Estudiante, EstadisticasAdmin } from '../types'; // ✅ CORREGIDO: Import de tipos
+import PermissionService from '../services/permissionService'; // ✅ NUEVO: Servicio de permisos
+import type { Estudiante, EstadisticasAdmin, Usuario } from '../types'; // ✅ CORREGIDO: Import de tipos
 
 // ✅ MANTIENE: Datos mock como fallback (preserva funcionalidad existente)
 const mockGeneraciones = 
@@ -34,7 +35,7 @@ interface GeneracionCalculada {
 
 export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
   const navigate = useNavigate();
-  const [usuario, setUsuario] = useState<any>(null);
+  const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [busqueda, setBusqueda] = useState('');
   const [filtroEstado, setFiltroEstado] = useState<'todas' | 'activas' | 'finalizadas'>('todas');
   const [ordenarPor, setOrdenarPor] = useState<'año' | 'estudiantes'>('año');
@@ -160,10 +161,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
           >
             Inicio
           </button>
+          {PermissionService.canManageUsers(usuario) && (
+            <button 
+              className="bg-transparent border border-white/30 text-white px-4 py-2 rounded-md hover:bg-white/10 transition"
+              onClick={() => navigate('/users')}
+            >
+              👥 Usuarios
+            </button>
+          )}
         </div>
         
         <div className="flex items-center gap-4">
           <span>{usuario?.tipo || 'Usuario'}: {usuario?.email || 'Cargando...'}</span>
+          <button
+            onClick={() => navigate('/profile')}
+            className="bg-white/10 text-white px-4 py-2 rounded-md hover:bg-white/20 transition text-sm border border-white/30"
+          >
+            👤 Mi Perfil
+          </button>
           <button
             onClick={handleLogout}
             className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition text-sm"
@@ -181,8 +196,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
             Dashboard Principal
           </h2>
           <p className="text-gray-600">
-            Gestión de estudiantes por generaciones
+            {PermissionService.isGuest(usuario) 
+              ? 'Visualización de estudiantes por generaciones (Solo lectura)' 
+              : 'Gestión de estudiantes por generaciones'}
           </p>
+          
+          {/* Mensaje para invitados */}
+          {PermissionService.isGuest(usuario) && (
+            <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
+              <div className="text-2xl">ℹ️</div>
+              <div>
+                <p className="font-semibold text-yellow-800 mb-1">Cuenta de Invitado</p>
+                <p className="text-sm text-yellow-700">
+                  Puedes visualizar la información de todos los estudiantes, pero no tienes permisos para 
+                  agregar, editar, eliminar estudiantes ni acceder a las entrevistas.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Estadísticas */}

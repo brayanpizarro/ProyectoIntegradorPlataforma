@@ -1,5 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { authService } from '../services/authService';
+import PermissionService from '../services/permissionService';
+import type { Usuario } from '../types';
 
 interface Estudiante {
   id: number;
@@ -48,12 +51,20 @@ const GeneracionViewSimple: React.FC = () => {
   const navigate = useNavigate();
   const generationId = parseInt(id || '2024', 10);
   
+  const [currentUser, setCurrentUser] = useState<Usuario | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCarrera, setFilterCarrera] = useState('');
   const [filterEstado, setFilterEstado] = useState('');
   const [filterBeca, setFilterBeca] = useState('');
   const [sortField, setSortField] = useState<keyof Estudiante>('apellidos');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
+  useEffect(() => {
+    const user = authService.getCurrentUser();
+    setCurrentUser(user);
+  }, []);
+
+  const canManageStudents = PermissionService.canManageStudents(currentUser);
 
   const students = studentsByGeneration[generationId] || [];
   
@@ -173,19 +184,21 @@ const GeneracionViewSimple: React.FC = () => {
           >
             ← Volver al Dashboard
           </button>
-          <button
-            style={{
-              padding: '10px 20px',
-              backgroundColor: '#007bff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer',
-              fontSize: '1rem'
-            }}
-          >
-            + Agregar Estudiante
-          </button>
+          {canManageStudents && (
+            <button
+              style={{
+                padding: '10px 20px',
+                backgroundColor: '#007bff',
+                color: 'white',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                fontSize: '1rem'
+              }}
+            >
+              + Agregar Estudiante
+            </button>
+          )}
         </div>
       </div>
 

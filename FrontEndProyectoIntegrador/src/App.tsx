@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { authService } from './services/authService';
+import PermissionService from './services/permissionService';
 import { LoginAdminForm } from './components/LoginForm/LoginAdminForm';
 import { Dashboard } from './pages/Dashboard';
 import GeneracionViewSimple from './pages/GeneracionViewSimple';
 import { EstudianteDetail } from './pages/EstudianteDetail';
 import { EntrevistaWorkspace } from './pages/EntrevistaWorkspace';
 import { AvanceCurricular } from './pages/AvanceCurricular';
+import { UserProfile } from './pages/UserProfile';
+import { UserManagement } from './pages/UserManagement';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -85,9 +88,9 @@ function App() {
         <Route 
           path="/entrevista/:id" 
           element={
-            isAuthenticated ? 
+            isAuthenticated && PermissionService.canManageInterviews(authService.getCurrentUser()) ? 
               <EntrevistaWorkspace /> : 
-              <Navigate to="/" replace />
+              <Navigate to="/dashboard" replace />
           }
         />
         <Route 
@@ -96,6 +99,22 @@ function App() {
             isAuthenticated ? 
               <AvanceCurricular /> : 
               <Navigate to="/" replace />
+          }
+        />
+        <Route 
+          path="/profile" 
+          element={
+            isAuthenticated ? 
+              <UserProfile /> : 
+              <Navigate to="/" replace />
+          }
+        />
+        <Route 
+          path="/users" 
+          element={
+            isAuthenticated && PermissionService.canManageUsers(authService.getCurrentUser()) ? 
+              <UserManagement /> : 
+              <Navigate to="/dashboard" replace />
           }
         />
         <Route 

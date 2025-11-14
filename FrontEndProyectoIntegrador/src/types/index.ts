@@ -8,8 +8,8 @@ export interface Usuario {
   apellidos?: string;
   rut?: string;
   email: string;
-  tipo?: 'admin' | 'academico' | 'estudiante';
-  rol: string;
+  tipo?: 'admin' | 'tutor' | 'invitado' | 'academico' | 'estudiante';
+  rol: 'admin' | 'tutor' | 'invitado' | 'academico' | 'estudiante';
   password?: string;
   telefono?: string;
   direccion?: string;
@@ -17,6 +17,7 @@ export interface Usuario {
   activo?: boolean;
   fecha_creacion?: string;
   fecha_actualizacion?: string;
+  creado_por?: string; // ID del admin que creó la cuenta
 }
 
 // ESTUDIANTE - ESTRUCTURA HÍBRIDA: Backend real + Frontend actual

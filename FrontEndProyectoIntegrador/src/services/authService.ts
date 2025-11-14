@@ -227,6 +227,8 @@ class AuthService {
     const validCredentials = [
       { email: 'admin@fundacion.cl', password: 'admin123', rol: 'admin' as const },
       { email: 'admin', password: 'admin', rol: 'admin' as const },
+      { email: 'tutor@fundacion.cl', password: 'tutor123', rol: 'tutor' as const },
+      { email: 'invitado@fundacion.cl', password: 'invitado123', rol: 'invitado' as const },
       { email: 'academico@fundacion.cl', password: 'admin123', rol: 'academico' as const },
       { email: 'estudiante@fundacion.cl', password: 'admin123', rol: 'estudiante' as const }
     ];
