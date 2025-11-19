@@ -1,54 +1,98 @@
-﻿import { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { encontrarEstudiantePorId } from '../data/mockData';
 import { apiService } from '../services/apiService';
+import type { Estudiante } from '../types';
 
-type SeccionActiva = 'personal' | 'familiar' | 'informe' | 'desempeno';
+type SeccionActiva = 'perfil' | 'personal' | 'familiar' | 'informe' | 'desempeno' | 'entrevistas';
 
-export const EstudianteDetail = () => {
+const EstudianteDetail: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [seccionActiva, setSeccionActiva] = useState<SeccionActiva>('personal');
+  const [seccionActiva, setSeccionActiva] = useState<SeccionActiva>('perfil');
   const [modoEdicion, setModoEdicion] = useState(false);
+  const [estudiante, setEstudiante] = useState<Estudiante | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [datosEditados, setDatosEditados] = useState<any>({}); // Para guardar cambios temporales
+  const [mostrarModalNuevaEntrevista, setMostrarModalNuevaEntrevista] = useState(false);
+  const [mostrarModalSemestresAnteriores, setMostrarModalSemestresAnteriores] = useState(false);
 
   useEffect(() => {
     if (!authService.isAuthenticated()) {
       navigate('/');
+      return;
     }
+    
     const fetchEstudiante = async () => {
       try {
-        const data = await apiService.getEstudiantePorId(id || '');
+        setLoading(true);
+        const data = await apiService.getEstudianteById(id || '');
         setEstudiante(data);
       } catch (error) {
-        setEstudiante(encontrarEstudiantePorId(id || ''));
+        console.log('Backend no disponible, usando datos mock');
+        const mockData = encontrarEstudiantePorId(id || '');
+        if (mockData) {
+          setEstudiante(mockData as any);
+        } else {
+          setEstudiante(null);
+        }
+      } finally {
+        setLoading(false);
       }
     }
+    
     fetchEstudiante();
-  }, [navigate]);
+  }, [navigate, id]);
 
+  if (loading) {
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <h2>Cargando datos del estudiante...</h2>
+      </div>
+    );
+  }
 
-  const formatearFecha = (fecha: any) => {
-    if (!fecha) return 'No especificado';
-    if (fecha instanceof Date) return fecha.toLocaleDateString();
-    return String(fecha);
-  };
+  if (!estudiante) {
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <h2>Estudiante no encontrado</h2>
+        <button 
+          onClick={() => navigate(-1)}
+          style={{
+            marginTop: '1rem',
+            padding: '0.5rem 1rem',
+            backgroundColor: '#6b7280',
+            color: 'white',
+            border: 'none',
+            borderRadius: '0.375rem',
+            cursor: 'pointer'
+          }}
+        >
+          Volver
+        </button>
+      </div>
+    );
+  }
 
-  const handleIngresarEntrevista = () => {
-    if (estudiante) {
-      navigate(`/entrevista/${estudiante.id}`);
+  const getEstadoColor = (estado: string) => {
+    switch (estado) {
+      case 'Activo': return '#4CAF50';
+      case 'Egresado': return '#2196F3';
+      case 'Suspendido': return '#FF9800';
+      case 'Desertor': return '#f44336';
+      case 'Congelado': return '#9E9E9E';
+      default: return '#4CAF50';
     }
   };
 
-  if (!estudiante) {
-    return <div style={{ padding: '2rem', textAlign: 'center' }}><h2>Estudiante no encontrado</h2></div>;
-  }
-
   const tabs = [
+    { id: 'perfil' as SeccionActiva, label: 'Perfil' },
     { id: 'personal' as SeccionActiva, label: 'Datos Personales' },
     { id: 'familiar' as SeccionActiva, label: 'Información Familiar' },
     { id: 'informe' as SeccionActiva, label: 'Informe Académico General' },
     { id: 'desempeno' as SeccionActiva, label: 'Desempeño por Semestre' },
+    { id: 'entrevistas' as SeccionActiva, label: 'Entrevistas' },
   ];
 
   const estilos = {
@@ -99,16 +143,40 @@ export const EstudianteDetail = () => {
             <button onClick={() => navigate(-1)} style={{ padding: '0.5rem 1rem', backgroundColor: '#6b7280', color: 'white', border: 'none', borderRadius: '0.375rem', cursor: 'pointer', fontSize: '0.875rem' }}>
               Volver
             </button>
-            <h1 style={{ margin: 0, fontSize: '1.5rem', color: '#1f2937', fontWeight: '600' }}>
+            <h1 style={{ margin: 0, fontSize: '1.5rem', color: '#1f2937', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               {estudiante.nombres} {estudiante.apellidos}
+              <span style={{ 
+                padding: '0.25rem 0.75rem', 
+                backgroundColor: getEstadoColor(estudiante.estado || 'Activo'), 
+                color: 'white', 
+                borderRadius: '0.375rem', 
+                fontSize: '0.875rem', 
+                fontWeight: '600' 
+              }}>
+                {estudiante.estado || 'Activo'}
+              </span>
             </h1>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-            <button onClick={() => setModoEdicion(!modoEdicion)} style={{ padding: '0.625rem 1.25rem', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '0.375rem', cursor: 'pointer', fontSize: '0.875rem', fontWeight: '500' }}>
-              {modoEdicion ? 'Vista Lectura' : 'Modo Edición'}
+            <button 
+              onClick={() => setModoEdicion(!modoEdicion)}
+              style={{ padding: '0.625rem 1.25rem', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '0.375rem', cursor: 'pointer', fontSize: '0.875rem', fontWeight: '500' }}
+            >
+              {modoEdicion ? '👁️ Modo Vista' : '✏️ Modo Edición'}
             </button>
-            <button onClick={handleIngresarEntrevista} style={{ padding: '0.625rem 1.25rem', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '0.375rem', cursor: 'pointer', fontSize: '0.875rem', fontWeight: '500' }}>
-              Ir a Entrevista
+            {modoEdicion && (
+              <button style={{ padding: '0.625rem 1.25rem', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '0.375rem', cursor: 'pointer', fontSize: '0.875rem', fontWeight: '500' }}>
+                💾 Guardar
+              </button>
+            )}
+            <button style={{ padding: '0.625rem 1.25rem', backgroundColor: '#f59e0b', color: 'white', border: 'none', borderRadius: '0.375rem', cursor: 'pointer', fontSize: '0.875rem', fontWeight: '500' }}>
+              📁 Guardar Semestre
+            </button>
+            <button 
+              onClick={() => setMostrarModalSemestresAnteriores(true)}
+              style={{ padding: '0.625rem 1.25rem', backgroundColor: '#8b5cf6', color: 'white', border: 'none', borderRadius: '0.375rem', cursor: 'pointer', fontSize: '0.875rem', fontWeight: '500' }}
+            >
+              📚 Ver Semestres Anteriores
             </button>
           </div>
         </div>
@@ -140,6 +208,102 @@ export const EstudianteDetail = () => {
       </div>
 
       <div style={{ padding: '2rem', maxWidth: '1400px', margin: '0 auto' }}>
+        {seccionActiva === 'perfil' && (
+          <div>
+            <div style={{ 
+              backgroundColor: 'white', 
+              borderRadius: '0.75rem', 
+              padding: '2rem', 
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+              marginBottom: '2rem'
+            }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: '2rem', alignItems: 'start' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ 
+                    width: '180px', 
+                    height: '180px', 
+                    borderRadius: '50%', 
+                    backgroundColor: '#e5e7eb', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    fontSize: '4rem',
+                    color: '#6b7280',
+                    marginBottom: '1rem'
+                  }}>
+                    👤
+                  </div>
+                  <div style={{ 
+                    padding: '0.5rem 1rem', 
+                    backgroundColor: getEstadoColor(estudiante.estado || 'Activo'), 
+                    color: 'white', 
+                    borderRadius: '0.5rem', 
+                    fontWeight: '600',
+                    fontSize: '1rem'
+                  }}>
+                    {estudiante.estado || 'Activo'}
+                  </div>
+                </div>
+
+                <div>
+                  <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '2rem', fontWeight: '700', color: '#1f2937' }}>
+                    {estudiante.nombres} {estudiante.apellidos}
+                  </h2>
+                  <p style={{ margin: '0 0 1.5rem 0', fontSize: '1.125rem', color: '#6b7280' }}>
+                    RUT: {estudiante.rut}
+                  </p>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem' }}>
+                    <div>
+                      <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>Carrera</div>
+                      <div style={{ fontSize: '1.125rem', fontWeight: '600', color: '#1f2937' }}>{estudiante.carrera || 'No especificado'}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>Universidad</div>
+                      <div style={{ fontSize: '1.125rem', fontWeight: '600', color: '#1f2937' }}>{estudiante.universidad || 'No especificado'}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>Promedio General</div>
+                      <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#10b981' }}>{estudiante.promedio || '0.0'}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>Total Entrevistas (2025)</div>
+                      <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#3b82f6' }}>2</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>Teléfono</div>
+                      <div style={{ fontSize: '1rem', fontWeight: '500', color: '#1f2937' }}>{estudiante.telefono || 'No especificado'}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>Año Ingreso Beca</div>
+                      <div style={{ fontSize: '1rem', fontWeight: '500', color: '#1f2937' }}>{estudiante.año_generacion || '2019'}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
+              <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+                <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>Semestre Actual</div>
+                <div style={{ fontSize: '1.75rem', fontWeight: '700', color: '#1f2937' }}>{estudiante.semestre || 7}</div>
+              </div>
+              <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+                <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>Ramos Aprobados</div>
+                <div style={{ fontSize: '1.75rem', fontWeight: '700', color: '#10b981' }}>43</div>
+              </div>
+              <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+                <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>Ramos Reprobados</div>
+                <div style={{ fontSize: '1.75rem', fontWeight: '700', color: '#f44336' }}>0</div>
+              </div>
+              <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '0.5rem', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+                <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>% Aprobación</div>
+                <div style={{ fontSize: '1.75rem', fontWeight: '700', color: '#10b981' }}>100%</div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {seccionActiva === 'personal' && (
           <div>
             <h2 style={estilos.tituloSeccion}>Datos Personales</h2>
@@ -147,78 +311,271 @@ export const EstudianteDetail = () => {
               <tbody>
                 <tr>
                   <td style={estilos.celdaLabel}>Nombre</td>
-                  <td style={estilos.celdaValor}>{estudiante.nombres} {estudiante.apellidos}</td>
+                  <td style={estilos.celdaValor}>
+                    {modoEdicion ? (
+                      <input 
+                        type="text" 
+                        defaultValue={`${estudiante.nombres} ${estudiante.apellidos}`}
+                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontFamily: 'inherit' }}
+                      />
+                    ) : (
+                      <span>{estudiante.nombres} {estudiante.apellidos}</span>
+                    )}
+                  </td>
                 </tr>
                 <tr>
                   <td style={estilos.celdaLabel}>Rut</td>
-                  <td style={estilos.celdaValor}>{estudiante.rut}</td>
+                  <td style={estilos.celdaValor}>
+                    {modoEdicion ? (
+                      <input 
+                        type="text" 
+                        defaultValue={estudiante.rut}
+                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontFamily: 'inherit' }}
+                      />
+                    ) : (
+                      <span>{estudiante.rut}</span>
+                    )}
+                  </td>
                 </tr>
                 <tr>
                   <td style={estilos.celdaLabel}>Teléfono</td>
-                  <td style={estilos.celdaValor}>{estudiante.telefono || 'No especificado'}</td>
+                  <td style={estilos.celdaValor}>
+                    {modoEdicion ? (
+                      <input 
+                        type="text" 
+                        defaultValue={estudiante.telefono || ''}
+                        placeholder="No especificado"
+                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontFamily: 'inherit' }}
+                      />
+                    ) : (
+                      <span>{estudiante.telefono || 'No especificado'}</span>
+                    )}
+                  </td>
                 </tr>
                 <tr>
                   <td style={estilos.celdaLabel}>Año Ingreso Beca</td>
-                  <td style={estilos.celdaValor}>{estudiante.año_generacion || '2019'}</td>
+                  <td style={estilos.celdaValor}>
+                    {modoEdicion ? (
+                      <input 
+                        type="text" 
+                        defaultValue={estudiante.año_generacion || '2019'}
+                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontFamily: 'inherit' }}
+                      />
+                    ) : (
+                      <span>{estudiante.año_generacion || '2019'}</span>
+                    )}
+                  </td>
                 </tr>
                 <tr>
                   <td style={estilos.celdaLabel}>Fecha de Nacimiento</td>
                   <td style={estilos.celdaValor}>
-                    {formatearFecha(estudiante.fecha_de_nacimiento || estudiante.fecha_nacimiento)}
+                    {modoEdicion ? (
+                      <input 
+                        type="date" 
+                        defaultValue={typeof estudiante.fecha_de_nacimiento === 'string' ? estudiante.fecha_de_nacimiento : ''}
+                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontFamily: 'inherit' }}
+                      />
+                    ) : (
+                      <span>{typeof estudiante.fecha_de_nacimiento === 'string' ? new Date(estudiante.fecha_de_nacimiento).toLocaleDateString('es-CL') : 'No especificado'}</span>
+                    )}
                   </td>
                 </tr>
                 <tr>
                   <td style={estilos.celdaLabel}>Liceo</td>
-                  <td style={estilos.celdaValor}>{estudiante.liceo || 'No especificado'}</td>
+                  <td style={estilos.celdaValor}>
+                    {modoEdicion ? (
+                      <input 
+                        type="text" 
+                        defaultValue={estudiante.liceo || ''}
+                        placeholder="No especificado"
+                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontFamily: 'inherit' }}
+                      />
+                    ) : (
+                      <span>{estudiante.liceo || 'No especificado'}</span>
+                    )}
+                  </td>
                 </tr>
                 <tr>
                   <td style={estilos.celdaLabel}>Especialidad</td>
-                  <td style={estilos.celdaValor}>{estudiante.especialidad || 'No especificado'}</td>
+                  <td style={estilos.celdaValor}>
+                    {modoEdicion ? (
+                      <input 
+                        type="text" 
+                        defaultValue={estudiante.especialidad || ''}
+                        placeholder="No especificado"
+                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontFamily: 'inherit' }}
+                      />
+                    ) : (
+                      <span>{estudiante.especialidad || 'No especificado'}</span>
+                    )}
+                  </td>
                 </tr>
                 <tr>
                   <td style={estilos.celdaLabel}>Comuna Liceo</td>
-                  <td style={estilos.celdaValor}>{estudiante.region || 'No especificado'}</td>
+                  <td style={estilos.celdaValor}>
+                    {modoEdicion ? (
+                      <input 
+                        type="text" 
+                        defaultValue={estudiante.region || ''}
+                        placeholder="No especificado"
+                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontFamily: 'inherit' }}
+                      />
+                    ) : (
+                      <span>{estudiante.region || 'No especificado'}</span>
+                    )}
+                  </td>
                 </tr>
                 <tr>
                   <td style={estilos.celdaLabel}>Promedios Enseñanza Media</td>
-                  <td style={estilos.celdaValor}>{estudiante.promedio_liceo || 'No especificado'}</td>
+                  <td style={estilos.celdaValor}>
+                    {modoEdicion ? (
+                      <input 
+                        type="text" 
+                        defaultValue={estudiante.promedio_liceo || ''}
+                        placeholder="No especificado"
+                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontFamily: 'inherit' }}
+                      />
+                    ) : (
+                      <span>{estudiante.promedio_liceo || 'No especificado'}</span>
+                    )}
+                  </td>
                 </tr>
                 <tr>
                   <td style={estilos.celdaLabel}>Puntajes PAES 2021/1|2</td>
-                  <td style={estilos.celdaValor}>No especificado</td>
+                  <td style={estilos.celdaValor}>
+                    {modoEdicion ? (
+                      <input 
+                        type="text" 
+                        placeholder="No especificado"
+                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontFamily: 'inherit' }}
+                      />
+                    ) : (
+                      <span>No especificado</span>
+                    )}
+                  </td>
                 </tr>
                 <tr>
                   <td style={estilos.celdaLabel}>Carrera</td>
-                  <td style={estilos.celdaValor}>{estudiante.carrera || 'No especificado'}</td>
+                  <td style={estilos.celdaValor}>
+                    {modoEdicion ? (
+                      <input 
+                        type="text" 
+                        defaultValue={estudiante.carrera || ''}
+                        placeholder="No especificado"
+                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontFamily: 'inherit' }}
+                      />
+                    ) : (
+                      <span>{estudiante.carrera || 'No especificado'}</span>
+                    )}
+                  </td>
                 </tr>
                 <tr>
                   <td style={estilos.celdaLabel}>Duración Carrera</td>
-                  <td style={estilos.celdaValor}>{estudiante.duracion_carrera || 'No especificado'}</td>
+                  <td style={estilos.celdaValor}>
+                    {modoEdicion ? (
+                      <input 
+                        type="text" 
+                        defaultValue={estudiante.duracion_carrera || ''}
+                        placeholder="No especificado"
+                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontFamily: 'inherit' }}
+                      />
+                    ) : (
+                      <span>{estudiante.duracion_carrera || 'No especificado'}</span>
+                    )}
+                  </td>
                 </tr>
                 <tr>
                   <td style={estilos.celdaLabel}>Universidad</td>
-                  <td style={estilos.celdaValor}>{estudiante.universidad || 'No especificado'}</td>
+                  <td style={estilos.celdaValor}>
+                    {modoEdicion ? (
+                      <input 
+                        type="text" 
+                        defaultValue={estudiante.universidad || ''}
+                        placeholder="No especificado"
+                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontFamily: 'inherit' }}
+                      />
+                    ) : (
+                      <span>{estudiante.universidad || 'No especificado'}</span>
+                    )}
+                  </td>
                 </tr>
                 <tr>
                   <td style={estilos.celdaLabel}>Vía de acceso</td>
-                  <td style={estilos.celdaValor}>{estudiante.via_acceso || 'No especificado'}</td>
+                  <td style={estilos.celdaValor}>
+                    {modoEdicion ? (
+                      <input 
+                        type="text" 
+                        defaultValue={estudiante.via_acceso || ''}
+                        placeholder="No especificado"
+                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontFamily: 'inherit' }}
+                      />
+                    ) : (
+                      <span>{estudiante.via_acceso || 'No especificado'}</span>
+                    )}
+                  </td>
                 </tr>
                 <tr>
                   <td style={estilos.celdaLabel}>Trayectoria Académica</td>
-                  <td style={estilos.celdaValor}>Ingresa en {estudiante.año_generacion || '2022'}/1S</td>
+                  <td style={estilos.celdaValor}>
+                    {modoEdicion ? (
+                      <input 
+                        type="text" 
+                        defaultValue={`Ingresa en ${estudiante.año_generacion || '2022'}/1S`}
+                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontFamily: 'inherit' }}
+                      />
+                    ) : (
+                      <span>Ingresa en {estudiante.año_generacion || '2022'}/1S</span>
+                    )}
+                  </td>
                 </tr>
                 <tr>
                   <td style={estilos.celdaLabel}>Otros Beneficios</td>
-                  <td style={estilos.celdaValor}>{estudiante.beca || 'No especificado'}</td>
+                  <td style={estilos.celdaValor}>
+                    {modoEdicion ? (
+                      <input 
+                        type="text" 
+                        defaultValue={estudiante.beca || ''}
+                        placeholder="No especificado"
+                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontFamily: 'inherit' }}
+                      />
+                    ) : (
+                      <span>{estudiante.beca || 'No especificado'}</span>
+                    )}
+                  </td>
                 </tr>
                 <tr>
                   <td style={estilos.celdaLabel}>Vencimiento Gratuidad</td>
-                  <td style={estilos.celdaValor}>No especificado</td>
+                  <td style={estilos.celdaValor}>
+                    {modoEdicion ? (
+                      <input 
+                        type="date" 
+                        placeholder="No especificado"
+                        style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontFamily: 'inherit' }}
+                      />
+                    ) : (
+                      <span>No especificado</span>
+                    )}
+                  </td>
                 </tr>
                 {['2022/1S', '2022/2S', '2023/1S', '2023/2S', '2024/1S', '2024/2S', '2025/1S', '2025/2S'].map((semestre) => (
                   <tr key={semestre}>
                     <td style={estilos.celdaLabel}>Status {semestre}</td>
-                    <td style={estilos.celdaValor}>{estudiante.estado || 'Estudiando'}</td>
+                    <td style={estilos.celdaValor}>
+                      {modoEdicion ? (
+                        <select 
+                          defaultValue={estudiante.estado || 'Activo'}
+                          style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontFamily: 'inherit' }}
+                        >
+                          <option value="Activo">Activo</option>
+                          <option value="Egresado">Egresado</option>
+                          <option value="Suspendido">Suspendido</option>
+                          <option value="Desertor">Desertor</option>
+                          <option value="Congelado">Congelado</option>
+                        </select>
+                      ) : (
+                        <span>{estudiante.estado || 'Activo'}</span>
+                      )}
+                    </td>
                   </tr>
                 ))}
                 <tr>
@@ -422,53 +779,154 @@ export const EstudianteDetail = () => {
                   <thead>
                     <tr>
                       <th style={{ ...estilos.encabezadoTabla, width: '5%' }}>Nº</th>
-                      <th style={{ ...estilos.encabezadoTabla, width: '20%' }}>Ramo</th>
-                      <th style={{ ...estilos.encabezadoTabla, width: '25%' }}>Comentarios</th>
-                      <th style={{ ...estilos.encabezadoTabla, width: '15%' }}>Notas parciales</th>
-                      <th style={{ ...estilos.encabezadoTabla, width: '12%' }}>Promedio final</th>
+                      <th style={{ ...estilos.encabezadoTabla, width: '15%' }}>Ramo</th>
+                      <th style={{ ...estilos.encabezadoTabla, width: '40%' }}>Comentarios</th>
+                      <th style={{ ...estilos.encabezadoTabla, width: '12%' }}>Notas parciales</th>
+                      <th style={{ ...estilos.encabezadoTabla, width: '10%' }}>Promedio final</th>
                       <th style={{ ...estilos.encabezadoTabla, width: '13%' }}>Aprobación</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
                       <td style={{ ...estilos.celdaValor, textAlign: 'center' }}>1</td>
-                      <td style={estilos.celdaValor}>Introducción al derecho</td>
                       <td style={estilos.celdaValor}>
-                        <div style={{ fontSize: '0.75rem', lineHeight: '1.4' }}>
-                          <div><strong>2025.03.15:</strong> Buen inicio de semestre</div>
-                          <div><strong>2025.05.10:</strong> Estudió para la prueba</div>
-                        </div>
+                        {modoEdicion ? (
+                          <input type="text" defaultValue="Introducción al derecho" style={{ width: '100%', padding: '0.375rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem' }} />
+                        ) : (
+                          'Introducción al derecho'
+                        )}
                       </td>
-                      <td style={{ ...estilos.celdaValor, textAlign: 'center', fontSize: '0.875rem' }}>5.1; 3.8; 4.0</td>
-                      <td style={{ ...estilos.celdaValor, textAlign: 'center', fontWeight: '600', fontSize: '1rem' }}>4.6</td>
+                      <td style={estilos.celdaValor}>
+                        {modoEdicion ? (
+                          <textarea 
+                            defaultValue="2025.03.15: Buen inicio de semestre&#10;2025.05.10: Estudió para la prueba"
+                            style={{ width: '100%', minHeight: '120px', padding: '0.375rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.75rem', fontFamily: 'inherit', resize: 'vertical' }}
+                            placeholder="Agregar comentarios..."
+                          />
+                        ) : (
+                          <div style={{ fontSize: '0.75rem', lineHeight: '1.4', whiteSpace: 'pre-wrap' }}>2025.03.15: Buen inicio de semestre{'\n'}2025.05.10: Estudió para la prueba</div>
+                        )}
+                      </td>
+                      <td style={{ ...estilos.celdaValor, textAlign: 'center' }}>
+                        {modoEdicion ? (
+                          <input type="text" defaultValue="5.1; 3.8; 4.0" style={{ width: '100%', padding: '0.375rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem', textAlign: 'center' }} />
+                        ) : (
+                          '5.1; 3.8; 4.0'
+                        )}
+                      </td>
+                      <td style={{ ...estilos.celdaValor, textAlign: 'center' }}>
+                        {modoEdicion ? (
+                          <input type="text" defaultValue="4.6" style={{ width: '100%', padding: '0.375rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem', fontWeight: '600', textAlign: 'center' }} />
+                        ) : (
+                          <strong>4.6</strong>
+                        )}
+                      </td>
                       <td style={{ ...estilos.celdaValor, textAlign: 'center', backgroundColor: '#d1fae5', color: '#065f46', fontWeight: '600' }}>Aprobado</td>
                     </tr>
                     <tr>
                       <td style={{ ...estilos.celdaValor, textAlign: 'center' }}>2</td>
-                      <td style={estilos.celdaValor}>Derecho político</td>
                       <td style={estilos.celdaValor}>
-                        <div style={{ fontSize: '0.75rem', lineHeight: '1.4' }}>
-                          Le fue bien en la primera prueba
-                        </div>
+                        {modoEdicion ? (
+                          <input type="text" defaultValue="Derecho político" style={{ width: '100%', padding: '0.375rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem' }} />
+                        ) : (
+                          'Derecho político'
+                        )}
                       </td>
-                      <td style={{ ...estilos.celdaValor, textAlign: 'center', fontSize: '0.875rem' }}>4.5; 2.1; 2.7</td>
-                      <td style={{ ...estilos.celdaValor, textAlign: 'center', fontWeight: '600', fontSize: '1rem' }}>3.1</td>
+                      <td style={estilos.celdaValor}>
+                        {modoEdicion ? (
+                          <textarea 
+                            defaultValue="Le fue bien en la primera prueba"
+                            style={{ width: '100%', minHeight: '120px', padding: '0.375rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.75rem', fontFamily: 'inherit', resize: 'vertical' }}
+                            placeholder="Agregar comentarios..."
+                          />
+                        ) : (
+                          <div style={{ fontSize: '0.75rem', lineHeight: '1.4', whiteSpace: 'pre-wrap' }}>Le fue bien en la primera prueba</div>
+                        )}
+                      </td>
+                      <td style={{ ...estilos.celdaValor, textAlign: 'center' }}>
+                        {modoEdicion ? (
+                          <input type="text" defaultValue="4.5; 2.1; 2.7" style={{ width: '100%', padding: '0.375rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem', textAlign: 'center' }} />
+                        ) : (
+                          '4.5; 2.1; 2.7'
+                        )}
+                      </td>
+                      <td style={{ ...estilos.celdaValor, textAlign: 'center' }}>
+                        {modoEdicion ? (
+                          <input type="text" defaultValue="3.1" style={{ width: '100%', padding: '0.375rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem', fontWeight: '600', textAlign: 'center' }} />
+                        ) : (
+                          <strong>3.1</strong>
+                        )}
+                      </td>
                       <td style={{ ...estilos.celdaValor, textAlign: 'center', backgroundColor: '#fee2e2', color: '#991b1b', fontWeight: '600' }}>Reprobado</td>
                     </tr>
                     <tr>
                       <td style={{ ...estilos.celdaValor, textAlign: 'center' }}>3</td>
-                      <td style={estilos.celdaValor}>Historia del derecho</td>
-                      <td style={estilos.celdaValor}></td>
-                      <td style={{ ...estilos.celdaValor, textAlign: 'center', fontSize: '0.875rem' }}>5.5; 6.0; 5.8</td>
-                      <td style={{ ...estilos.celdaValor, textAlign: 'center', fontWeight: '600', fontSize: '1rem' }}>5.8</td>
+                      <td style={estilos.celdaValor}>
+                        {modoEdicion ? (
+                          <input type="text" defaultValue="Historia del derecho" style={{ width: '100%', padding: '0.375rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem' }} />
+                        ) : (
+                          'Historia del derecho'
+                        )}
+                      </td>
+                      <td style={estilos.celdaValor}>
+                        {modoEdicion ? (
+                          <textarea 
+                            style={{ width: '100%', minHeight: '120px', padding: '0.375rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.75rem', fontFamily: 'inherit', resize: 'vertical' }}
+                            placeholder="Agregar comentarios..."
+                          />
+                        ) : (
+                          <div style={{ fontSize: '0.75rem', lineHeight: '1.4', whiteSpace: 'pre-wrap' }}></div>
+                        )}
+                      </td>
+                      <td style={{ ...estilos.celdaValor, textAlign: 'center' }}>
+                        {modoEdicion ? (
+                          <input type="text" defaultValue="5.5; 6.0; 5.8" style={{ width: '100%', padding: '0.375rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem', textAlign: 'center' }} />
+                        ) : (
+                          '5.5; 6.0; 5.8'
+                        )}
+                      </td>
+                      <td style={{ ...estilos.celdaValor, textAlign: 'center' }}>
+                        {modoEdicion ? (
+                          <input type="text" defaultValue="5.8" style={{ width: '100%', padding: '0.375rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem', fontWeight: '600', textAlign: 'center' }} />
+                        ) : (
+                          <strong>5.8</strong>
+                        )}
+                      </td>
                       <td style={{ ...estilos.celdaValor, textAlign: 'center', backgroundColor: '#d1fae5', color: '#065f46', fontWeight: '600' }}>Aprobado</td>
                     </tr>
                     <tr>
                       <td style={{ ...estilos.celdaValor, textAlign: 'center' }}>4</td>
-                      <td style={estilos.celdaValor}>Derecho civil I</td>
-                      <td style={estilos.celdaValor}></td>
-                      <td style={{ ...estilos.celdaValor, textAlign: 'center', fontSize: '0.875rem' }}>4.9; 5.2; 5.0</td>
-                      <td style={{ ...estilos.celdaValor, textAlign: 'center', fontWeight: '600', fontSize: '1rem' }}>5.0</td>
+                      <td style={estilos.celdaValor}>
+                        {modoEdicion ? (
+                          <input type="text" defaultValue="Derecho civil I" style={{ width: '100%', padding: '0.375rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem' }} />
+                        ) : (
+                          'Derecho civil I'
+                        )}
+                      </td>
+                      <td style={estilos.celdaValor}>
+                        {modoEdicion ? (
+                          <textarea 
+                            style={{ width: '100%', minHeight: '120px', padding: '0.375rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.75rem', fontFamily: 'inherit', resize: 'vertical' }}
+                            placeholder="Agregar comentarios..."
+                          />
+                        ) : (
+                          <div style={{ fontSize: '0.75rem', lineHeight: '1.4', whiteSpace: 'pre-wrap' }}></div>
+                        )}
+                      </td>
+                      <td style={{ ...estilos.celdaValor, textAlign: 'center' }}>
+                        {modoEdicion ? (
+                          <input type="text" defaultValue="4.9; 5.2; 5.0" style={{ width: '100%', padding: '0.375rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem', textAlign: 'center' }} />
+                        ) : (
+                          '4.9; 5.2; 5.0'
+                        )}
+                      </td>
+                      <td style={{ ...estilos.celdaValor, textAlign: 'center' }}>
+                        {modoEdicion ? (
+                          <input type="text" defaultValue="5.0" style={{ width: '100%', padding: '0.375rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '1rem', fontWeight: '600', textAlign: 'center' }} />
+                        ) : (
+                          <strong>5.0</strong>
+                        )}
+                      </td>
                       <td style={{ ...estilos.celdaValor, textAlign: 'center', backgroundColor: '#d1fae5', color: '#065f46', fontWeight: '600' }}>Aprobado</td>
                     </tr>
                     <tr>
@@ -508,45 +966,370 @@ export const EstudianteDetail = () => {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+            {/* Sección de Comentarios - Layout Vertical con más espacio */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '2rem' }}>
               <div>
-                <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.875rem', fontWeight: '700', backgroundColor: '#e0e7ff', padding: '0.5rem', borderRadius: '0.25rem', textAlign: 'center' }}>
-                  Comentarios Generales
+                <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '1rem', fontWeight: '700', backgroundColor: '#e0e7ff', padding: '0.75rem', borderRadius: '0.375rem', textAlign: 'center', color: '#1e40af' }}>
+                  📝 Comentarios Generales del Semestre
                 </h4>
-                <div style={{ border: '1px solid #d1d5db', padding: '0.75rem', backgroundColor: 'white', minHeight: '120px', fontSize: '0.875rem', lineHeight: '1.5' }}>
-                  <div style={{ marginBottom: '0.5rem' }}><strong>2025.09.04:</strong> Le cuesta organizar sus tiempos para estudiar.</div>
-                  <div><strong>2025.10.11:</strong> Está asistiendo a apoyo psicopedagógico.</div>
-                </div>
+                {modoEdicion ? (
+                  <textarea 
+                    defaultValue="2025.09.04: Le cuesta organizar sus tiempos para estudiar.&#10;2025.10.11: Está asistiendo a apoyo psicopedagógico."
+                    style={{ width: '100%', minHeight: '100px', padding: '1rem', border: '2px solid #d1d5db', borderRadius: '0.375rem', fontFamily: 'inherit', fontSize: '0.875rem', lineHeight: '1.6', resize: 'vertical' }}
+                    placeholder="Agregar comentarios generales sobre el desempeño del semestre..."
+                  />
+                ) : (
+                  <div style={{ padding: '1rem', border: '1px solid #e5e7eb', borderRadius: '0.375rem', backgroundColor: '#f9fafb', minHeight: '100px', fontSize: '0.875rem', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+                    2025.09.04: Le cuesta organizar sus tiempos para estudiar.
+                    2025.10.11: Está asistiendo a apoyo psicopedagógico.
+                  </div>
+                )}
               </div>
 
               <div>
-                <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.875rem', fontWeight: '700', backgroundColor: '#fef3c7', padding: '0.5rem', borderRadius: '0.25rem', textAlign: 'center' }}>
-                  Principales dificultades / desafíos
+                <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '1rem', fontWeight: '700', backgroundColor: '#fef3c7', padding: '0.75rem', borderRadius: '0.375rem', textAlign: 'center', color: '#92400e' }}>
+                  ⚠️ Principales Dificultades / Desafíos
                 </h4>
-                <div style={{ border: '1px solid #d1d5db', padding: '0.75rem', backgroundColor: 'white', minHeight: '120px', fontSize: '0.875rem', lineHeight: '1.5' }}>
-                  Mantener buena asistencia a clases tempranas. Gestión del tiempo de estudio.
-                </div>
+                {modoEdicion ? (
+                  <textarea 
+                    defaultValue="Mantener buena asistencia a clases tempranas. Gestión del tiempo de estudio."
+                    style={{ width: '100%', minHeight: '100px', padding: '1rem', border: '2px solid #d1d5db', borderRadius: '0.375rem', fontFamily: 'inherit', fontSize: '0.875rem', lineHeight: '1.6', resize: 'vertical' }}
+                    placeholder="Describir las principales dificultades o desafíos que enfrenta el estudiante..."
+                  />
+                ) : (
+                  <div style={{ padding: '1rem', border: '1px solid #e5e7eb', borderRadius: '0.375rem', backgroundColor: '#f9fafb', minHeight: '100px', fontSize: '0.875rem', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+                    Mantener buena asistencia a clases tempranas. Gestión del tiempo de estudio.
+                  </div>
+                )}
               </div>
 
               <div>
-                <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.875rem', fontWeight: '700', backgroundColor: '#d1fae5', padding: '0.5rem', borderRadius: '0.25rem', textAlign: 'center' }}>
-                  Principales aprendizajes / logros
+                <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '1rem', fontWeight: '700', backgroundColor: '#d1fae5', padding: '0.75rem', borderRadius: '0.375rem', textAlign: 'center', color: '#065f46' }}>
+                  🎯 Principales Aprendizajes / Logros
                 </h4>
-                <div style={{ border: '1px solid #d1d5db', padding: '0.75rem', backgroundColor: 'white', minHeight: '120px', fontSize: '0.875rem' }}>
-                  {modoEdicion ? (
-                    <textarea 
-                      style={{ width: '100%', height: '100px', border: 'none', outline: 'none', fontFamily: 'inherit', fontSize: 'inherit', resize: 'none' }}
-                      placeholder="Agregar logros y aprendizajes..."
-                    />
-                  ) : (
-                    <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>Sin registro</span>
-                  )}
-                </div>
+                {modoEdicion ? (
+                  <textarea 
+                    style={{ width: '100%', minHeight: '100px', padding: '1rem', border: '2px solid #d1d5db', borderRadius: '0.375rem', fontFamily: 'inherit', fontSize: '0.875rem', lineHeight: '1.6', resize: 'vertical' }}
+                    placeholder="Destacar los logros y aprendizajes más importantes del semestre..."
+                  />
+                ) : (
+                  <div style={{ padding: '1rem', border: '1px solid #e5e7eb', borderRadius: '0.375rem', backgroundColor: '#f9fafb', minHeight: '100px', fontSize: '0.875rem', lineHeight: '1.6', fontStyle: 'italic', color: '#9ca3af' }}>
+                    Sin registro
+                  </div>
+                )}
               </div>
             </div>
           </div>
         )}
+
+        {seccionActiva === 'entrevistas' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+              <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '700', color: '#1f2937' }}>📋 Historial de Entrevistas</h2>
+              <button 
+                onClick={() => setMostrarModalNuevaEntrevista(true)}
+                style={{ padding: '0.75rem 1.5rem', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontSize: '0.875rem', fontWeight: '600', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
+              >
+                ➕ Nueva Entrevista
+              </button>
+            </div>
+
+            {/* Dashboard de Entrevistas */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '2rem' }}>
+              <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '0.75rem', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', border: '1px solid #e5e7eb' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                  <div style={{ fontSize: '2rem' }}>📊</div>
+                  <div>
+                    <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>Total Entrevistas 2025</div>
+                    <div style={{ fontSize: '2rem', fontWeight: '700', color: '#1f2937' }}>2</div>
+                  </div>
+                </div>
+              </div>
+              <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '0.75rem', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', border: '1px solid #e5e7eb' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                  <div style={{ fontSize: '2rem' }}>📅</div>
+                  <div>
+                    <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>Última Entrevista</div>
+                    <div style={{ fontSize: '1.125rem', fontWeight: '600', color: '#1f2937' }}>15/03/2025</div>
+                    <div style={{ fontSize: '0.75rem', color: '#10b981' }}>Hace 5 días</div>
+                  </div>
+                </div>
+              </div>
+              <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '0.75rem', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', border: '1px solid #e5e7eb' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                  <div style={{ fontSize: '2rem' }}>👥</div>
+                  <div>
+                    <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>Entrevistadores</div>
+                    <div style={{ fontSize: '1.125rem', fontWeight: '600', color: '#1f2937' }}>María G., Pedro R.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Cards de Entrevistas */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {/* Entrevista 1 */}
+              <div style={{ backgroundColor: 'white', borderRadius: '0.75rem', padding: '1.5rem', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', border: '1px solid #e5e7eb' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1rem' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+                      <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1f2937' }}>📝 Entrevista - 15/03/2025</div>
+                      <span style={{ padding: '0.25rem 0.75rem', backgroundColor: '#dcfce7', color: '#166534', borderRadius: '0.375rem', fontSize: '0.75rem', fontWeight: '600' }}>Reciente</span>
+                    </div>
+                    <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.75rem' }}>
+                      <strong>Entrevistador:</strong> María González
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => navigate(`/entrevista/${id}`)}
+                    style={{ padding: '0.5rem 1rem', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '0.375rem', cursor: 'pointer', fontSize: '0.875rem', fontWeight: '500' }}
+                  >
+                    Ver Detalle →
+                  </button>
+                </div>
+                <div style={{ marginBottom: '0.75rem' }}>
+                  <div style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1f2937', marginBottom: '0.25rem' }}>Temas Tratados:</div>
+                  <div style={{ fontSize: '0.875rem', color: '#4b5563' }}>Rendimiento académico, adaptación al semestre</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1f2937', marginBottom: '0.25rem' }}>Observaciones:</div>
+                  <div style={{ fontSize: '0.875rem', color: '#4b5563', lineHeight: '1.5' }}>
+                    El estudiante muestra buena disposición. Comentó que está teniendo dificultades con una asignatura específica. Se acordó hacer seguimiento en próxima entrevista.
+                  </div>
+                </div>
+              </div>
+
+              {/* Entrevista 2 */}
+              <div style={{ backgroundColor: 'white', borderRadius: '0.75rem', padding: '1.5rem', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', border: '1px solid #e5e7eb' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1rem' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1f2937', marginBottom: '0.5rem' }}>📝 Entrevista - 10/02/2025</div>
+                    <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.75rem' }}>
+                      <strong>Entrevistador:</strong> Pedro Ramírez
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => navigate(`/entrevista/${id}`)}
+                    style={{ padding: '0.5rem 1rem', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '0.375rem', cursor: 'pointer', fontSize: '0.875rem', fontWeight: '500' }}
+                  >
+                    Ver Detalle →
+                  </button>
+                </div>
+                <div style={{ marginBottom: '0.75rem' }}>
+                  <div style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1f2937', marginBottom: '0.25rem' }}>Temas Tratados:</div>
+                  <div style={{ fontSize: '0.875rem', color: '#4b5563' }}>Inicio de semestre, planificación</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1f2937', marginBottom: '0.25rem' }}>Observaciones:</div>
+                  <div style={{ fontSize: '0.875rem', color: '#4b5563', lineHeight: '1.5' }}>
+                    Se revisó el plan de estudios para el semestre. El estudiante se comprometió a mejorar su asistencia.
+                  </div>
+                </div>
+              </div>
+
+              {/* Entrevista 3 */}
+              <div style={{ backgroundColor: 'white', borderRadius: '0.75rem', padding: '1.5rem', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', border: '1px solid #e5e7eb', opacity: 0.8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1rem' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1f2937', marginBottom: '0.5rem' }}>📝 Entrevista - 20/12/2024</div>
+                    <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.75rem' }}>
+                      <strong>Entrevistador:</strong> María González
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => navigate(`/entrevista/${id}`)}
+                    style={{ padding: '0.5rem 1rem', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '0.375rem', cursor: 'pointer', fontSize: '0.875rem', fontWeight: '500' }}
+                  >
+                    Ver Detalle →
+                  </button>
+                </div>
+                <div style={{ marginBottom: '0.75rem' }}>
+                  <div style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1f2937', marginBottom: '0.25rem' }}>Temas Tratados:</div>
+                  <div style={{ fontSize: '0.875rem', color: '#4b5563' }}>Cierre de semestre, resultados finales</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1f2937', marginBottom: '0.25rem' }}>Observaciones:</div>
+                  <div style={{ fontSize: '0.875rem', color: '#4b5563', lineHeight: '1.5' }}>
+                    Buen desempeño general. Se felicitó al estudiante por su esfuerzo y mejora en el promedio.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Nueva Entrevista */}
+            {mostrarModalNuevaEntrevista && (
+              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                <div style={{ backgroundColor: 'white', borderRadius: '0.75rem', padding: '2rem', maxWidth: '500px', width: '90%', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+                  <h3 style={{ margin: '0 0 1.5rem 0', fontSize: '1.5rem', fontWeight: '700', color: '#1f2937' }}>➕ Nueva Entrevista</h3>
+                  
+                  <div style={{ marginBottom: '1rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+                      Fecha <span style={{ color: '#ef4444' }}>*</span>
+                    </label>
+                    <input 
+                      type="date" 
+                      defaultValue={new Date().toISOString().split('T')[0]}
+                      style={{ width: '100%', padding: '0.75rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '0.875rem' }}
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: '1rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+                      Entrevistador <span style={{ color: '#ef4444' }}>*</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      defaultValue={authService.getCurrentUser()?.nombres || 'Usuario Actual'}
+                      readOnly
+                      style={{ width: '100%', padding: '0.75rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '0.875rem', backgroundColor: '#f9fafb' }}
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: '1rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+                      Temas Tratados (opcional)
+                    </label>
+                    <input 
+                      type="text" 
+                      placeholder="Ej: Rendimiento académico, situación familiar..."
+                      style={{ width: '100%', padding: '0.75rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '0.875rem' }}
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+                      Observaciones Generales (opcional)
+                    </label>
+                    <textarea 
+                      placeholder="Observaciones iniciales de la entrevista..."
+                      style={{ width: '100%', minHeight: '100px', padding: '0.75rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '0.875rem', fontFamily: 'inherit', resize: 'vertical' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+                    <button 
+                      onClick={() => setMostrarModalNuevaEntrevista(false)}
+                      style={{ padding: '0.75rem 1.5rem', backgroundColor: '#e5e7eb', color: '#374151', border: 'none', borderRadius: '0.375rem', cursor: 'pointer', fontSize: '0.875rem', fontWeight: '600' }}
+                    >
+                      Cancelar
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setMostrarModalNuevaEntrevista(false);
+                        navigate(`/entrevista/${id}`);
+                      }}
+                      style={{ padding: '0.75rem 1.5rem', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '0.375rem', cursor: 'pointer', fontSize: '0.875rem', fontWeight: '600' }}
+                    >
+                      Crear y Abrir Entrevista
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* Modal Ver Semestres Anteriores */}
+      {mostrarModalSemestresAnteriores && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '2rem' }}>
+          <div style={{ backgroundColor: 'white', borderRadius: '0.75rem', padding: '2rem', maxWidth: '900px', width: '100%', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '700', color: '#1f2937' }}>📚 Semestres Guardados</h3>
+              <button 
+                onClick={() => setMostrarModalSemestresAnteriores(false)}
+                style={{ padding: '0.5rem', backgroundColor: '#f3f4f6', border: 'none', borderRadius: '0.375rem', cursor: 'pointer', fontSize: '1.25rem', color: '#6b7280' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1.5rem' }}>
+              Aquí puedes ver snapshots de semestres anteriores guardados. Selecciona un semestre para ver su información.
+            </p>
+
+            {/* Lista de Semestres Guardados */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {/* Semestre 2024/2S */}
+              <div style={{ border: '2px solid #e5e7eb', borderRadius: '0.5rem', padding: '1.5rem', cursor: 'pointer', transition: 'all 0.2s' }}
+                   onMouseEnter={(e) => e.currentTarget.style.borderColor = '#10b981'}
+                   onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1.125rem', fontWeight: '600', color: '#1f2937' }}>
+                      Semestre 2024/2S
+                    </h4>
+                    <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                      <span>📅 Guardado: 20/12/2024</span>
+                      <span style={{ margin: '0 0.5rem' }}>•</span>
+                      <span>📊 Promedio: 5.2</span>
+                      <span style={{ margin: '0 0.5rem' }}>•</span>
+                      <span>📚 7 ramos (6 aprobados, 1 reprobado)</span>
+                    </div>
+                  </div>
+                  <button style={{ padding: '0.5rem 1rem', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '0.375rem', cursor: 'pointer', fontSize: '0.875rem', fontWeight: '500' }}>
+                    Ver Detalle →
+                  </button>
+                </div>
+              </div>
+
+              {/* Semestre 2024/1S */}
+              <div style={{ border: '2px solid #e5e7eb', borderRadius: '0.5rem', padding: '1.5rem', cursor: 'pointer', transition: 'all 0.2s' }}
+                   onMouseEnter={(e) => e.currentTarget.style.borderColor = '#10b981'}
+                   onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1.125rem', fontWeight: '600', color: '#1f2937' }}>
+                      Semestre 2024/1S
+                    </h4>
+                    <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                      <span>📅 Guardado: 30/06/2024</span>
+                      <span style={{ margin: '0 0.5rem' }}>•</span>
+                      <span>📊 Promedio: 5.5</span>
+                      <span style={{ margin: '0 0.5rem' }}>•</span>
+                      <span>📚 6 ramos (6 aprobados)</span>
+                    </div>
+                  </div>
+                  <button style={{ padding: '0.5rem 1rem', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '0.375rem', cursor: 'pointer', fontSize: '0.875rem', fontWeight: '500' }}>
+                    Ver Detalle →
+                  </button>
+                </div>
+              </div>
+
+              {/* Semestre 2023/2S */}
+              <div style={{ border: '2px solid #e5e7eb', borderRadius: '0.5rem', padding: '1.5rem', cursor: 'pointer', transition: 'all 0.2s' }}
+                   onMouseEnter={(e) => e.currentTarget.style.borderColor = '#10b981'}
+                   onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1.125rem', fontWeight: '600', color: '#1f2937' }}>
+                      Semestre 2023/2S
+                    </h4>
+                    <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                      <span>📅 Guardado: 15/12/2023</span>
+                      <span style={{ margin: '0 0.5rem' }}>•</span>
+                      <span>📊 Promedio: 5.8</span>
+                      <span style={{ margin: '0 0.5rem' }}>•</span>
+                      <span>📚 6 ramos (6 aprobados)</span>
+                    </div>
+                  </div>
+                  <button style={{ padding: '0.5rem 1rem', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '0.375rem', cursor: 'pointer', fontSize: '0.875rem', fontWeight: '500' }}>
+                    Ver Detalle →
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ marginTop: '2rem', padding: '1rem', backgroundColor: '#f3f4f6', borderRadius: '0.5rem' }}>
+              <p style={{ margin: 0, fontSize: '0.875rem', color: '#6b7280' }}>
+                💡 <strong>Nota:</strong> Los semestres guardados son snapshots de solo lectura. No se pueden editar una vez guardados.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
+export default EstudianteDetail;

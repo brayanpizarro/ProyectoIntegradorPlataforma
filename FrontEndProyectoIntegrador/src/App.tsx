@@ -3,8 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { authService } from './services/authService';
 import { LoginAdminForm } from './components/LoginForm/LoginAdminForm';
 import { Dashboard } from './pages/Dashboard';
-import GeneracionViewSimple from './pages/GeneracionViewSimple';
-import { EstudianteDetail } from './pages/EstudianteDetail';
+import GeneracionView from './pages/GeneracionView';
+import EstudianteDetail from './pages/EstudianteDetail';
 import { EntrevistaWorkspace } from './pages/EntrevistaWorkspace';
 
 function App() {
@@ -69,7 +69,7 @@ function App() {
           path="/generacion/:id" 
           element={
             isAuthenticated ? 
-              <GeneracionViewSimple /> : 
+              <GeneracionView /> : 
               <Navigate to="/" replace />
           }
         />

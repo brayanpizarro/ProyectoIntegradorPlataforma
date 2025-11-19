@@ -104,12 +104,37 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ estudiante, onNavigateBack
         </div>
       </div>
 
-      {/* ✅ LADO DERECHO: Usuario actual */}
+      {/* ✅ LADO DERECHO: Usuario actual y botón terminar */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '0.75rem'
+        gap: '1rem'
       }}>
+        {/* Botón Terminar Entrevista */}
+        <button
+          onClick={() => {
+            if (window.confirm('¿Deseas terminar y guardar esta entrevista?')) {
+              onNavigateBack();
+            }
+          }}
+          style={{
+            padding: '0.625rem 1.25rem',
+            backgroundColor: '#10b981',
+            color: 'white',
+            border: 'none',
+            borderRadius: '0.5rem',
+            cursor: 'pointer',
+            fontSize: '0.875rem',
+            fontWeight: '600',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}
+        >
+          ✓ Terminar Entrevista
+        </button>
+
         {/* Indicador de sesión activa */}
         <div style={{
           padding: '0.25rem 0.75rem',
@@ -119,7 +144,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ estudiante, onNavigateBack
           fontSize: '0.75rem',
           fontWeight: '500'
         }}>
-          🟢 Entrevista Activa
+          🟢 Activa
         </div>
         
         {/* Avatar del usuario actual */}
