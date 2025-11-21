@@ -1,7 +1,3 @@
-// SERVICIO DE AUTENTICACIÓN HÍBRIDO
-// Intenta usar API real del backend, con fallback a mock para desarrollo
-// TODO Backend: Implementar /auth/login, /auth/logout, /auth/me en el backend
-
 import type { LoginCredentials, AuthResponse, Usuario } from '../types';
 
 const API_BASE_URL = 'http://localhost:3000'; // TODO Backend: Configurar CORS para este origen
@@ -34,15 +30,11 @@ class AuthService {
     return localStorage.getItem('accesstoken');
   }
 
-  /**
-   * Login principal - Intenta API real, fallback a mock
-   * TODO Backend: Implementar POST /auth/login con validación de usuarios
-   */
+
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     console.log('🔐 Intentando login con:', credentials.email);
 
     try {
-      // INTENTO 1: API del backend real
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
@@ -54,7 +46,6 @@ class AuthService {
       if (response.ok) {
         const authResponse: AuthResponse = await response.json();
         
-        // Guardar datos en localStorage
         this.saveAuthData(authResponse);
         
         console.log('✅ Login exitoso con backend real');
@@ -115,10 +106,6 @@ class AuthService {
     console.log('🚪 Sesión cerrada localmente');
   }
 
-  /**
-   * Obtener usuario actual
-   * TODO Backend: Opcional - implementar GET /auth/me para datos actualizados
-   */
   getCurrentUser(): Usuario | null {
     if (this.currentUser) {
       return this.currentUser;
