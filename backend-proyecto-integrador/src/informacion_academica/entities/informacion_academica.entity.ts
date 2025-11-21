@@ -20,6 +20,20 @@ export class InformacionAcademica {
   @Column({ nullable: true })
   via_acceso: string;
 
+  @Column()
+  ingreso_beca: number;
+
+  @Column()
+  colegio: string; //liceo
+
+  @Column({nullable: true})
+  especialidad_colegio: string; // Si es que aplica
+
+  @Column()
+  comuna_colegio: string;
+
+  /* TO DO: CREAR PUNTAJE PAES, VER SI ES UN ARRAY */
+
   @Column({ type: 'json', nullable: true })
   beneficios: any;
 

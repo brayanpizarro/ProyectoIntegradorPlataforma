@@ -42,9 +42,9 @@ async function testPostgreSQL() {
     console.log('\n[TEST] Probando CRUD de Institución...');
     const institucion = new Institucion();
     institucion.nombre = 'Universidad de Prueba';
-    institucion.tipo_institucion = 'Universidad';
-    institucion.nivel_educativo = 'Superior';
-    institucion.carrera_especialidad = 'Ingeniería';
+    //institucion.tipo_institucion = 'Universidad';
+    //institucion.nivel_educativo = 'Superior';
+    //institucion.carrera_especialidad = 'Ingeniería';
     institucion.anio_de_ingreso = '2023';
     institucion.anio_de_egreso = '2027';
 
@@ -84,7 +84,7 @@ async function testPostgreSQL() {
     familia.padre_nombre = 'José';
     familia.padre_edad = 47;
     familia.hermanos = [{ nombre: 'Ana', edad: 15 }];
-    familia.observaciones = 'Familia de prueba';
+    //familia.observaciones = 'Familia de prueba';
     familia.estudiante = estudianteGuardado;
     await AppDataSource.manager.save(familia);
     console.log('  ✓ Familia creada');

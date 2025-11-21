@@ -9,14 +9,18 @@ export class Institucion {
   @Column()
   nombre: string;
 
-  @Column()
+  /*@Column()
   tipo_institucion: string;
 
   @Column()
   nivel_educativo: string;
-
+  
   @Column()
   carrera_especialidad: string;
+  */
+
+  @Column()
+  duracion: string; // Establecer un tipo, y ver si es mejor number o string
 
   @Column()
   anio_de_ingreso: string;
