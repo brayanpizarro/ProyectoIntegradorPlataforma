@@ -1,11 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { authService } from './services/authService';
+import { logger } from './config';
 import { LoginAdminForm } from './components/LoginForm/LoginAdminForm';
-import { Dashboard } from './pages/Dashboard';
-import GeneracionView from './pages/GeneracionView';
-import EstudianteDetail from './pages/EstudianteDetail';
-import { EntrevistaWorkspace } from './pages/EntrevistaWorkspace';
+import { LoadingSpinner } from './components/common';
+
+// Lazy loading de componentes pesados para mejor rendimiento
+const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
+const GeneracionView = lazy(() => import('./pages/GeneracionView'));
+const EstudianteDetail = lazy(() => import('./pages/EstudianteDetail'));
+const EntrevistaWorkspace = lazy(() => import('./pages/EntrevistaWorkspace').then(m => ({ default: m.EntrevistaWorkspace })));
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -15,7 +19,7 @@ function App() {
   useEffect(() => {
     const checkAuth = () => {
       const authenticated = authService.isAuthenticated();
-      console.log('🔐 Estado de autenticación:', authenticated);
+      logger.log('🔐 Estado de autenticación:', authenticated);
       setIsAuthenticated(authenticated);
       setIsLoading(false);
     };
@@ -25,102 +29,93 @@ function App() {
 
   // Función para actualizar el estado de autenticación
   const handleAuthChange = (authenticated: boolean) => {
-    console.log('🔄 Cambiando estado de autenticación a:', authenticated);
+    logger.log('🔄 Cambiando estado de autenticación a:', authenticated);
     setIsAuthenticated(authenticated);
   };
 
   if (isLoading) {
-    return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        backgroundColor: '#f5f5f5'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <h2>Cargando...</h2>
-          <p>Verificando autenticación</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner fullScreen message="Verificando autenticación..." />;
   }
 
   return (
     <Router>
-      <Routes>
-        <Route 
-          path="/" 
-          element={
-            isAuthenticated ? 
-              <Navigate to="/dashboard" replace /> : 
-              <LoginAdminForm onAuthChange={handleAuthChange} />
-          }
-        />
-        <Route 
-          path="/dashboard" 
-          element={
-            isAuthenticated ? 
-              <Dashboard onAuthChange={handleAuthChange} /> : 
-              <Navigate to="/" replace />
-          }
-        />
-        <Route 
-          path="/generacion/:id" 
-          element={
-            isAuthenticated ? 
-              <GeneracionView /> : 
-              <Navigate to="/" replace />
-          }
-        />
-        <Route 
-          path="/estudiante/:id" 
-          element={
-            isAuthenticated ? 
-              <EstudianteDetail /> : 
-              <Navigate to="/" replace />
-          }
-        />
-        <Route 
-          path="/entrevista/:id" 
-          element={
-            isAuthenticated ? 
-              <EntrevistaWorkspace /> : 
-              <Navigate to="/" replace />
-          }
-        />
-        <Route 
-          path="/test" 
-          element={
-            <div style={{ padding: '20px', backgroundColor: 'cyan', color: 'black' }}>
-              <h1>Página de Debug</h1>
-              <p>Estado actual:</p>
-              <ul>
-                <li>Token: {localStorage.getItem('token') || 'No existe'}</li>
-                <li>Usuario: {localStorage.getItem('user') || 'No existe'}</li>
-                <li>Autenticado: {isAuthenticated ? 'SÍ' : 'NO'}</li>
-              </ul>
-              <button 
-                onClick={() => {
-                  localStorage.clear();
-                  setIsAuthenticated(false);
-                  window.location.href = '/';
-                }}
-                style={{
-                  padding: '10px 20px',
-                  backgroundColor: 'red',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '5px',
-                  cursor: 'pointer'
-                }}
-              >
-                🗑️ Limpiar localStorage y ir al login
-              </button>
-            </div>
-          }
-        />
-      </Routes>
+      <Suspense fallback={<LoadingSpinner fullScreen message="Cargando página..." />}>
+        <Routes>
+          <Route 
+            path="/" 
+            element={
+              isAuthenticated ? 
+                <Navigate to="/dashboard" replace /> : 
+                <LoginAdminForm onAuthChange={handleAuthChange} />
+            }
+          />
+          <Route 
+            path="/dashboard" 
+            element={
+              isAuthenticated ? 
+                <Dashboard onAuthChange={handleAuthChange} /> : 
+                <Navigate to="/" replace />
+            }
+          />
+          <Route 
+            path="/generacion/:id" 
+            element={
+              isAuthenticated ? 
+                <GeneracionView /> : 
+                <Navigate to="/" replace />
+            }
+          />
+          <Route 
+            path="/estudiante/:id" 
+            element={
+              isAuthenticated ? 
+                <EstudianteDetail /> : 
+                <Navigate to="/" replace />
+            }
+          />
+          <Route 
+            path="/entrevista/:id" 
+            element={
+              isAuthenticated ? 
+                <EntrevistaWorkspace /> : 
+                <Navigate to="/" replace />
+            }
+          />
+          <Route 
+            path="/test" 
+            element={
+              <div className="min-h-screen bg-cyan-500 p-8 text-black">
+                <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
+                  <h1 className="text-3xl font-bold mb-4">🔧 Página de Debug</h1>
+                  <h2 className="text-xl font-semibold mb-3">Estado actual:</h2>
+                  <ul className="space-y-2 mb-6 text-sm">
+                    <li className="p-2 bg-gray-100 rounded">
+                      <strong>Token:</strong> {localStorage.getItem('token') || '❌ No existe'}
+                    </li>
+                    <li className="p-2 bg-gray-100 rounded">
+                      <strong>Usuario:</strong> {localStorage.getItem('user') || '❌ No existe'}
+                    </li>
+                    <li className="p-2 bg-gray-100 rounded">
+                      <strong>Autenticado:</strong> {isAuthenticated ? '✅ SÍ' : '❌ NO'}
+                    </li>
+                  </ul>
+                  <button 
+                    onClick={() => {
+                      localStorage.clear();
+                      setIsAuthenticated(false);
+                      window.location.href = '/';
+                    }}
+                    className="w-full px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold"
+                    aria-label="Limpiar almacenamiento local y volver al login"
+                  >
+                    🗑️ Limpiar localStorage y ir al login
+                  </button>
+                </div>
+              </div>
+            }
+          />
+        </Routes>
+      </Suspense>
     </Router>
   );
 }

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { logger } from '../config';
 import type { Reporte, FiltrosReporte } from '../types';
 import { authService } from './authService';
 
@@ -28,12 +29,12 @@ export const reporteService = {
   // Obtener todos los reportes
   getReportes: async (): Promise<Reporte[]> => {
     try {
-      console.log('📊 Obteniendo lista de reportes...');
+      logger.log('📊 Obteniendo lista de reportes...');
       const response = await api.get('/reporte');
-      console.log('✅ Reportes obtenidos:', response.data.length);
+      logger.log('✅ Reportes obtenidos:', response.data.length);
       return response.data;
     } catch (error) {
-      console.error('❌ Error obteniendo reportes:', error);
+      logger.error('❌ Error obteniendo reportes:', error);
       throw error;
     }
   },
@@ -41,12 +42,12 @@ export const reporteService = {
   // Obtener un reporte por ID
   getReporteById: async (id: string): Promise<Reporte> => {
     try {
-      console.log(`📋 Obteniendo reporte con ID: ${id}`);
+      logger.log(`📋 Obteniendo reporte con ID: ${id}`);
       const response = await api.get(`/reporte/${id}`);
-      console.log('✅ Reporte obtenido:', response.data.titulo);
+      logger.log('✅ Reporte obtenido:', response.data.titulo);
       return response.data;
     } catch (error) {
-      console.error(`❌ Error obteniendo reporte ${id}:`, error);
+      logger.error(`❌ Error obteniendo reporte ${id}:`, error);
       throw error;
     }
   },
@@ -54,12 +55,12 @@ export const reporteService = {
   // Crear un nuevo reporte
   crearReporte: async (reporte: Omit<Reporte, 'id'>): Promise<Reporte> => {
     try {
-      console.log('➕ Creando nuevo reporte:', reporte.titulo);
+      logger.log('➕ Creando nuevo reporte:', reporte.titulo);
       const response = await api.post('/reporte', reporte);
-      console.log('✅ Reporte creado con ID:', response.data.id);
+      logger.log('✅ Reporte creado con ID:', response.data.id);
       return response.data;
     } catch (error) {
-      console.error('❌ Error creando reporte:', error);
+      logger.error('❌ Error creando reporte:', error);
       throw error;
     }
   },
@@ -67,12 +68,12 @@ export const reporteService = {
   // Actualizar un reporte
   actualizarReporte: async (id: string, reporte: Partial<Reporte>): Promise<Reporte> => {
     try {
-      console.log(`✏️ Actualizando reporte: ${id}`);
+      logger.log(`✏️ Actualizando reporte: ${id}`);
       const response = await api.patch(`/reporte/${id}`, reporte);
-      console.log('✅ Reporte actualizado');
+      logger.log('✅ Reporte actualizado');
       return response.data;
     } catch (error) {
-      console.error(`❌ Error actualizando reporte ${id}:`, error);
+      logger.error(`❌ Error actualizando reporte ${id}:`, error);
       throw error;
     }
   },
@@ -80,11 +81,11 @@ export const reporteService = {
   // Eliminar un reporte
   eliminarReporte: async (id: string): Promise<void> => {
     try {
-      console.log(`🗑️ Eliminando reporte: ${id}`);
+      logger.log(`🗑️ Eliminando reporte: ${id}`);
       await api.delete(`/reporte/${id}`);
-      console.log('✅ Reporte eliminado');
+      logger.log('✅ Reporte eliminado');
     } catch (error) {
-      console.error(`❌ Error eliminando reporte ${id}:`, error);
+      logger.error(`❌ Error eliminando reporte ${id}:`, error);
       throw error;
     }
   },
@@ -92,7 +93,7 @@ export const reporteService = {
   // Buscar reportes con filtros
   buscarReportes: async (filtros: FiltrosReporte): Promise<Reporte[]> => {
     try {
-      console.log('🔍 Buscando reportes con filtros:', filtros);
+      logger.log('🔍 Buscando reportes con filtros:', filtros);
       const params = new URLSearchParams();
       
       if (filtros.estudiante_id) params.append('estudiante_id', filtros.estudiante_id);
@@ -103,10 +104,10 @@ export const reporteService = {
       if (filtros.tipo_reporte) params.append('tipo_reporte', filtros.tipo_reporte);
       
       const response = await api.get(`/reporte/buscar?${params.toString()}`);
-      console.log('✅ Búsqueda completada, resultados:', response.data.length);
+      logger.log('✅ Búsqueda completada, resultados:', response.data.length);
       return response.data;
     } catch (error) {
-      console.error('❌ Error buscando reportes:', error);
+      logger.error('❌ Error buscando reportes:', error);
       throw error;
     }
   },
@@ -114,12 +115,12 @@ export const reporteService = {
   // Obtener reportes por estudiante
   getReportesPorEstudiante: async (estudianteId: string): Promise<Reporte[]> => {
     try {
-      console.log(`👤 Obteniendo reportes del estudiante: ${estudianteId}`);
+      logger.log(`👤 Obteniendo reportes del estudiante: ${estudianteId}`);
       const response = await api.get(`/reporte/estudiante/${estudianteId}`);
-      console.log('✅ Reportes del estudiante obtenidos:', response.data.length);
+      logger.log('✅ Reportes del estudiante obtenidos:', response.data.length);
       return response.data;
     } catch (error) {
-      console.error(`❌ Error obteniendo reportes del estudiante ${estudianteId}:`, error);
+      logger.error(`❌ Error obteniendo reportes del estudiante ${estudianteId}:`, error);
       throw error;
     }
   },
@@ -127,12 +128,12 @@ export const reporteService = {
   // Obtener reportes por académico
   getReportesPorAcademico: async (academicoId: string): Promise<Reporte[]> => {
     try {
-      console.log(`👨‍🏫 Obteniendo reportes del académico: ${academicoId}`);
+      logger.log(`👨‍🏫 Obteniendo reportes del académico: ${academicoId}`);
       const response = await api.get(`/reporte/academico/${academicoId}`);
-      console.log('✅ Reportes del académico obtenidos:', response.data.length);
+      logger.log('✅ Reportes del académico obtenidos:', response.data.length);
       return response.data;
     } catch (error) {
-      console.error(`❌ Error obteniendo reportes del académico ${academicoId}:`, error);
+      logger.error(`❌ Error obteniendo reportes del académico ${academicoId}:`, error);
       throw error;
     }
   },
@@ -140,12 +141,12 @@ export const reporteService = {
   // Obtener reportes por asignatura
   getReportesPorAsignatura: async (asignaturaId: string): Promise<Reporte[]> => {
     try {
-      console.log(`📚 Obteniendo reportes de la asignatura: ${asignaturaId}`);
+      logger.log(`📚 Obteniendo reportes de la asignatura: ${asignaturaId}`);
       const response = await api.get(`/reporte/asignatura/${asignaturaId}`);
-      console.log('✅ Reportes de la asignatura obtenidos:', response.data.length);
+      logger.log('✅ Reportes de la asignatura obtenidos:', response.data.length);
       return response.data;
     } catch (error) {
-      console.error(`❌ Error obteniendo reportes de la asignatura ${asignaturaId}:`, error);
+      logger.error(`❌ Error obteniendo reportes de la asignatura ${asignaturaId}:`, error);
       throw error;
     }
   },

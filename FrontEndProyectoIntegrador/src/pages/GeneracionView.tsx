@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { apiService } from '../services/apiService';
+import { logger } from '../config';
+import { GenerationHeader, StudentFilterPanel, StudentsTable } from '../components/GenerationView';
 
 interface Estudiante {
   id: number;
@@ -111,426 +113,52 @@ const GeneracionViewSimple: React.FC = () => {
     navigate(`/estudiante/${studentId}`);
   };
 
-  const getSortIcon = (field: keyof Estudiante) => {
-    if (sortField !== field) return '↕️';
-    return sortDirection === 'asc' ? '↑' : '↓';
-  };
-
-  const getEstadoColor = (estado: string) => {
-    switch (estado) {
-      case 'Activo': return '#4CAF50';        // Verde
-      case 'Egresado': return '#2196F3';      // Azul
-      case 'Suspendido': return '#FF9800';    // Naranja
-      case 'Desertor': return '#f44336';      // Rojo
-      case 'Congelado': return '#9E9E9E';     // Gris
-      default: return '#757575';
-    }
-  };
-
   useEffect(() => {
-    console.log('Fetching students for generation example');
+    logger.log('🔍 Cargando estudiantes de generación:', id);
     const fetchStudents = async () => {
       try {
         const dataStudents = await apiService.EstudiantesPorGeneracion(id || '')
         setStudents(dataStudents);
+        logger.log('✅ Estudiantes cargados:', dataStudents.length);
       } catch (error) {
+        logger.warn('⚠️ Usando datos mock para generación', generationId);
         setStudents(studentsByGeneration[generationId] || []);
       }
     }
     fetchStudents();
-  }, []);
+  }, [id, generationId]);
+
+  const handleAddStudent = () => {
+    logger.log('Agregar nuevo estudiante - funcionalidad por implementar');
+  };
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      {/* Header */}
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        marginBottom: '30px',
-        borderBottom: '2px solid #e0e0e0',
-        paddingBottom: '20px'
-      }}>
-        <div>
-          <h1 style={{ 
-            fontSize: '2rem', 
-            fontWeight: 'bold', 
-            color: '#333',
-            margin: '0 0 10px 0'
-          }}>
-            Estudiantes Generación {generationId}
-          </h1>
-          <p style={{ 
-            color: '#666', 
-            fontSize: '1.1rem',
-            margin: 0
-          }}>
-            {filteredAndSortedStudents.length} estudiante{filteredAndSortedStudents.length !== 1 ? 's' : ''} encontrado{filteredAndSortedStudents.length !== 1 ? 's' : ''}
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: '15px' }}>
-          <button
-            onClick={() => navigate('/dashboard')}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: '#6c757d',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer',
-              fontSize: '1rem'
-            }}
-          >
-            ← Volver al Dashboard
-          </button>
-          <button
-            style={{
-              padding: '10px 20px',
-              backgroundColor: '#007bff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer',
-              fontSize: '1rem'
-            }}
-          >
-            + Agregar Estudiante
-          </button>
-        </div>
-      </div>
+    <div className="p-5 font-sans">
+      <GenerationHeader
+        generationYear={generationId}
+        totalStudents={filteredAndSortedStudents.length}
+        onBack={() => navigate('/dashboard')}
+        onAddStudent={handleAddStudent}
+      />
 
-      {/* Filtros y búsqueda */}
-      <div style={{ 
-        backgroundColor: '#f8f9fa',
-        padding: '20px',
-        borderRadius: '8px',
-        marginBottom: '20px',
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '15px'
-      }}>
-        <div>
-          <label style={{ 
-            display: 'block', 
-            marginBottom: '5px', 
-            fontWeight: 'bold',
-            color: '#495057'
-          }}>
-            Buscar estudiante:
-          </label>
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Nombre, apellido o RUT..."
-            style={{
-              width: '100%',
-              padding: '10px',
-              border: '1px solid #ced4da',
-              borderRadius: '4px',
-              fontSize: '1rem'
-            }}
-          />
-        </div>
+      <StudentFilterPanel
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        selectedCarrera={filterCarrera}
+        onCarreraChange={setFilterCarrera}
+        selectedEstado={filterEstado}
+        onEstadoChange={setFilterEstado}
+        carreras={carreras}
+        estados={estados}
+      />
 
-        <div>
-          <label style={{ 
-            display: 'block', 
-            marginBottom: '5px', 
-            fontWeight: 'bold',
-            color: '#495057'
-          }}>
-            Carrera:
-          </label>
-          <select
-            value={filterCarrera}
-            onChange={(e) => setFilterCarrera(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '10px',
-              border: '1px solid #ced4da',
-              borderRadius: '4px',
-              fontSize: '1rem'
-            }}
-          >
-            <option value="">Todas las carreras</option>
-            {carreras.map(carrera => (
-              <option key={carrera} value={carrera}>{carrera}</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label style={{ 
-            display: 'block', 
-            marginBottom: '5px', 
-            fontWeight: 'bold',
-            color: '#495057'
-          }}>
-            Estado:
-          </label>
-          <select
-            value={filterEstado}
-            onChange={(e) => setFilterEstado(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '10px',
-              border: '1px solid #ced4da',
-              borderRadius: '4px',
-              fontSize: '1rem'
-            }}
-          >
-            <option value="">Todos los estados</option>
-            {estados.map(estado => (
-              <option key={estado} value={estado}>{estado}</option>
-            ))}
-          </select>
-        </div>
-
-      </div>
-
-      {/* Tabla de estudiantes */}
-      <div style={{ 
-        backgroundColor: 'white',
-        borderRadius: '8px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        overflow: 'hidden'
-      }}>
-        <table style={{ 
-          width: '100%', 
-          borderCollapse: 'collapse',
-          fontSize: '0.9rem'
-        }}>
-          <thead>
-            <tr style={{ backgroundColor: '#e9ecef' }}>
-              <th 
-                onClick={() => handleSort('apellidos')}
-                style={{ 
-                  padding: '15px 10px', 
-                  textAlign: 'left', 
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  borderBottom: '2px solid #dee2e6',
-                  color: '#495057'
-                }}
-              >
-                Nombre {getSortIcon('apellidos')}
-              </th>
-              <th 
-                onClick={() => handleSort('carrera')}
-                style={{ 
-                  padding: '15px 10px', 
-                  textAlign: 'left', 
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  borderBottom: '2px solid #dee2e6',
-                  color: '#495057'
-                }}
-              >
-                Carrera {getSortIcon('carrera')}
-              </th>
-              <th 
-                onClick={() => handleSort('estado')}
-                style={{ 
-                  padding: '15px 10px', 
-                  textAlign: 'center', 
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  borderBottom: '2px solid #dee2e6',
-                  color: '#495057'
-                }}
-              >
-                Estado {getSortIcon('estado')}
-              </th>
-              <th 
-                onClick={() => handleSort('promedio')}
-                style={{ 
-                  padding: '15px 10px', 
-                  textAlign: 'center', 
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  borderBottom: '2px solid #dee2e6',
-                  color: '#495057'
-                }}
-              >
-                Promedio {getSortIcon('promedio')}
-              </th>
-              <th style={{ 
-                padding: '15px 10px', 
-                textAlign: 'center', 
-                fontWeight: 'bold',
-                borderBottom: '2px solid #dee2e6',
-                color: '#495057',
-                minWidth: '120px'
-              }}>
-                Última Entrevista
-              </th>
-              <th style={{ 
-                padding: '15px 10px', 
-                textAlign: 'center', 
-                fontWeight: 'bold',
-                borderBottom: '2px solid #dee2e6',
-                color: '#495057'
-              }}>
-                Entrevistas (Año)
-              </th>
-              <th style={{ 
-                padding: '15px 10px', 
-                textAlign: 'center', 
-                fontWeight: 'bold',
-                borderBottom: '2px solid #dee2e6',
-                color: '#495057'
-              }}>
-                Alertas
-              </th>
-              <th style={{ 
-                padding: '15px 10px', 
-                textAlign: 'center', 
-                fontWeight: 'bold',
-                borderBottom: '2px solid #dee2e6',
-                color: '#495057'
-              }}>
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredAndSortedStudents.map((student, index) => (
-              <tr 
-                key={student.id}
-                style={{ 
-                  backgroundColor: index % 2 === 0 ? '#f8f9fa' : 'white',
-                  transition: 'background-color 0.2s'
-                }}
-                onMouseOver={(e) => {
-                  (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#e3f2fd';
-                }}
-                onMouseOut={(e) => {
-                  (e.currentTarget as HTMLTableRowElement).style.backgroundColor = index % 2 === 0 ? '#f8f9fa' : 'white';
-                }}
-              >
-                <td style={{ padding: '12px 10px', borderBottom: '1px solid #dee2e6' }}>
-                  <div style={{ fontWeight: 'bold', color: '#333' }}>
-                    {student.nombres} {student.apellidos}
-                  </div>
-                </td>
-                <td style={{ padding: '12px 10px', borderBottom: '1px solid #dee2e6', color: '#666' }}>
-                  {student.carrera}
-                </td>
-                <td style={{ padding: '12px 10px', borderBottom: '1px solid #dee2e6', textAlign: 'center' }}>
-                  <span style={{
-                    padding: '4px 8px',
-                    borderRadius: '12px',
-                    fontSize: '0.8rem',
-                    fontWeight: 'bold',
-                    color: 'white',
-                    backgroundColor: getEstadoColor(student.estado)
-                  }}>
-                    {student.estado}
-                  </span>
-                </td>
-                <td style={{ 
-                  padding: '12px 10px', 
-                  borderBottom: '1px solid #dee2e6', 
-                  textAlign: 'center',
-                  fontWeight: 'bold',
-                  color: student.promedio >= 6.0 ? '#4CAF50' : student.promedio >= 5.5 ? '#FF9800' : '#f44336'
-                }}>
-                  {student.promedio.toFixed(1)}
-                </td>
-                <td style={{ padding: '12px 10px', borderBottom: '1px solid #dee2e6', textAlign: 'center', fontSize: '0.85rem' }}>
-                  {student.ultimaEntrevista ? 
-                    new Date(student.ultimaEntrevista).toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' })
-                    : 'Sin registro'}
-                </td>
-                <td style={{ padding: '12px 10px', borderBottom: '1px solid #dee2e6', textAlign: 'center', fontWeight: 'bold', fontSize: '1rem' }}>
-                  {student.totalEntrevistasAno || 0}
-                </td>
-                <td style={{ padding: '12px 10px', borderBottom: '1px solid #dee2e6', textAlign: 'center' }}>
-                  <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                    {(student.diasSinEntrevista && student.diasSinEntrevista > 60) && (
-                      <span 
-                        style={{
-                          padding: '2px 6px',
-                          borderRadius: '4px',
-                          fontSize: '0.7rem',
-                          fontWeight: 'bold',
-                          backgroundColor: '#FFF3CD',
-                          color: '#856404',
-                          border: '1px solid #FFEAA7'
-                        }}
-                        title={`${student.diasSinEntrevista} días sin entrevista`}
-                      >
-                        ⏰ {student.diasSinEntrevista}d
-                      </span>
-                    )}
-                    {student.tienePendienteNotas && (
-                      <span 
-                        style={{
-                          padding: '2px 6px',
-                          borderRadius: '4px',
-                          fontSize: '0.7rem',
-                          fontWeight: 'bold',
-                          backgroundColor: '#F8D7DA',
-                          color: '#721C24',
-                          border: '1px solid #F5C6CB'
-                        }}
-                        title="Pendiente de notas"
-                      >
-                        📝
-                      </span>
-                    )}
-                    {!student.diasSinEntrevista || (student.diasSinEntrevista <= 60 && !student.tienePendienteNotas) ? (
-                      <span style={{ color: '#999', fontSize: '0.8rem' }}>—</span>
-                    ) : null}
-                  </div>
-                </td>
-                <td style={{ padding: '12px 10px', borderBottom: '1px solid #dee2e6', textAlign: 'center' }}>
-                  <button
-                    onClick={() => handleVerDetalles(student.id)}
-                    style={{
-                      padding: '6px 12px',
-                      backgroundColor: '#007bff',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      fontSize: '0.8rem',
-                      fontWeight: 'bold',
-                      transition: 'background-color 0.2s'
-                    }}
-                    onMouseOver={(e) => {
-                      (e.target as HTMLButtonElement).style.backgroundColor = '#0056b3';
-                    }}
-                    onMouseOut={(e) => {
-                      (e.target as HTMLButtonElement).style.backgroundColor = '#007bff';
-                    }}
-                  >
-                    Ver Detalles
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {filteredAndSortedStudents.length === 0 && (
-        <div style={{
-          textAlign: 'center',
-          padding: '40px',
-          backgroundColor: '#f8f9fa',
-          borderRadius: '8px',
-          marginTop: '20px'
-        }}>
-          <h3 style={{ color: '#6c757d', marginBottom: '10px' }}>
-            No se encontraron estudiantes
-          </h3>
-          <p style={{ color: '#6c757d' }}>
-            Intenta ajustar los filtros de búsqueda
-          </p>
-        </div>
-      )}
+      <StudentsTable
+        students={filteredAndSortedStudents}
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={handleSort}
+        onViewDetails={handleVerDetalles}
+      />
     </div>
   );
 };
