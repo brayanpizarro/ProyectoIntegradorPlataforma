@@ -106,65 +106,28 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
   };
 
   return (
-    <div style={{
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      backgroundColor: 'white'
-    }}>
+    <div className="h-full flex flex-col bg-white">
       {/* ✅ HEADER DE LA SECCIÓN */}
-      <div style={{
-        padding: '1rem',
-        borderBottom: '1px solid #e2e8f0',
-        backgroundColor: '#fafafa'
-      }}>
-        <h3 style={{
-          margin: '0 0 0.5rem 0',
-          fontSize: '1.125rem',
-          fontWeight: '600',
-          color: '#1e293b'
-        }}>
+      <div className="p-4 border-b border-gray-200 bg-gray-50">
+        <h3 className="m-0 mb-2 text-lg font-semibold text-gray-800">
           📝 {sectionTitle}
         </h3>
-        <p style={{
-          margin: 0,
-          fontSize: '0.875rem',
-          color: '#64748b'
-        }}>
+        <p className="m-0 text-sm text-gray-500">
           Notas de entrevista para {estudiante.nombre || 
             `${estudiante.nombres} ${estudiante.apellidos}`}
         </p>
       </div>
 
       {/* ✅ BARRA DE BÚSQUEDA */}
-      <div style={{
-        padding: '1rem',
-        borderBottom: '1px solid #e2e8f0',
-        display: 'flex',
-        gap: '0.75rem'
-      }}>
+      <div className="p-4 border-b border-gray-200 flex gap-3">
         {/* Búsqueda por texto */}
-        <div style={{ flex: 1 }}>
+        <div className="flex-1">
           <input
             type="text"
             placeholder="Buscar en las notas..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '0.5rem',
-              border: '1px solid #cbd5e1',
-              borderRadius: '0.375rem',
-              fontSize: '0.875rem',
-              outline: 'none',
-              boxSizing: 'border-box'
-            }}
-            onFocus={(e) => {
-              e.target.style.borderColor = '#3b82f6';
-            }}
-            onBlur={(e) => {
-              e.target.style.borderColor = '#cbd5e1';
-            }}
+            className="w-full p-2 border border-gray-300 rounded-md text-sm outline-none box-border focus:border-blue-500"
           />
         </div>
         
@@ -174,12 +137,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
             type="date"
             value={searchDate}
             onChange={(e) => setSearchDate(e.target.value)}
-            style={{
-              padding: '0.5rem',
-              border: '1px solid #cbd5e1',
-              borderRadius: '0.375rem',
-              fontSize: '0.875rem'
-            }}
+            className="p-2 border border-gray-300 rounded-md text-sm"
           />
         </div>
         
@@ -190,15 +148,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
               setSearchTerm('');
               setSearchDate('');
             }}
-            style={{
-              padding: '0.5rem',
-              backgroundColor: '#f1f5f9',
-              border: '1px solid #cbd5e1',
-              borderRadius: '0.375rem',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              color: '#64748b'
-            }}
+            className="p-2 bg-gray-100 border border-gray-300 rounded-md cursor-pointer text-sm text-gray-500"
           >
             🗑️
           </button>
@@ -206,23 +156,11 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
       </div>
 
       {/* ✅ LISTA DE NOTAS PREVIAS */}
-      <div style={{
-        flex: 1,
-        overflowY: 'auto',
-        padding: '1rem'
-      }}>
+      <div className="flex-1 overflow-y-auto p-4">
         {filteredNotes.length === 0 ? (
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: '200px',
-            color: '#94a3b8',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📝</div>
-            <div style={{ fontSize: '0.875rem' }}>
+          <div className="flex flex-col items-center justify-center h-[200px] text-gray-400 text-center">
+            <div className="text-3xl mb-2">📝</div>
+            <div className="text-sm">
               {notes.length === 0 
                 ? `No hay notas sobre ${sectionTitle.toLowerCase()} aún`
                 : 'No se encontraron notas con esos criterios'
@@ -230,31 +168,15 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
             </div>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <div className="flex flex-col gap-3">
             {filteredNotes.map((note) => (
               <div
                 key={note.id}
-                style={{
-                  padding: '0.75rem',
-                  backgroundColor: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '0.5rem'
-                }}
+                className="p-3 bg-gray-50 border border-gray-200 rounded-lg"
               >
                 {/* Header de la nota */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: '0.5rem'
-                }}>
-                  <div style={{
-                    fontSize: '0.75rem',
-                    color: '#64748b',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem'
-                  }}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-xs text-gray-500 flex items-center gap-2">
                     <span>🕒</span>
                     <span>{formatDate(note.timestamp)}</span>
                     <span>•</span>
@@ -263,12 +185,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
                 </div>
                 
                 {/* Contenido de la nota */}
-                <div style={{
-                  fontSize: '0.875rem',
-                  color: '#1e293b',
-                  lineHeight: '1.5',
-                  whiteSpace: 'pre-wrap'
-                }}>
+                <div className="text-sm text-gray-800 leading-6 whitespace-pre-wrap">
                   {note.content}
                 </div>
               </div>
@@ -278,19 +195,9 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
       </div>
 
       {/* ✅ EDITOR DE NUEVA NOTA */}
-      <div style={{
-        borderTop: '1px solid #e2e8f0',
-        padding: '1rem',
-        backgroundColor: '#fafafa'
-      }}>
-        <div style={{ marginBottom: '0.75rem' }}>
-          <label style={{
-            display: 'block',
-            fontSize: '0.875rem',
-            fontWeight: '500',
-            color: '#374151',
-            marginBottom: '0.25rem'
-          }}>
+      <div className="border-t border-gray-200 p-4 bg-gray-50">
+        <div className="mb-3">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             ✍️ Nueva observación sobre {sectionTitle.toLowerCase()}
           </label>
           <textarea
@@ -298,26 +205,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
             onChange={(e) => setNewNote(e.target.value)}
             placeholder={`Escribe tus observaciones sobre ${sectionTitle.toLowerCase()} durante la entrevista...`}
             autoFocus
-            style={{
-              width: '100%',
-              minHeight: '80px',
-              padding: '0.75rem',
-              border: '1px solid #cbd5e1',
-              borderRadius: '0.375rem',
-              fontSize: '0.875rem',
-              fontFamily: 'inherit',
-              resize: 'vertical',
-              outline: 'none',
-              boxSizing: 'border-box'
-            }}
-            onFocus={(e) => {
-              e.target.style.borderColor = '#3b82f6';
-              e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
-            }}
-            onBlur={(e) => {
-              e.target.style.borderColor = '#cbd5e1';
-              e.target.style.boxShadow = 'none';
-            }}
+            className="w-full min-h-[80px] p-3 border border-gray-300 rounded-md text-sm font-inherit resize-y outline-none box-border focus:border-blue-500 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)]"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
                 handleSaveNote();
@@ -327,32 +215,16 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
         </div>
         
         {/* Botones de acción */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between'
-        }}>
-          <div style={{
-            fontSize: '0.75rem',
-            color: '#64748b'
-          }}>
+        <div className="flex items-center justify-between">
+          <div className="text-xs text-gray-500">
             💡 Ctrl+Enter para guardar rápido
           </div>
           
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div className="flex gap-2">
             <button
               onClick={() => setNewNote('')}
               disabled={!newNote.trim()}
-              style={{
-                padding: '0.5rem 1rem',
-                backgroundColor: 'white',
-                border: '1px solid #cbd5e1',
-                borderRadius: '0.375rem',
-                color: '#64748b',
-                cursor: newNote.trim() ? 'pointer' : 'not-allowed',
-                fontSize: '0.875rem',
-                opacity: newNote.trim() ? 1 : 0.5
-              }}
+              className="px-4 py-2 bg-white border border-gray-300 rounded-md text-gray-500 cursor-pointer text-sm disabled:cursor-not-allowed disabled:opacity-50"
             >
               Limpiar
             </button>
@@ -360,19 +232,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
             <button
               onClick={handleSaveNote}
               disabled={!newNote.trim() || isLoading}
-              style={{
-                padding: '0.5rem 1.5rem',
-                backgroundColor: newNote.trim() ? '#3b82f6' : '#e2e8f0',
-                color: newNote.trim() ? 'white' : '#9ca3af',
-                border: 'none',
-                borderRadius: '0.375rem',
-                cursor: newNote.trim() ? 'pointer' : 'not-allowed',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}
+              className={`px-6 py-2 ${newNote.trim() ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-400'} border-none rounded-md cursor-pointer text-sm font-medium flex items-center gap-2 disabled:cursor-not-allowed`}
             >
               {isLoading ? (
                 <>

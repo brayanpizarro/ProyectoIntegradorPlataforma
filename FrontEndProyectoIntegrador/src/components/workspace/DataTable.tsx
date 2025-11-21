@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import type { Estudiante } from '../../types';
 
 interface DataTableProps {
@@ -45,33 +45,14 @@ export const DataTable: React.FC<DataTableProps> = ({
     ];
 
     return (
-      <div style={{ padding: '1.5rem' }}>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 2fr',
-          gap: '1rem',
-          maxWidth: '600px'
-        }}>
+      <div className="p-6">
+        <div className="grid grid-cols-[1fr_2fr] gap-4 max-w-[600px]">
           {datos.map((item, index) => (
             <React.Fragment key={index}>
-              <div style={{
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                color: '#374151',
-                padding: '0.75rem',
-                backgroundColor: '#f9fafb',
-                borderRadius: '0.375rem'
-              }}>
+              <div className="text-sm font-medium text-gray-700 p-3 bg-gray-50 rounded-md">
                 {item.label}
               </div>
-              <div style={{
-                fontSize: '0.875rem',
-                color: '#1f2937',
-                padding: '0.75rem',
-                backgroundColor: 'white',
-                border: '1px solid #e5e7eb',
-                borderRadius: '0.375rem'
-              }}>
+              <div className="text-sm text-gray-800 p-3 bg-white border border-gray-200 rounded-md">
                 {item.value}
               </div>
             </React.Fragment>
@@ -119,33 +100,14 @@ export const DataTable: React.FC<DataTableProps> = ({
     ];
 
     return (
-      <div style={{ padding: '1.5rem' }}>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 2fr',
-          gap: '1rem',
-          maxWidth: '700px'
-        }}>
+      <div className="p-6">
+        <div className="grid grid-cols-[1fr_2fr] gap-4 max-w-[700px]">
           {datosAcademicos.map((item, index) => (
             <React.Fragment key={index}>
-              <div style={{
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                color: '#374151',
-                padding: '0.75rem',
-                backgroundColor: '#f0f9ff',
-                borderRadius: '0.375rem'
-              }}>
+              <div className="text-sm font-medium text-gray-700 p-3 bg-blue-50 rounded-md">
                 {item.label}
               </div>
-              <div style={{
-                fontSize: '0.875rem',
-                color: '#1f2937',
-                padding: '0.75rem',
-                backgroundColor: 'white',
-                border: '1px solid #bfdbfe',
-                borderRadius: '0.375rem'
-              }}>
+              <div className="text-sm text-gray-800 p-3 bg-white border border-blue-200 rounded-md">
                 {item.value}
               </div>
             </React.Fragment>
@@ -153,54 +115,27 @@ export const DataTable: React.FC<DataTableProps> = ({
         </div>
 
         {/* Indicador de progreso */}
-        <div style={{
-          marginTop: '2rem',
-          padding: '1rem',
-          backgroundColor: '#f8fafc',
-          borderRadius: '0.5rem',
-          border: '1px solid #e2e8f0'
-        }}>
-          <h4 style={{
-            margin: '0 0 0.75rem 0',
-            fontSize: '1rem',
-            fontWeight: '600',
-            color: '#1e293b'
-          }}>
+        <div className="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <h4 className="m-0 mb-3 text-base font-semibold text-gray-800">
             📊 Progreso Académico
           </h4>
           
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1rem',
-            marginBottom: '0.5rem'
-          }}>
-            <span style={{ fontSize: '0.875rem', color: '#64748b', minWidth: '100px' }}>
+          <div className="flex items-center gap-4 mb-2">
+            <span className="text-sm text-gray-500 min-w-[100px]">
               Avance de carrera:
             </span>
-            <div style={{
-              flex: 1,
-              height: '8px',
-              backgroundColor: '#e2e8f0',
-              borderRadius: '4px',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                height: '100%',
-                width: `${((estudiante.semestre || 0) / 10) * 100}%`,
-                backgroundColor: '#3b82f6',
-                borderRadius: '4px'
-              }} />
+            <div className="flex-1 h-2 bg-gray-200 rounded overflow-hidden">
+              <div 
+                className="h-full bg-blue-500 rounded"
+                style={{ width: `${((estudiante.semestre || 0) / 10) * 100}%` }}
+              />
             </div>
-            <span style={{ fontSize: '0.875rem', fontWeight: '500', color: '#1e293b' }}>
+            <span className="text-sm font-medium text-gray-800">
               {estudiante.semestre || 0}/10
             </span>
           </div>
           
-          <div style={{
-            fontSize: '0.75rem',
-            color: '#64748b'
-          }}>
+          <div className="text-xs text-gray-500">
             * Basado en semestres cursados de carrera estimada en 10 semestres
           </div>
         </div>
@@ -219,117 +154,45 @@ export const DataTable: React.FC<DataTableProps> = ({
     ];
 
     return (
-      <div style={{ padding: '1.5rem' }}>
-        <div style={{
-          backgroundColor: 'white',
-          border: '1px solid #e5e7eb',
-          borderRadius: '0.5rem',
-          overflow: 'hidden'
-        }}>
-          <div style={{
-            padding: '1rem',
-            backgroundColor: '#f9fafb',
-            borderBottom: '1px solid #e5e7eb'
-          }}>
-            <h4 style={{
-              margin: 0,
-              fontSize: '1rem',
-              fontWeight: '600',
-              color: '#1e293b'
-            }}>
+      <div className="p-6">
+        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+          <div className="p-4 bg-gray-50 border-b border-gray-200">
+            <h4 className="m-0 text-base font-semibold text-gray-800">
               📚 Historial por Semestre
             </h4>
           </div>
           
-          <table style={{
-            width: '100%',
-            borderCollapse: 'collapse'
-          }}>
-            <thead style={{ backgroundColor: '#f8fafc' }}>
+          <table className="w-full border-collapse">
+            <thead className="bg-gray-50">
               <tr>
-                <th style={{
-                  padding: '0.75rem',
-                  textAlign: 'left',
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  color: '#374151',
-                  borderBottom: '1px solid #e5e7eb'
-                }}>
+                <th className="p-3 text-left text-sm font-medium text-gray-700 border-b border-gray-200">
                   Período
                 </th>
-                <th style={{
-                  padding: '0.75rem',
-                  textAlign: 'center',
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  color: '#374151',
-                  borderBottom: '1px solid #e5e7eb'
-                }}>
+                <th className="p-3 text-center text-sm font-medium text-gray-700 border-b border-gray-200">
                   Asignaturas
                 </th>
-                <th style={{
-                  padding: '0.75rem',
-                  textAlign: 'center',
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  color: '#374151',
-                  borderBottom: '1px solid #e5e7eb'
-                }}>
+                <th className="p-3 text-center text-sm font-medium text-gray-700 border-b border-gray-200">
                   Promedio
                 </th>
-                <th style={{
-                  padding: '0.75rem',
-                  textAlign: 'center',
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  color: '#374151',
-                  borderBottom: '1px solid #e5e7eb'
-                }}>
+                <th className="p-3 text-center text-sm font-medium text-gray-700 border-b border-gray-200">
                   Estado
                 </th>
               </tr>
             </thead>
             <tbody>
               {historialMock.map((registro, index) => (
-                <tr key={index} style={{
-                  borderBottom: index < historialMock.length - 1 ? '1px solid #f3f4f6' : 'none'
-                }}>
-                  <td style={{
-                    padding: '0.75rem',
-                    fontSize: '0.875rem',
-                    color: '#1f2937'
-                  }}>
+                <tr key={index} className={index < historialMock.length - 1 ? 'border-b border-gray-100' : ''}>
+                  <td className="p-3 text-sm text-gray-800">
                     {registro.periodo}
                   </td>
-                  <td style={{
-                    padding: '0.75rem',
-                    textAlign: 'center',
-                    fontSize: '0.875rem',
-                    color: '#1f2937'
-                  }}>
+                  <td className="p-3 text-center text-sm text-gray-800">
                     {registro.asignaturas}
                   </td>
-                  <td style={{
-                    padding: '0.75rem',
-                    textAlign: 'center',
-                    fontSize: '0.875rem',
-                    fontWeight: '500',
-                    color: registro.promedio >= 6.0 ? '#059669' : '#dc2626'
-                  }}>
+                  <td className="p-3 text-center text-sm font-medium" style={{ color: registro.promedio >= 6.0 ? '#059669' : '#dc2626' }}>
                     {registro.promedio}
                   </td>
-                  <td style={{
-                    padding: '0.75rem',
-                    textAlign: 'center'
-                  }}>
-                    <span style={{
-                      padding: '0.25rem 0.75rem',
-                      borderRadius: '9999px',
-                      fontSize: '0.75rem',
-                      fontWeight: '500',
-                      backgroundColor: '#dcfce7',
-                      color: '#166534'
-                    }}>
+                  <td className="p-3 text-center">
+                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                       {registro.estado}
                     </span>
                   </td>
@@ -354,44 +217,20 @@ export const DataTable: React.FC<DataTableProps> = ({
     };
 
     return (
-      <div style={{ padding: '1.5rem' }}>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr',
-          gap: '1.5rem',
-          maxWidth: '700px'
-        }}>
+      <div className="p-6">
+        <div className="grid grid-cols-1 gap-6 max-w-[700px]">
           {/* Información de los padres */}
-          <div style={{
-            backgroundColor: 'white',
-            border: '1px solid #e5e7eb',
-            borderRadius: '0.5rem',
-            padding: '1rem'
-          }}>
-            <h4 style={{
-              margin: '0 0 1rem 0',
-              fontSize: '1rem',
-              fontWeight: '600',
-              color: '#1e293b'
-            }}>
+          <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <h4 className="m-0 mb-4 text-base font-semibold text-gray-800">
               👨‍👩‍👧‍👦 Información Familiar
             </h4>
             
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: '1rem'
-            }}>
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <h5 style={{
-                  margin: '0 0 0.5rem 0',
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  color: '#374151'
-                }}>
+                <h5 className="m-0 mb-2 text-sm font-medium text-gray-700">
                   Madre
                 </h5>
-                <div style={{ fontSize: '0.875rem', color: '#1f2937' }}>
+                <div className="text-sm text-gray-800">
                   {familiaData.madre.nombre}<br />
                   {familiaData.madre.edad} años<br />
                   {familiaData.madre.ocupacion}
@@ -399,15 +238,10 @@ export const DataTable: React.FC<DataTableProps> = ({
               </div>
               
               <div>
-                <h5 style={{
-                  margin: '0 0 0.5rem 0',
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  color: '#374151'
-                }}>
+                <h5 className="m-0 mb-2 text-sm font-medium text-gray-700">
                   Padre
                 </h5>
-                <div style={{ fontSize: '0.875rem', color: '#1f2937' }}>
+                <div className="text-sm text-gray-800">
                   {familiaData.padre.nombre}<br />
                   {familiaData.padre.edad} años<br />
                   {familiaData.padre.ocupacion}
@@ -417,71 +251,25 @@ export const DataTable: React.FC<DataTableProps> = ({
           </div>
 
           {/* Información adicional */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 2fr',
-            gap: '1rem'
-          }}>
-            <div style={{
-              fontSize: '0.875rem',
-              fontWeight: '500',
-              color: '#374151',
-              padding: '0.75rem',
-              backgroundColor: '#fef7ed',
-              borderRadius: '0.375rem'
-            }}>
+          <div className="grid grid-cols-[1fr_2fr] gap-4">
+            <div className="text-sm font-medium text-gray-700 p-3 bg-orange-50 rounded-md">
               Hermanos
             </div>
-            <div style={{
-              fontSize: '0.875rem',
-              color: '#1f2937',
-              padding: '0.75rem',
-              backgroundColor: 'white',
-              border: '1px solid #fed7aa',
-              borderRadius: '0.375rem'
-            }}>
+            <div className="text-sm text-gray-800 p-3 bg-white border border-orange-200 rounded-md">
               {familiaData.hermanos}
             </div>
 
-            <div style={{
-              fontSize: '0.875rem',
-              fontWeight: '500',
-              color: '#374151',
-              padding: '0.75rem',
-              backgroundColor: '#fef7ed',
-              borderRadius: '0.375rem'
-            }}>
+            <div className="text-sm font-medium text-gray-700 p-3 bg-orange-50 rounded-md">
               Situación económica
             </div>
-            <div style={{
-              fontSize: '0.875rem',
-              color: '#1f2937',
-              padding: '0.75rem',
-              backgroundColor: 'white',
-              border: '1px solid #fed7aa',
-              borderRadius: '0.375rem'
-            }}>
+            <div className="text-sm text-gray-800 p-3 bg-white border border-orange-200 rounded-md">
               {familiaData.situacionEconomica}
             </div>
 
-            <div style={{
-              fontSize: '0.875rem',
-              fontWeight: '500',
-              color: '#374151',
-              padding: '0.75rem',
-              backgroundColor: '#fef7ed',
-              borderRadius: '0.375rem'
-            }}>
+            <div className="text-sm font-medium text-gray-700 p-3 bg-orange-50 rounded-md">
               Contacto de emergencia
             </div>
-            <div style={{
-              fontSize: '0.875rem',
-              color: '#1f2937',
-              padding: '0.75rem',
-              backgroundColor: 'white',
-              border: '1px solid #fed7aa',
-              borderRadius: '0.375rem'
-            }}>
+            <div className="text-sm text-gray-800 p-3 bg-white border border-orange-200 rounded-md">
               {familiaData.contactoEmergencia}
             </div>
           </div>
@@ -493,16 +281,12 @@ export const DataTable: React.FC<DataTableProps> = ({
   // ✅ RENDER: Datos genéricos
   const renderGenericData = () => {
     return (
-      <div style={{
-        padding: '2rem',
-        textAlign: 'center',
-        color: '#64748b'
-      }}>
-        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📊</div>
-        <h3 style={{ margin: '0 0 0.5rem 0', color: '#1e293b' }}>
+      <div className="p-8 text-center text-gray-500">
+        <div className="text-5xl mb-4">📊</div>
+        <h3 className="m-0 mb-2 text-gray-800">
           {sectionTitle}
         </h3>
-        <p style={{ margin: 0, fontSize: '0.875rem' }}>
+        <p className="m-0 text-sm">
           Los datos para esta sección se implementarán próximamente
         </p>
       </div>
@@ -510,41 +294,20 @@ export const DataTable: React.FC<DataTableProps> = ({
   };
 
   return (
-    <div style={{
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      backgroundColor: 'white'
-    }}>
+    <div className="h-full flex flex-col bg-white">
       {/* ✅ HEADER DE LA SECCIÓN */}
-      <div style={{
-        padding: '1rem',
-        borderBottom: '1px solid #e2e8f0',
-        backgroundColor: '#fafafa'
-      }}>
-        <h3 style={{
-          margin: '0 0 0.5rem 0',
-          fontSize: '1.125rem',
-          fontWeight: '600',
-          color: '#1e293b'
-        }}>
+      <div className="p-4 border-b border-gray-200 bg-gray-50">
+        <h3 className="m-0 mb-2 text-lg font-semibold text-gray-800">
           📊 {sectionTitle}
         </h3>
-        <p style={{
-          margin: 0,
-          fontSize: '0.875rem',
-          color: '#64748b'
-        }}>
+        <p className="m-0 text-sm text-gray-500">
           Información del estudiante {estudiante.nombre || 
             `${estudiante.nombres} ${estudiante.apellidos}`}
         </p>
       </div>
 
       {/* ✅ CONTENIDO DE LA SECCIÓN */}
-      <div style={{
-        flex: 1,
-        overflowY: 'auto'
-      }}>
+      <div className="flex-1 overflow-y-auto">
         {getSectionContent()}
       </div>
     </div>

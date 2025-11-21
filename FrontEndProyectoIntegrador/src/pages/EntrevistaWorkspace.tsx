@@ -1,55 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { authService } from '../services/authService';
+import { logger } from '../config';
 import type { Estudiante } from '../types';
 import { encontrarEstudiantePorId } from '../data/mockData';
+import { useWorkspaceTabs } from '../hooks';
+import { sidebarSections } from '../config/workspaceSections';
+import { LoadingState, ErrorState } from '../components/EntrevistaWorkspace';
 
 // Componentes del workspace
 import { TopNavbar } from '../components/workspace/TopNavbar';
 import { Sidebar } from '../components/workspace/Sidebar';
 import { TabManager } from '../components/workspace/TabManager';
-
-// ✅ INTERFACES: Sistema de pestañas y workspace
-interface Tab {
-  id: string;
-  title: string;
-  type: 'note' | 'data';
-  content?: any;
-  isActive: boolean;
-}
-
-interface WorkspaceState {
-  leftTabs: Tab[];
-  rightTabs: Tab[];
-  splitView: boolean;
-  activePanel: 'left' | 'right';
-}
-
-// ✅ ETIQUETAS DEL SIDEBAR: Configuración de secciones disponibles
-const sidebarSections = [
-  {
-    title: 'Lista de temas',
-    items: [
-      { id: 'destacados', title: 'Destacados', icon: '⭐', type: 'note' as const },
-      { id: 'pareja', title: 'Pareja', icon: '💕', type: 'note' as const },
-      { id: 'amigos', title: 'Amigos', icon: '👥', type: 'note' as const },
-      { id: 'familia', title: 'Familia', icon: '👨‍👩‍👧‍👦', type: 'note' as const },
-      { id: 'estudios', title: 'Estudios', icon: '📚', type: 'note' as const },
-      { id: 'trabajo', title: 'Trabajo', icon: '💼', type: 'note' as const },
-      { id: 'metas', title: 'Metas', icon: '🎯', type: 'note' as const },
-      { id: 'problemas', title: 'Problemas', icon: '⚠️', type: 'note' as const },
-    ]
-  },
-  {
-    title: 'Información importante',
-    items: [
-      { id: 'info-personal', title: 'Información Personal', icon: '👤', type: 'data' as const },
-      { id: 'avance-academico', title: 'Avance Académico', icon: '📊', type: 'data' as const },
-      { id: 'historial', title: 'Historial Académico', icon: '📋', type: 'data' as const },
-      { id: 'familia-data', title: 'Información Familiar', icon: '🏠', type: 'data' as const },
-    ]
-  }
-];
 
 export const EntrevistaWorkspace: React.FC = () => {
   const navigate = useNavigate();
@@ -60,13 +22,16 @@ export const EntrevistaWorkspace: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // ✅ ESTADO PRINCIPAL: Workspace con pestañas
-  const [workspace, setWorkspace] = useState<WorkspaceState>({
-    leftTabs: [],
-    rightTabs: [],
-    splitView: false,
-    activePanel: 'left'
-  });
+  // ✅ CUSTOM HOOK: Manejo de pestañas
+  const {
+    workspace,
+    openTab,
+    closeTab,
+    focusTab,
+    enableSplitView,
+    disableSplitView,
+    setActivePanel
+  } = useWorkspaceTabs();
 
   // ✅ CARGAR DATOS: Estudiante al iniciar
   useEffect(() => {
@@ -104,7 +69,7 @@ export const EntrevistaWorkspace: React.FC = () => {
           setError('Estudiante no encontrado');
         }
       } catch (error) {
-        console.error('Error al cargar estudiante:', error);
+        logger.error('Error al cargar estudiante:', error);
         setError('Error al cargar los datos del estudiante');
       } finally {
         setLoading(false);
@@ -114,146 +79,19 @@ export const EntrevistaWorkspace: React.FC = () => {
     loadEstudiante();
   }, [estudianteId, navigate]);
 
-  // ✅ FUNCIONES: Manejo de pestañas
-  const openTab = (sectionId: string, sectionTitle: string, type: 'note' | 'data') => {
-    const tabId = `tab-${sectionId}`;
-    
-    // Verificar si la pestaña ya existe en algún panel
-    const existsInLeft = workspace.leftTabs.some(tab => tab.id === tabId);
-    const existsInRight = workspace.rightTabs.some(tab => tab.id === tabId);
-    
-    if (existsInLeft || existsInRight) {
-      // Si ya existe, activarla
-      focusTab(tabId);
-      return;
-    }
-    
-    // Crear nueva pestaña
-    const newTab: Tab = {
-      id: tabId,
-      title: sectionTitle,
-      type,
-      isActive: true,
-      content: type === 'note' ? { notes: [], newNote: '' } : null
-    };
-    
-    // Determinar en qué panel agregar la pestaña
-    const targetPanel = workspace.activePanel;
-    
-    setWorkspace(prev => ({
-      ...prev,
-      [targetPanel === 'left' ? 'leftTabs' : 'rightTabs']: [
-        ...prev[targetPanel === 'left' ? 'leftTabs' : 'rightTabs'].map(tab => ({ ...tab, isActive: false })),
-        newTab
-      ]
-    }));
-  };
 
-  const closeTab = (tabId: string) => {
-    setWorkspace(prev => ({
-      ...prev,
-      leftTabs: prev.leftTabs.filter(tab => tab.id !== tabId),
-      rightTabs: prev.rightTabs.filter(tab => tab.id !== tabId)
-    }));
-  };
-
-  const focusTab = (tabId: string) => {
-    setWorkspace(prev => {
-      // Encontrar en qué panel está la pestaña
-      const isInLeft = prev.leftTabs.some(tab => tab.id === tabId);
-      const isInRight = prev.rightTabs.some(tab => tab.id === tabId);
-      
-      return {
-        ...prev,
-        // Solo actualizar el panel donde está la pestaña
-        leftTabs: isInLeft ? 
-          prev.leftTabs.map(tab => ({ ...tab, isActive: tab.id === tabId })) : 
-          prev.leftTabs,
-        rightTabs: isInRight ? 
-          prev.rightTabs.map(tab => ({ ...tab, isActive: tab.id === tabId })) : 
-          prev.rightTabs,
-        // Cambiar el panel activo al panel donde está la pestaña
-        activePanel: isInLeft ? 'left' : 'right'
-      };
-    });
-  };
-
-  const enableSplitView = () => {
-    setWorkspace(prev => ({ ...prev, splitView: true }));
-  };
-
-  const disableSplitView = () => {
-    setWorkspace(prev => ({
-      ...prev,
-      splitView: false,
-      // Mover todas las pestañas del panel derecho al izquierdo
-      leftTabs: [...prev.leftTabs, ...prev.rightTabs],
-      rightTabs: []
-    }));
-  };
-
-  // ✅ FUNCIÓN: Cambiar panel activo sin afectar pestañas
-  const setActivePanel = (panel: 'left' | 'right') => {
-    setWorkspace(prev => ({ ...prev, activePanel: panel }));
-  };
 
   // ✅ ESTADOS DE CARGA
   if (loading) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#f8fafc'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⏳</div>
-          <h2>Cargando workspace...</h2>
-          <p style={{ color: '#64748b' }}>Preparando entrevista</p>
-        </div>
-      </div>
-    );
+    return <LoadingState />;
   }
 
   if (error || !estudiante) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#f8fafc'
-      }}>
-        <div style={{ textAlign: 'center', maxWidth: '400px', padding: '2rem' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
-          <h2>Error al cargar</h2>
-          <p style={{ color: '#64748b', marginBottom: '1rem' }}>{error}</p>
-          <button 
-            onClick={() => navigate(-1)}
-            style={{
-              padding: '0.75rem 1.5rem',
-              backgroundColor: '#3b82f6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '0.5rem',
-              cursor: 'pointer'
-            }}
-          >
-            ← Volver
-          </button>
-        </div>
-      </div>
-    );
+    return <ErrorState error={error || 'Estudiante no encontrado'} onBack={() => navigate(-1)} />;
   }
 
   return (
-    <div style={{
-      height: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      backgroundColor: '#f8fafc'
-    }}>
+    <div className="h-screen flex flex-col bg-slate-50">
       {/* ✅ NAVBAR SUPERIOR */}
       <TopNavbar 
         estudiante={estudiante}
@@ -261,13 +99,7 @@ export const EntrevistaWorkspace: React.FC = () => {
       />
       
       {/* ✅ ÁREA PRINCIPAL: Sidebar + Workspace */}
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        overflow: 'hidden',
-        height: 'calc(100vh - 64px)', // ✅ Altura fija (100vh - navbar)
-        maxHeight: 'calc(100vh - 64px)'
-      }}>
+      <div className="flex-1 flex overflow-hidden h-[calc(100vh-64px)] max-h-[calc(100vh-64px)]">
         {/* SIDEBAR IZQUIERDO */}
         <Sidebar 
           sections={sidebarSections}
@@ -277,15 +109,7 @@ export const EntrevistaWorkspace: React.FC = () => {
         />
         
         {/* ÁREA DE PESTAÑAS */}
-        <div style={{ 
-          flex: 1, 
-          display: 'flex', 
-          flexDirection: 'column',
-          width: 'calc(100% - 280px)', // ✅ Ancho fijo: 100% - sidebar
-          maxWidth: 'calc(100% - 280px)', // ✅ No puede crecer más
-          minWidth: '400px', // ✅ Ancho mínimo
-          overflow: 'hidden' // ✅ Evitar desbordamiento
-        }}>
+        <div className="flex-1 flex flex-col w-[calc(100%-280px)] max-w-[calc(100%-280px)] min-w-[400px] overflow-hidden">
           <TabManager
             workspace={workspace}
             onCloseTab={closeTab}

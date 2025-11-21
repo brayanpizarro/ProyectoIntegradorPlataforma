@@ -16,132 +16,73 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ estudiante, onNavigateBack
     'Sin especificar';
 
   return (
-    <div style={{
-      height: '64px',
-      backgroundColor: 'white',
-      borderBottom: '1px solid #e2e8f0',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '0 1.5rem',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-    }}>
+    <div className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 shadow-sm">
       {/* ✅ LADO IZQUIERDO: Logo y navegación */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      <div className="flex items-center gap-4">
         {/* Botón volver */}
         <button
           onClick={onNavigateBack}
-          style={{
-            padding: '0.5rem',
-            backgroundColor: '#f1f5f9',
-            border: '1px solid #cbd5e1',
-            borderRadius: '0.5rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            fontSize: '0.875rem',
-            color: '#475569'
-          }}
+          className="p-2 bg-gray-100 border border-gray-300 rounded-lg cursor-pointer flex items-center gap-2 text-sm text-gray-600"
         >
           ← Volver
         </button>
         
         {/* Breadcrumb */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          fontSize: '0.875rem',
-          color: '#64748b'
-        }}>
+        <div className="flex items-center gap-2 text-sm text-gray-500">
           <span>Entrevistas</span>
           <span>→</span>
-          <span style={{ color: '#1e293b', fontWeight: '500' }}>
+          <span className="text-gray-800 font-medium">
             {nombreCompleto}
           </span>
         </div>
       </div>
 
       {/* ✅ CENTRO: Información del estudiante */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '1rem',
-        flex: 1,
-        justifyContent: 'center'
-      }}>
+      <div className="flex items-center gap-4 flex-1 justify-center">
         {/* Avatar del estudiante */}
-        <div style={{
-          width: '40px',
-          height: '40px',
-          borderRadius: '50%',
-          backgroundColor: '#e0f2fe',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '1.25rem',
-          color: '#0891b2'
-        }}>
+        <div className="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center text-xl text-cyan-600">
           👤
         </div>
         
         {/* Datos del estudiante */}
-        <div style={{ textAlign: 'center' }}>
-          <div style={{
-            fontSize: '1.125rem',
-            fontWeight: '600',
-            color: '#1e293b'
-          }}>
+        <div className="text-center">
+          <div className="text-lg font-semibold text-gray-800">
             {nombreCompleto}
           </div>
-          <div style={{
-            fontSize: '0.875rem',
-            color: '#64748b'
-          }}>
+          <div className="text-sm text-gray-500">
             {carrera} • {universidad}
           </div>
         </div>
       </div>
 
-      {/* ✅ LADO DERECHO: Usuario actual */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.75rem'
-      }}>
+      {/* ✅ LADO DERECHO: Usuario actual y botón terminar */}
+      <div className="flex items-center gap-4">
+        {/* Botón Terminar Entrevista */}
+        <button
+          onClick={() => {
+            if (window.confirm('¿Deseas terminar y guardar esta entrevista?')) {
+              onNavigateBack();
+            }
+          }}
+          className="px-5 py-2.5 bg-emerald-500 text-white border-none rounded-lg cursor-pointer text-sm font-semibold shadow-sm flex items-center gap-2"
+        >
+          ✓ Terminar Entrevista
+        </button>
+
         {/* Indicador de sesión activa */}
-        <div style={{
-          padding: '0.25rem 0.75rem',
-          backgroundColor: '#dcfce7',
-          color: '#166534',
-          borderRadius: '9999px',
-          fontSize: '0.75rem',
-          fontWeight: '500'
-        }}>
-          🟢 Entrevista Activa
+        <div className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
+          🟢 Activa
         </div>
         
         {/* Avatar del usuario actual */}
-        <div style={{
-          width: '32px',
-          height: '32px',
-          borderRadius: '50%',
-          backgroundColor: '#3b82f6',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'white',
-          fontSize: '0.875rem',
-          fontWeight: '500'
-        }}>
+        <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-medium">
           A
         </div>
         
         {/* Información del usuario */}
-        <div style={{ fontSize: '0.875rem' }}>
-          <div style={{ color: '#1e293b', fontWeight: '500' }}>Admin</div>
-          <div style={{ color: '#64748b', fontSize: '0.75rem' }}>Entrevistador</div>
+        <div className="text-sm">
+          <div className="text-gray-800 font-medium">Admin</div>
+          <div className="text-gray-500 text-xs">Entrevistador</div>
         </div>
       </div>
     </div>

@@ -61,6 +61,9 @@ export interface Estudiante {
   region?: string;
   institucion_id?: string;
   año_ingreso?: number;
+  edad?: number;
+  genero?: string;
+  observaciones?: string;
   activo?: boolean;
   fecha_creacion?: string;
   fecha_actualizacion?: string;
@@ -134,6 +137,7 @@ export interface InformacionAcademica {
   // ✅ CAMPOS ADICIONALES que busca el código
   carrera?: string;
   promedio_actual?: number;
+  semestre_carrera?: number;
 }
 
 // ENTREVISTAS - MongoDB Schema del backend

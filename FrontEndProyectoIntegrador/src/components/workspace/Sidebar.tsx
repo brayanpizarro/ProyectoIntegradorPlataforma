@@ -24,55 +24,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
   splitViewActive = false 
 }) => {
   return (
-    <div style={{
-      width: '280px',
-      minWidth: '280px', // ✅ Ancho mínimo fijo
-      maxWidth: '280px', // ✅ Ancho máximo fijo
-      backgroundColor: 'white',
-      borderRight: '1px solid #e2e8f0',
-      padding: '1rem',
-      overflowY: 'auto',
-      flexShrink: 0 // ✅ No se comprime
-    }}>
+    <div className="w-[280px] min-w-[280px] max-w-[280px] bg-white border-r border-gray-200 p-4 overflow-y-auto flex-shrink-0">
       {/* ✅ TÍTULO DEL SIDEBAR */}
-      <div style={{
-        marginBottom: '1.5rem',
-        paddingBottom: '0.75rem',
-        borderBottom: '1px solid #e2e8f0'
-      }}>
-        <h3 style={{
-          margin: 0,
-          fontSize: '1.125rem',
-          fontWeight: '600',
-          color: '#1e293b'
-        }}>
+      <div className="mb-6 pb-3 border-b border-gray-200">
+        <h3 className="m-0 text-lg font-semibold text-gray-800">
           📝 Etiquetas de Entrevista
         </h3>
-        <p style={{
-          margin: '0.25rem 0 0 0',
-          fontSize: '0.75rem',
-          color: '#64748b'
-        }}>
+        <p className="mt-1 mb-0 text-xs text-gray-500">
           Haz clic para abrir una pestaña
         </p>
         
         {/* ✅ INDICADOR DE PANEL ACTIVO */}
         {splitViewActive && (
-          <div style={{
-            marginTop: '0.75rem',
-            padding: '0.5rem',
-            backgroundColor: activePanel === 'left' ? '#dbeafe' : '#f0fdf4',
-            border: `1px solid ${activePanel === 'left' ? '#3b82f6' : '#10b981'}`,
-            borderRadius: '0.375rem',
-            fontSize: '0.75rem'
-          }}>
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.5rem',
-              color: activePanel === 'left' ? '#1d4ed8' : '#166534',
-              fontWeight: '500'
-            }}>
+          <div className={`mt-3 p-2 ${activePanel === 'left' ? 'bg-blue-50 border-blue-500' : 'bg-green-50 border-green-500'} border rounded-md text-xs`}>
+            <div className={`flex items-center gap-2 ${activePanel === 'left' ? 'text-blue-800' : 'text-green-800'} font-medium`}>
               <span>{activePanel === 'left' ? '📋' : '📊'}</span>
               <span>Abrirá en panel {activePanel === 'left' ? 'izquierdo' : 'derecho'}</span>
             </div>
@@ -82,71 +47,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* ✅ SECCIONES DE ETIQUETAS */}
       {sections.map((section, sectionIndex) => (
-        <div key={sectionIndex} style={{ marginBottom: '1.5rem' }}>
+        <div key={sectionIndex} className="mb-6">
           {/* Título de sección */}
-          <h4 style={{
-            margin: '0 0 0.75rem 0',
-            fontSize: '0.875rem',
-            fontWeight: '500',
-            color: '#475569',
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em'
-          }}>
+          <h4 className="m-0 mb-3 text-sm font-medium text-gray-600 uppercase tracking-wide">
             {section.title}
           </h4>
           
           {/* Lista de etiquetas */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+          <div className="flex flex-col gap-1">
             {section.items.map((item) => (
               <button
                 key={item.id}
                 onClick={() => onSectionClick(item.id, item.title, item.type)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  padding: '0.75rem',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  borderRadius: '0.5rem',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  transition: 'all 0.2s ease',
-                  fontSize: '0.875rem',
-                  color: '#374151'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#f1f5f9';
-                  e.currentTarget.style.transform = 'translateX(2px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.transform = 'translateX(0)';
-                }}
+                className="flex items-center gap-3 p-3 bg-transparent border-none rounded-lg cursor-pointer text-left transition-all duration-200 text-sm text-gray-700 hover:bg-gray-100 hover:translate-x-0.5"
               >
                 {/* Icono */}
-                <span style={{
-                  fontSize: '1.25rem',
-                  width: '24px',
-                  textAlign: 'center'
-                }}>
+                <span className="text-xl w-6 text-center">
                   {item.icon}
                 </span>
                 
                 {/* Texto */}
-                <span style={{ flex: 1, fontWeight: '500' }}>
+                <span className="flex-1 font-medium">
                   {item.title}
                 </span>
                 
                 {/* Indicador de tipo */}
-                <span style={{
-                  fontSize: '0.625rem',
-                  padding: '0.125rem 0.375rem',
-                  borderRadius: '9999px',
-                  backgroundColor: item.type === 'note' ? '#dbeafe' : '#f0fdf4',
-                  color: item.type === 'note' ? '#1d4ed8' : '#166534',
-                  fontWeight: '500'
-                }}>
+                <span className={`text-[0.625rem] px-1.5 py-0.5 rounded-full font-medium ${item.type === 'note' ? 'bg-blue-50 text-blue-800' : 'bg-green-50 text-green-800'}`}>
                   {item.type === 'note' ? 'NOTA' : 'DATA'}
                 </span>
               </button>
@@ -156,55 +82,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ))}
 
       {/* ✅ LEYENDA */}
-      <div style={{
-        marginTop: '2rem',
-        padding: '1rem',
-        backgroundColor: '#f8fafc',
-        borderRadius: '0.5rem',
-        border: '1px solid #e2e8f0'
-      }}>
-        <div style={{
-          fontSize: '0.75rem',
-          color: '#64748b',
-          marginBottom: '0.5rem',
-          fontWeight: '500'
-        }}>
+      <div className="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="text-xs text-gray-500 mb-2 font-medium">
           💡 Tipos de pestañas
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            fontSize: '0.75rem'
-          }}>
-            <span style={{
-              padding: '0.125rem 0.375rem',
-              borderRadius: '9999px',
-              backgroundColor: '#dbeafe',
-              color: '#1d4ed8',
-              fontWeight: '500'
-            }}>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2 text-xs">
+            <span className="px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-800 font-medium">
               NOTA
             </span>
-            <span style={{ color: '#64748b' }}>Tomar apuntes de entrevista</span>
+            <span className="text-gray-500">Tomar apuntes de entrevista</span>
           </div>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            fontSize: '0.75rem'
-          }}>
-            <span style={{
-              padding: '0.125rem 0.375rem',
-              borderRadius: '9999px',
-              backgroundColor: '#f0fdf4',
-              color: '#166534',
-              fontWeight: '500'
-            }}>
+          <div className="flex items-center gap-2 text-xs">
+            <span className="px-1.5 py-0.5 rounded-full bg-green-50 text-green-800 font-medium">
               DATA
             </span>
-            <span style={{ color: '#64748b' }}>Ver información del alumno</span>
+            <span className="text-gray-500">Ver información del alumno</span>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import type { Estudiante } from '../../types';
 import { NoteEditor } from './NoteEditor';
 import { DataTable } from './DataTable';
@@ -44,27 +44,14 @@ export const TabManager: React.FC<TabManagerProps> = ({
     tabs: Tab[];
     panelId: 'left' | 'right';
     isActive: boolean;
-    isSplitView: boolean; // ✅ Pasar como prop
+    isSplitView: boolean;
   }> = ({ tabs, panelId, isActive, isSplitView }) => {
     const activeTab = tabs.find(tab => tab.isActive);
 
     return (
       <div 
-        style={{
-          flex: isSplitView ? 1 : 1, // ✅ Flex para ocupar espacio disponible
-          display: 'flex',
-          flexDirection: 'column',
-          border: isActive ? '2px solid #3b82f6' : '1px solid #e2e8f0',
-          borderRadius: '0.5rem',
-          backgroundColor: 'white',
-          overflow: 'hidden',
-          minWidth: isSplitView ? '300px' : 'auto', // ✅ Ancho mínimo solo en split
-          maxWidth: isSplitView ? 'calc(50% - 0.5rem)' : '100%', // ✅ Ancho máximo
-          width: isSplitView ? 'auto' : '100%', // ✅ Ancho completo cuando no hay split
-          height: '100%' // ✅ Altura fija
-        }}
+        className={`flex-1 flex flex-col ${isActive ? 'border-2 border-blue-500' : 'border border-gray-200'} rounded-lg bg-white overflow-hidden ${isSplitView ? 'min-w-[300px] max-w-[calc(50%-0.5rem)]' : 'w-full'} h-full`}
         onClick={(e) => {
-          // Solo activar panel si el click no es en un input/textarea/button
           const target = e.target as HTMLElement;
           if (!target.matches('input, textarea, button, input *, textarea *, button *')) {
             onSetActivePanel(panelId);
@@ -72,66 +59,18 @@ export const TabManager: React.FC<TabManagerProps> = ({
         }}
       >
         {/* ✅ HEADER DEL PANEL */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          backgroundColor: isActive ? '#eff6ff' : '#f8fafc',
-          borderBottom: '1px solid #e2e8f0',
-          padding: '0.5rem 0.75rem',
-          fontSize: '0.75rem',
-          fontWeight: '500',
-          color: isActive ? '#1d4ed8' : '#64748b'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div className={`flex items-center justify-between ${isActive ? 'bg-blue-50' : 'bg-gray-50'} border-b border-gray-200 px-3 py-2 text-xs font-medium ${isActive ? 'text-blue-800' : 'text-gray-500'}`}>
+          <div className="flex items-center gap-2">
             <span>{panelId === 'left' ? '📋' : '📊'}</span>
             <span>Panel {panelId === 'left' ? 'Izquierdo' : 'Derecho'}</span>
-            {isActive && <span style={{ color: '#10b981' }}>● Activo</span>}
+            {isActive && <span className="text-emerald-500">● Activo</span>}
           </div>
-          
-          {/* ✅ Indicador de drop zone durante drag */}
-          {false && (
-            <span style={{ 
-              color: '#059669', 
-              fontSize: '0.625rem',
-              fontStyle: 'italic'
-            }}>
-              ⬇ Soltar aquí
-            </span>
-          )}
         </div>
 
         {/* ✅ BARRA DE PESTAÑAS */}
-        <div 
-          className="tabs-scrollbar"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            backgroundColor: '#f8fafc',
-            borderBottom: '1px solid #e2e8f0',
-            padding: '0 0.5rem',
-            height: '48px', // ✅ Altura fija
-            minHeight: '48px',
-            maxHeight: '48px', // ✅ No se puede agrandar
-            gap: '0.25rem',
-            overflowX: 'auto', // ✅ Scroll horizontal cuando hay muchas pestañas
-            overflowY: 'hidden', // ✅ Sin scroll vertical
-            maxWidth: '100%',
-            flexShrink: 0 // ✅ No se comprime
-          }}
-        >
+        <div className="tabs-scrollbar flex items-center bg-gray-50 border-b border-gray-200 px-2 h-12 min-h-[48px] max-h-[48px] gap-1 overflow-x-auto overflow-y-hidden max-w-full flex-shrink-0">
           {tabs.length === 0 ? (
-            // Placeholder cuando no hay pestañas
-            <div style={{
-              flex: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#94a3b8',
-              fontSize: '0.875rem',
-              fontStyle: 'italic',
-              padding: '1rem'
-            }}>
+            <div className="flex-1 flex items-center justify-center text-gray-400 text-sm italic p-4">
               {panelId === 'left' ? 
                 '📋 Selecciona una etiqueta del sidebar' : 
                 '📊 Haz clic aquí para activar este panel'
@@ -139,7 +78,6 @@ export const TabManager: React.FC<TabManagerProps> = ({
             </div>
           ) : (
             <>
-              {/* Tabs */}
               {tabs.map((tab) => (
                 <div
                   key={tab.id}
@@ -147,93 +85,32 @@ export const TabManager: React.FC<TabManagerProps> = ({
                     onFocusTab(tab.id);
                     onSetActivePanel(panelId);
                   }}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    padding: '0.5rem 0.75rem',
-                    backgroundColor: tab.isActive ? 'white' : 'transparent',
-                    border: tab.isActive ? '1px solid #e2e8f0' : '1px solid transparent',
-                    borderBottom: tab.isActive ? '1px solid white' : '1px solid transparent',
-                    borderRadius: '0.375rem 0.375rem 0 0',
-                    cursor: 'pointer',
-                    fontSize: '0.875rem',
-                    fontWeight: tab.isActive ? '500' : '400',
-                    color: tab.isActive ? '#1e293b' : '#64748b',
-                    marginBottom: tab.isActive ? '-1px' : '0',
-                    zIndex: tab.isActive ? 1 : 0,
-                    maxWidth: '150px', // ✅ Ancho máximo limitado
-                    minWidth: '100px', // ✅ Ancho mínimo
-                    position: 'relative',
-                    flexShrink: 0 // ✅ No permitir que se compriman
-                  }}
+                  className={`flex items-center gap-2 px-3 py-2 ${tab.isActive ? 'bg-white border border-gray-200 border-b-white' : 'bg-transparent border border-transparent'} rounded-t-md cursor-pointer text-sm ${tab.isActive ? 'text-gray-800 font-medium' : 'text-gray-500'} ${tab.isActive ? '-mb-px z-10' : ''} max-w-[150px] min-w-[100px] relative flex-shrink-0`}
                 >
-                  {/* Icono según tipo */}
-                  <span style={{ fontSize: '0.875rem', flexShrink: 0 }}>
+                  <span className="text-sm flex-shrink-0">
                     {tab.type === 'note' ? '📝' : '📊'}
                   </span>
                   
-                  {/* Título */}
-                  <span style={{
-                    flex: 1,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    fontSize: '0.75rem'
-                  }}>
+                  <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-xs">
                     {tab.title}
                   </span>
                   
-                  {/* Botón cerrar */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       onCloseTab(tab.id);
                     }}
-                    style={{
-                      width: '14px',
-                      height: '14px',
-                      borderRadius: '50%',
-                      border: 'none',
-                      backgroundColor: 'transparent',
-                      color: '#94a3b8',
-                      cursor: 'pointer',
-                      fontSize: '10px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      padding: 0,
-                      flexShrink: 0
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#fee2e2';
-                      e.currentTarget.style.color = '#dc2626';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                      e.currentTarget.style.color = '#94a3b8';
-                    }}
+                    className="w-3.5 h-3.5 rounded-full border-none bg-transparent text-gray-400 cursor-pointer text-[10px] flex items-center justify-center p-0 flex-shrink-0 hover:bg-red-100 hover:text-red-600"
                   >
                     ×
                   </button>
                 </div>
               ))}
               
-              {/* Botón para split view (solo en panel izquierdo si no está activo) */}
               {!workspace.splitView && panelId === 'left' && tabs.length > 0 && (
                 <button
                   onClick={onEnableSplitView}
-                  style={{
-                    marginLeft: 'auto',
-                    padding: '0.375rem',
-                    backgroundColor: 'transparent',
-                    border: '1px solid #cbd5e1',
-                    borderRadius: '0.375rem',
-                    color: '#64748b',
-                    cursor: 'pointer',
-                    fontSize: '0.75rem',
-                    flexShrink: 0
-                  }}
+                  className="ml-auto p-1.5 bg-transparent border border-gray-300 rounded-md text-gray-500 cursor-pointer text-xs flex-shrink-0"
                   title="Dividir vista"
                 >
                   ⧉
@@ -244,12 +121,7 @@ export const TabManager: React.FC<TabManagerProps> = ({
         </div>
 
         {/* ✅ CONTENIDO DE LA PESTAÑA ACTIVA */}
-        <div style={{ 
-          flex: 1, 
-          overflow: 'auto', // ✅ Scroll cuando el contenido es grande
-          height: '100%',
-          maxHeight: 'calc(100% - 96px)' // ✅ Altura fija (100% - header - tabs)
-        }}>
+        <div className="flex-1 overflow-auto h-full max-h-[calc(100%-96px)]">
           {activeTab ? (
             activeTab.type === 'note' ? (
               <NoteEditor
@@ -265,19 +137,10 @@ export const TabManager: React.FC<TabManagerProps> = ({
               />
             )
           ) : (
-            <div style={{
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#94a3b8',
-              fontSize: '0.875rem',
-              flexDirection: 'column',
-              gap: '0.5rem'
-            }}>
+            <div className="h-full flex flex-col items-center justify-center text-gray-400 text-sm gap-2">
               <span>Selecciona una pestaña</span>
               {panelId === 'right' && (
-                <span style={{ fontSize: '0.75rem', textAlign: 'center' }}>
+                <span className="text-xs text-center">
                   Haz clic aquí para activar este panel, luego usa el sidebar
                 </span>
               )}
@@ -289,54 +152,18 @@ export const TabManager: React.FC<TabManagerProps> = ({
   };
 
   return (
-    <div style={{
-      flex: 1,
-      display: 'flex',
-      flexDirection: 'column',
-      padding: '1rem',
-      gap: '1rem',
-      height: '100%', // ✅ Altura completa del contenedor padre
-      maxHeight: '100%', // ✅ No exceder altura del padre
-      overflow: 'hidden' // ✅ Evitar que se agrande
-    }}>
+    <div className="flex-1 flex flex-col p-4 gap-4 h-full max-h-full overflow-hidden">
       {/* ✅ CONTROLES DE VISTA */}
       {workspace.splitView && (
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0.75rem',
-          backgroundColor: '#e0f2fe',
-          border: '1px solid #0891b2',
-          borderRadius: '0.5rem',
-          fontSize: '0.875rem',
-          height: '48px', // ✅ Altura fija
-          minHeight: '48px',
-          maxHeight: '48px',
-          flexShrink: 0 // ✅ No se comprime
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            color: '#0c4a6e'
-          }}>
+        <div className="flex items-center justify-between p-3 bg-cyan-50 border border-cyan-600 rounded-lg text-sm h-12 min-h-[48px] max-h-[48px] flex-shrink-0">
+          <div className="flex items-center gap-2 text-cyan-900">
             <span>⧉</span>
             <span>Vista dividida activa</span>
           </div>
           
           <button
             onClick={onDisableSplitView}
-            style={{
-              padding: '0.375rem 0.75rem',
-              backgroundColor: 'white',
-              border: '1px solid #0891b2',
-              borderRadius: '0.375rem',
-              color: '#0c4a6e',
-              cursor: 'pointer',
-              fontSize: '0.75rem',
-              fontWeight: '500'
-            }}
+            className="px-3 py-1.5 bg-white border border-cyan-600 rounded-md text-cyan-900 cursor-pointer text-xs font-medium"
           >
             Unir vista
           </button>
@@ -344,15 +171,7 @@ export const TabManager: React.FC<TabManagerProps> = ({
       )}
 
       {/* ✅ ÁREA DE PESTAÑAS */}
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        gap: '1rem',
-        overflow: 'hidden',
-        minHeight: '400px', // ✅ Altura mínima
-        width: '100%' // ✅ Ancho completo
-      }}>
-        {/* Panel izquierdo (siempre presente) */}
+      <div className="flex-1 flex gap-4 overflow-hidden min-h-[400px] w-full">
         <TabPanel
           tabs={workspace.leftTabs}
           panelId="left"
@@ -360,7 +179,6 @@ export const TabManager: React.FC<TabManagerProps> = ({
           isSplitView={workspace.splitView}
         />
         
-        {/* Panel derecho (solo en split view) */}
         {workspace.splitView && (
           <TabPanel
             tabs={workspace.rightTabs}
@@ -372,22 +190,8 @@ export const TabManager: React.FC<TabManagerProps> = ({
       </div>
 
       {/* ✅ BARRA DE ESTADO */}
-      <div style={{
-        padding: '0.75rem',
-        backgroundColor: '#f8fafc',
-        border: '1px solid #e2e8f0',
-        borderRadius: '0.5rem',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        fontSize: '0.75rem',
-        color: '#64748b',
-        height: '48px', // ✅ Altura fija
-        minHeight: '48px',
-        maxHeight: '48px',
-        flexShrink: 0 // ✅ No se comprime
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between text-xs text-gray-500 h-12 min-h-[48px] max-h-[48px] flex-shrink-0">
+        <div className="flex items-center gap-4">
           <span>
             📋 {workspace.leftTabs.length + workspace.rightTabs.length} pestañas abiertas
           </span>
@@ -398,19 +202,9 @@ export const TabManager: React.FC<TabManagerProps> = ({
           )}
         </div>
         
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem'
-        }}>
+        <div className="flex items-center gap-2">
           <span>Panel activo:</span>
-          <span style={{
-            padding: '0.125rem 0.5rem',
-            backgroundColor: workspace.activePanel === 'left' ? '#dbeafe' : '#f0fdf4',
-            color: workspace.activePanel === 'left' ? '#1d4ed8' : '#166534',
-            borderRadius: '9999px',
-            fontWeight: '500'
-          }}>
+          <span className={`px-2 py-0.5 ${workspace.activePanel === 'left' ? 'bg-blue-50 text-blue-800' : 'bg-green-50 text-green-800'} rounded-full font-medium`}>
             {workspace.activePanel === 'left' ? 'Izquierdo' : 'Derecho'}
           </span>
         </div>
