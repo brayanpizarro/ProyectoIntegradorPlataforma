@@ -50,7 +50,7 @@ export const TabManager: React.FC<TabManagerProps> = ({
 
     return (
       <div 
-        className={`flex-1 flex flex-col ${isActive ? 'border-2 border-blue-500' : 'border border-gray-200'} rounded-lg bg-white overflow-hidden ${isSplitView ? 'min-w-[300px] max-w-[calc(50%-0.5rem)]' : 'w-full'} h-full`}
+        className={`flex-1 flex flex-col ${isActive ? 'border-2 border-[var(--color-turquoise)]' : 'border border-gray-200'} rounded-lg bg-white overflow-hidden ${isSplitView ? 'min-w-[300px] max-w-[calc(50%-0.5rem)]' : 'w-full'} h-full`}
         onClick={(e) => {
           const target = e.target as HTMLElement;
           if (!target.matches('input, textarea, button, input *, textarea *, button *')) {
@@ -59,11 +59,11 @@ export const TabManager: React.FC<TabManagerProps> = ({
         }}
       >
         {/* ✅ HEADER DEL PANEL */}
-        <div className={`flex items-center justify-between ${isActive ? 'bg-blue-50' : 'bg-gray-50'} border-b border-gray-200 px-3 py-2 text-xs font-medium ${isActive ? 'text-blue-800' : 'text-gray-500'}`}>
+        <div className={`flex items-center justify-between ${isActive ? 'bg-[var(--color-turquoise)]/10' : 'bg-gray-50'} border-b border-gray-200 px-3 py-2 text-xs font-medium ${isActive ? 'text-[var(--color-turquoise)]' : 'text-gray-500'}`}>
           <div className="flex items-center gap-2">
             <span>{panelId === 'left' ? '📋' : '📊'}</span>
             <span>Panel {panelId === 'left' ? 'Izquierdo' : 'Derecho'}</span>
-            {isActive && <span className="text-emerald-500">● Activo</span>}
+            {isActive && <span className="text-[var(--color-turquoise)]">● Activo</span>}
           </div>
         </div>
 
@@ -155,15 +155,15 @@ export const TabManager: React.FC<TabManagerProps> = ({
     <div className="flex-1 flex flex-col p-4 gap-4 h-full max-h-full overflow-hidden">
       {/* ✅ CONTROLES DE VISTA */}
       {workspace.splitView && (
-        <div className="flex items-center justify-between p-3 bg-cyan-50 border border-cyan-600 rounded-lg text-sm h-12 min-h-[48px] max-h-[48px] flex-shrink-0">
-          <div className="flex items-center gap-2 text-cyan-900">
+        <div className="flex items-center justify-between p-3 bg-[var(--color-turquoise)]/10 border border-[var(--color-turquoise)] rounded-lg text-sm h-12 min-h-[48px] max-h-[48px] flex-shrink-0">
+          <div className="flex items-center gap-2 text-[var(--color-turquoise)]">
             <span>⧉</span>
             <span>Vista dividida activa</span>
           </div>
           
           <button
             onClick={onDisableSplitView}
-            className="px-3 py-1.5 bg-white border border-cyan-600 rounded-md text-cyan-900 cursor-pointer text-xs font-medium"
+            className="px-3 py-1.5 bg-white border border-[var(--color-turquoise)] rounded-md text-[var(--color-turquoise)] cursor-pointer text-xs font-medium"
           >
             Unir vista
           </button>
@@ -204,7 +204,7 @@ export const TabManager: React.FC<TabManagerProps> = ({
         
         <div className="flex items-center gap-2">
           <span>Panel activo:</span>
-          <span className={`px-2 py-0.5 ${workspace.activePanel === 'left' ? 'bg-blue-50 text-blue-800' : 'bg-green-50 text-green-800'} rounded-full font-medium`}>
+          <span className={`px-2 py-0.5 ${workspace.activePanel === 'left' ? 'bg-[var(--color-turquoise)]/20 text-[var(--color-turquoise)]' : 'bg-[var(--color-orange)]/20 text-[var(--color-orange)]'} rounded-full font-medium`}>
             {workspace.activePanel === 'left' ? 'Izquierdo' : 'Derecho'}
           </span>
         </div>

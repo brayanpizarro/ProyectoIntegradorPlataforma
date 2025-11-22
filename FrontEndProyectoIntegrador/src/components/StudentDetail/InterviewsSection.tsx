@@ -21,7 +21,7 @@ export const InterviewsSection: React.FC<InterviewsSectionProps> = ({ onNuevaEnt
         <h2 className="text-2xl font-bold">Entrevistas</h2>
         <button 
           onClick={onNuevaEntrevista}
-          className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+          className="px-5 py-2.5 bg-[var(--color-turquoise)] text-white rounded-lg hover:bg-[var(--color-turquoise-light)] transition-colors text-sm font-medium"
         >
           ➕ Nueva Entrevista
         </button>
@@ -52,7 +52,7 @@ export const InterviewsSection: React.FC<InterviewsSectionProps> = ({ onNuevaEnt
               <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm">
                 👁️ Ver Detalle
               </button>
-              <button className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm">
+              <button className="px-4 py-2 bg-[var(--color-turquoise)]/10 text-[var(--color-turquoise)] rounded-lg hover:bg-[var(--color-turquoise)]/20 transition-colors text-sm">
                 ✏️ Editar
               </button>
             </div>
@@ -69,7 +69,7 @@ export const InterviewsSection: React.FC<InterviewsSectionProps> = ({ onNuevaEnt
           </p>
           <button 
             onClick={onNuevaEntrevista}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+            className="px-6 py-3 bg-[var(--color-turquoise)] text-white rounded-lg hover:bg-[var(--color-turquoise-light)] transition-colors text-sm font-medium"
           >
             ➕ Agregar Primera Entrevista
           </button>

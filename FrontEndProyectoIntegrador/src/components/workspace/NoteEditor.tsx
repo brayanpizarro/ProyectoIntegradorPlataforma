@@ -232,7 +232,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
             <button
               onClick={handleSaveNote}
               disabled={!newNote.trim() || isLoading}
-              className={`px-6 py-2 ${newNote.trim() ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-400'} border-none rounded-md cursor-pointer text-sm font-medium flex items-center gap-2 disabled:cursor-not-allowed`}
+              className={`px-6 py-2 ${newNote.trim() ? 'bg-[var(--color-turquoise)] text-white' : 'bg-gray-200 text-gray-400'} border-none rounded-md cursor-pointer text-sm font-medium flex items-center gap-2 disabled:cursor-not-allowed`}
             >
               {isLoading ? (
                 <>

@@ -14,7 +14,7 @@ export const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ usuario, onLog
   const navigate = useNavigate();
 
   return (
-    <nav className="bg-blue-600 text-white px-8 py-4 flex justify-between items-center shadow-md">
+    <nav className="bg-[var(--color-turquoise)] text-white px-8 py-4 flex justify-between items-center shadow-md">
       <div className="flex items-center gap-8">
         <h1 className="text-2xl font-bold">
           🏛️ Fundación
@@ -31,7 +31,7 @@ export const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ usuario, onLog
         <span className="text-sm">{usuario?.tipo || 'Usuario'}: {usuario?.email || 'Cargando...'}</span>
         <button
           onClick={onLogout}
-          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+          className="bg-[var(--color-coral-dark)] text-white px-4 py-2 rounded-lg hover:bg-[var(--color-coral)] transition-colors text-sm font-medium"
         >
           Cerrar Sesión
         </button>

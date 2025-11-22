@@ -51,14 +51,14 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
         <div className="flex gap-3 items-center">
           <button 
             onClick={onToggleEdicion}
-            className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+            className="px-5 py-2.5 bg-[var(--color-turquoise)] text-white rounded-lg hover:bg-[var(--color-turquoise-light)] transition-colors text-sm font-medium"
           >
             {modoEdicion ? '👁️ Modo Vista' : '✏️ Modo Edición'}
           </button>
           {modoEdicion && (
             <button 
               onClick={onGuardar}
-              className="px-5 py-2.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors text-sm font-medium"
+              className="px-5 py-2.5 bg-[var(--color-turquoise)] text-white rounded-lg hover:bg-[var(--color-turquoise-light)] transition-colors text-sm font-medium"
             >
               💾 Guardar
             </button>

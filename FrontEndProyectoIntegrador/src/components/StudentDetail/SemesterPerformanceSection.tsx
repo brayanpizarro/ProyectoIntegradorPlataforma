@@ -22,7 +22,7 @@ const mockRamos = [
 export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProps> = ({ modoEdicion }) => {
   return (
     <div>
-      <div className="bg-green-600 text-white text-center font-bold text-xl py-3 mb-2">
+      <div className="bg-[var(--color-turquoise)] text-white text-center font-bold text-xl py-3 mb-2">
         Desempeño Académico por semestre
       </div>
       <div className="bg-yellow-200 p-2 text-center font-semibold mb-4 border border-gray-300 text-sm">
@@ -38,13 +38,13 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
           >
             <thead>
               <tr>
-                <th scope="col" className="bg-green-600 text-white p-3 text-left border border-gray-300 w-[5%]">Nº</th>
-                <th scope="col" className="bg-green-600 text-white p-3 text-left border border-gray-300 w-[10%]">Código</th>
-                <th scope="col" className="bg-green-600 text-white p-3 text-left border border-gray-300 w-[15%]">Ramo</th>
-                <th scope="col" className="bg-green-600 text-white p-3 text-left border border-gray-300 w-[35%]">Comentarios</th>
-                <th scope="col" className="bg-green-600 text-white p-3 text-left border border-gray-300 w-[12%]">Notas parciales</th>
-                <th scope="col" className="bg-green-600 text-white p-3 text-left border border-gray-300 w-[10%]">Promedio final</th>
-                <th scope="col" className="bg-green-600 text-white p-3 text-left border border-gray-300 w-[13%]">Aprobación</th>
+                <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300 w-[5%]">Nº</th>
+                <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300 w-[10%]">Código</th>
+                <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300 w-[15%]">Ramo</th>
+                <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300 w-[35%]">Comentarios</th>
+                <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300 w-[12%]">Notas parciales</th>
+                <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300 w-[10%]">Promedio final</th>
+                <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300 w-[13%]">Aprobación</th>
               </tr>
             </thead>
             <tbody>

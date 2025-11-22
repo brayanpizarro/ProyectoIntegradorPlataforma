@@ -36,8 +36,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         
         {/* ✅ INDICADOR DE PANEL ACTIVO */}
         {splitViewActive && (
-          <div className={`mt-3 p-2 ${activePanel === 'left' ? 'bg-blue-50 border-blue-500' : 'bg-green-50 border-green-500'} border rounded-md text-xs`}>
-            <div className={`flex items-center gap-2 ${activePanel === 'left' ? 'text-blue-800' : 'text-green-800'} font-medium`}>
+          <div className={`mt-3 p-2 ${activePanel === 'left' ? 'bg-[var(--color-turquoise)]/10 border-[var(--color-turquoise)]' : 'bg-[var(--color-orange)]/10 border-[var(--color-orange)]'} border rounded-md text-xs`}>
+            <div className={`flex items-center gap-2 ${activePanel === 'left' ? 'text-[var(--color-turquoise)]' : 'text-[var(--color-orange)]'} font-medium`}>
               <span>{activePanel === 'left' ? '📋' : '📊'}</span>
               <span>Abrirá en panel {activePanel === 'left' ? 'izquierdo' : 'derecho'}</span>
             </div>
@@ -72,7 +72,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </span>
                 
                 {/* Indicador de tipo */}
-                <span className={`text-[0.625rem] px-1.5 py-0.5 rounded-full font-medium ${item.type === 'note' ? 'bg-blue-50 text-blue-800' : 'bg-green-50 text-green-800'}`}>
+                <span className={`text-[0.625rem] px-1.5 py-0.5 rounded-full font-medium ${item.type === 'note' ? 'bg-[var(--color-turquoise)]/20 text-[var(--color-turquoise)]' : 'bg-[var(--color-orange)]/20 text-[var(--color-orange)]'}`}>
                   {item.type === 'note' ? 'NOTA' : 'DATA'}
                 </span>
               </button>
@@ -88,13 +88,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2 text-xs">
-            <span className="px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-800 font-medium">
+            <span className="px-1.5 py-0.5 rounded-full bg-[var(--color-turquoise)]/20 text-[var(--color-turquoise)] font-medium">
               NOTA
             </span>
             <span className="text-gray-500">Tomar apuntes de entrevista</span>
           </div>
           <div className="flex items-center gap-2 text-xs">
-            <span className="px-1.5 py-0.5 rounded-full bg-green-50 text-green-800 font-medium">
+            <span className="px-1.5 py-0.5 rounded-full bg-[var(--color-orange)]/20 text-[var(--color-orange)] font-medium">
               DATA
             </span>
             <span className="text-gray-500">Ver información del alumno</span>

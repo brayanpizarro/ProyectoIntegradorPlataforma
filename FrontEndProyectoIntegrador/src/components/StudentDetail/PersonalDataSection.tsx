@@ -18,7 +18,7 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
 }) => {
   return (
     <div>
-      <div className="bg-green-600 text-white text-center font-bold text-xl py-3 mb-4">
+      <div className="bg-[var(--color-turquoise)] text-white text-center font-bold text-xl py-3 mb-4">
         Datos Personales
       </div>
       <table 

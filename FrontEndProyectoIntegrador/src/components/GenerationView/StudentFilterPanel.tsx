@@ -36,7 +36,7 @@ export const StudentFilterPanel: React.FC<StudentFilterPanelProps> = ({
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Nombre, apellido o RUT..."
-          className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+          className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-[var(--color-turquoise)] focus:border-[var(--color-turquoise)] outline-none"
         />
       </div>
 
@@ -47,7 +47,7 @@ export const StudentFilterPanel: React.FC<StudentFilterPanelProps> = ({
         <select
           value={selectedCarrera}
           onChange={(e) => onCarreraChange(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+          className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-[var(--color-turquoise)] focus:border-[var(--color-turquoise)] outline-none"
         >
           <option value="">Todas las carreras</option>
           {carreras.map(carrera => (
@@ -63,7 +63,7 @@ export const StudentFilterPanel: React.FC<StudentFilterPanelProps> = ({
         <select
           value={selectedEstado}
           onChange={(e) => onEstadoChange(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+          className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-[var(--color-turquoise)] focus:border-[var(--color-turquoise)] outline-none"
         >
           <option value="">Todos los estados</option>
           {estados.map(estado => (

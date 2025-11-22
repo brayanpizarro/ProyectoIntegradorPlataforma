@@ -219,7 +219,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
             icon="✅" 
             label="Estudiantes Activos" 
             value={totalActivos}
-            accentColor="#10b981"
+            accentColor="var(--color-turquoise)"
           />
         </div>
 
@@ -245,7 +245,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
               onClick={() => {
                 alert('Funcionalidad para crear nueva generación - Por implementar');
               }}
-              className="bg-emerald-500 text-white px-6 py-3 rounded-lg hover:bg-emerald-600 transition-colors text-sm font-medium"
+              className="bg-[var(--color-turquoise)] text-white px-6 py-3 rounded-lg hover:bg-[var(--color-turquoise-light)] transition-colors text-sm font-medium"
             >
               + Nueva Generación
             </button>

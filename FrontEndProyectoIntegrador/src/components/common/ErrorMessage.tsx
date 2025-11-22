@@ -34,7 +34,7 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({
         {onRetry && (
           <button
             onClick={onRetry}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            className="px-6 py-3 bg-[var(--color-turquoise)] text-white rounded-lg hover:bg-[var(--color-turquoise-light)] transition-colors font-medium"
             aria-label="Reintentar carga"
           >
             🔄 Reintentar

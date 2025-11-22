@@ -42,7 +42,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
             placeholder="Ej: 2024, 2023..."
             value={busqueda}
             onChange={(e) => onBusquedaChange(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[var(--color-turquoise)] focus:border-[var(--color-turquoise)] outline-none"
           />
         </div>
 
@@ -54,7 +54,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           <select
             value={filtroEstado}
             onChange={(e) => onFiltroEstadoChange(e.target.value as any)}
-            className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[var(--color-turquoise)] focus:border-[var(--color-turquoise)] outline-none"
           >
             <option value="todas">Todas las generaciones</option>
             <option value="activas">Solo activas</option>
@@ -70,7 +70,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           <select
             value={ordenarPor}
             onChange={(e) => onOrdenarPorChange(e.target.value as any)}
-            className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[var(--color-turquoise)] focus:border-[var(--color-turquoise)] outline-none"
           >
             <option value="año">Año (más reciente)</option>
             <option value="estudiantes">Cantidad de estudiantes</option>

@@ -36,7 +36,7 @@ export const GenerationHeader: React.FC<GenerationHeaderProps> = ({
         </button>
         <button
           onClick={onAddStudent}
-          className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="px-5 py-2 bg-[var(--color-turquoise)] text-white rounded-lg hover:bg-[var(--color-turquoise-light)] transition-colors"
         >
           + Agregar Estudiante
         </button>

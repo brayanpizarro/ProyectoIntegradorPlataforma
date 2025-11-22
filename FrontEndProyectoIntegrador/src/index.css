@@ -1,13 +1,23 @@
 @import "tailwindcss";
 
 :root {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  /* Fuente principal */
+  font-family: 'Assistant', 'Open Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   font-size: 16px;
   
+  /* Paleta de colores Fundación Carmen Gaudié */
+  --color-turquoise: #4DB6AC;
+  --color-turquoise-light: #80CBC4;
+  --color-coral: #E57373;
+  --color-coral-dark: #D84315;
+  --color-orange: #FFB74D;
+  --color-yellow: #FFC107;
+  --color-cream: #FFF8E1;
+  
   color-scheme: light;
-  color: #213547;
+  color: #333333;
   background-color: #f8fafc;
 
   font-synthesis: none;

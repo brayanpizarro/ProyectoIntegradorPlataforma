@@ -37,7 +37,7 @@ export const GenerationsGrid: React.FC<GenerationsGridProps> = ({
         </p>
         <button
           onClick={onLimpiarFiltros}
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+          className="bg-[var(--color-turquoise)] text-white px-6 py-3 rounded-lg hover:bg-[var(--color-turquoise-light)] transition-colors text-sm font-medium"
         >
           Limpiar filtros
         </button>
