@@ -13,7 +13,7 @@ interface FamilyInfoSectionProps {
 export const FamilyInfoSection: React.FC<FamilyInfoSectionProps> = ({ modoEdicion }) => {
   return (
     <div>
-      <div className="bg-green-600 text-white text-center font-bold text-xl py-3 mb-4">
+      <div className="bg-[var(--color-turquoise)] text-white text-center font-bold text-xl py-3 mb-4">
         Información Familiar
       </div>
       <table 
@@ -23,8 +23,8 @@ export const FamilyInfoSection: React.FC<FamilyInfoSectionProps> = ({ modoEdicio
       >
         <thead>
           <tr>
-            <th scope="col" className="bg-green-600 text-white p-3 text-left border border-gray-300 w-1/5">Familiar</th>
-            <th scope="col" className="bg-green-600 text-white p-3 text-left border border-gray-300">Observaciones</th>
+            <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300 w-1/5">Familiar</th>
+            <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300">Observaciones</th>
           </tr>
         </thead>
         <tbody>

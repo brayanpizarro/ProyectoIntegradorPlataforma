@@ -40,8 +40,8 @@ export const GenerationCard: React.FC<GenerationCardProps> = ({
         {/* Indicador de estado */}
         <span className={`px-3 py-1 rounded-full text-xs font-medium ${
           estado === 'activa' 
-            ? 'bg-green-100 text-green-800' 
-            : 'bg-yellow-100 text-yellow-800'
+            ? 'bg-[var(--color-turquoise)]/20 text-[var(--color-turquoise)]' 
+            : 'bg-[var(--color-orange)]/20 text-[var(--color-orange)]'
         }`}>
           {estado === 'activa' ? '🟢 Activa' : '🟡 Finalizada'}
         </span>
@@ -57,7 +57,7 @@ export const GenerationCard: React.FC<GenerationCardProps> = ({
           </p>
         </div>
         <div className="text-center">
-          <p className="text-2xl font-bold text-emerald-500">
+          <p className="text-2xl font-bold text-[var(--color-turquoise)]">
             {activos}
           </p>
           <p className="text-xs text-gray-500">

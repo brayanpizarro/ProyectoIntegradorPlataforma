@@ -185,7 +185,7 @@ const EstudianteDetail: React.FC = () => {
                     setMostrarModalNuevaEntrevista(false);
                     navigate(`/entrevista/${id}`);
                   }}
-                  className="px-6 py-3 bg-emerald-500 text-white border-none rounded-md cursor-pointer text-sm font-semibold"
+                  className="px-6 py-3 bg-[var(--color-turquoise)] text-white border-none rounded-md cursor-pointer text-sm font-semibold"
                 >
                   Crear y Abrir Entrevista
                 </button>
@@ -216,7 +216,7 @@ const EstudianteDetail: React.FC = () => {
             {/* Lista de Semestres Guardados */}
             <div className="flex flex-col gap-4">
               {/* Semestre 2024/2S */}
-              <div className="border-2 border-gray-200 rounded-lg p-6 cursor-pointer transition-all hover:border-emerald-500">
+              <div className="border-2 border-gray-200 rounded-lg p-6 cursor-pointer transition-all hover:border-[var(--color-turquoise)]">
                 <div className="flex justify-between items-center">
                   <div>
                     <h4 className="m-0 mb-2 text-lg font-semibold text-gray-800">
@@ -227,17 +227,17 @@ const EstudianteDetail: React.FC = () => {
                       <span className="mx-2">•</span>
                       <span>📊 Promedio: 5.2</span>
                       <span className="mx-2">•</span>
-                      <span>📚 7 ramos (6 aprobados, 1 reprobado)</span>
+                      <span>📚 5 ramos (4 aprobados, 1 reprobado)</span>
                     </div>
                   </div>
-                  <button className="px-4 py-2 bg-blue-500 text-white border-none rounded-md cursor-pointer text-sm font-medium">
+                  <button className="px-4 py-2 bg-[var(--color-turquoise)] text-white border-none rounded-md cursor-pointer text-sm font-medium">
                     Ver Detalle →
                   </button>
                 </div>
               </div>
 
               {/* Semestre 2024/1S */}
-              <div className="border-2 border-gray-200 rounded-lg p-6 cursor-pointer transition-all hover:border-emerald-500">
+              <div className="border-2 border-gray-200 rounded-lg p-6 cursor-pointer transition-all hover:border-[var(--color-turquoise)]">
                 <div className="flex justify-between items-center">
                   <div>
                     <h4 className="m-0 mb-2 text-lg font-semibold text-gray-800">
@@ -251,14 +251,14 @@ const EstudianteDetail: React.FC = () => {
                       <span>📚 6 ramos (6 aprobados)</span>
                     </div>
                   </div>
-                  <button className="px-4 py-2 bg-blue-500 text-white border-none rounded-md cursor-pointer text-sm font-medium">
+                  <button className="px-4 py-2 bg-[var(--color-turquoise)] text-white border-none rounded-md cursor-pointer text-sm font-medium">
                     Ver Detalle →
                   </button>
                 </div>
               </div>
 
               {/* Semestre 2023/2S */}
-              <div className="border-2 border-gray-200 rounded-lg p-6 cursor-pointer transition-all hover:border-emerald-500">
+              <div className="border-2 border-gray-200 rounded-lg p-6 cursor-pointer transition-all hover:border-[var(--color-turquoise)]">
                 <div className="flex justify-between items-center">
                   <div>
                     <h4 className="m-0 mb-2 text-lg font-semibold text-gray-800">
@@ -272,7 +272,7 @@ const EstudianteDetail: React.FC = () => {
                       <span>📚 6 ramos (6 aprobados)</span>
                     </div>
                   </div>
-                  <button className="px-4 py-2 bg-blue-500 text-white border-none rounded-md cursor-pointer text-sm font-medium">
+                  <button className="px-4 py-2 bg-[var(--color-turquoise)] text-white border-none rounded-md cursor-pointer text-sm font-medium">
                     Ver Detalle →
                   </button>
                 </div>

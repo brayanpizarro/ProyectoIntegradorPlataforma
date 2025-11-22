@@ -104,7 +104,7 @@ export const DataTable: React.FC<DataTableProps> = ({
         <div className="grid grid-cols-[1fr_2fr] gap-4 max-w-[700px]">
           {datosAcademicos.map((item, index) => (
             <React.Fragment key={index}>
-              <div className="text-sm font-medium text-gray-700 p-3 bg-blue-50 rounded-md">
+              <div className="text-sm font-medium text-gray-700 p-3 bg-[var(--color-turquoise)]/10 rounded-md">
                 {item.label}
               </div>
               <div className="text-sm text-gray-800 p-3 bg-white border border-blue-200 rounded-md">
@@ -126,7 +126,7 @@ export const DataTable: React.FC<DataTableProps> = ({
             </span>
             <div className="flex-1 h-2 bg-gray-200 rounded overflow-hidden">
               <div 
-                className="h-full bg-blue-500 rounded"
+                className="h-full bg-[var(--color-turquoise)] rounded"
                 style={{ width: `${((estudiante.semestre || 0) / 10) * 100}%` }}
               />
             </div>

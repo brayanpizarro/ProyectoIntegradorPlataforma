@@ -69,7 +69,7 @@ export const LoginAdminForm: React.FC<LoginAdminFormProps> = ({ onAuthChange }) 
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#667eea] to-[#764ba2] p-5">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--color-turquoise)] to-[var(--color-coral)] p-5">
       <div className="bg-white rounded-[20px] shadow-[0_20px_40px_rgba(0,0,0,0.1)] p-10 w-full max-w-[400px] animate-[slideIn_0.6s_ease-out]">
         <div className="text-center mb-8">
           <div className="text-5xl mb-4">🛡️</div>
@@ -93,7 +93,7 @@ export const LoginAdminForm: React.FC<LoginAdminFormProps> = ({ onAuthChange }) 
               aria-required="true"
               aria-invalid={error ? 'true' : 'false'}
               autoComplete="email"
-              className="px-4 py-3 border-2 border-[#e9ecef] rounded-[10px] text-base transition-all duration-300 bg-[#f8f9fa] focus:outline-none focus:border-[#667eea] focus:bg-white focus:shadow-[0_0_0_3px_rgba(102,126,234,0.1)] disabled:opacity-60 disabled:cursor-not-allowed"
+              className="px-4 py-3 border-2 border-[#e9ecef] rounded-[10px] text-base transition-all duration-300 bg-[#f8f9fa] focus:outline-none focus:border-[var(--color-turquoise)] focus:bg-white focus:shadow-[0_0_0_3px_rgba(77,182,172,0.1)] disabled:opacity-60 disabled:cursor-not-allowed"
             />
           </div>
           
@@ -112,7 +112,7 @@ export const LoginAdminForm: React.FC<LoginAdminFormProps> = ({ onAuthChange }) 
               aria-required="true"
               aria-invalid={error ? 'true' : 'false'}
               autoComplete="current-password"
-              className="px-4 py-3 border-2 border-[#e9ecef] rounded-[10px] text-base transition-all duration-300 bg-[#f8f9fa] focus:outline-none focus:border-[#667eea] focus:bg-white focus:shadow-[0_0_0_3px_rgba(102,126,234,0.1)] disabled:opacity-60 disabled:cursor-not-allowed"
+              className="px-4 py-3 border-2 border-[#e9ecef] rounded-[10px] text-base transition-all duration-300 bg-[#f8f9fa] focus:outline-none focus:border-[var(--color-turquoise)] focus:bg-white focus:shadow-[0_0_0_3px_rgba(77,182,172,0.1)] disabled:opacity-60 disabled:cursor-not-allowed"
             />
           </div>
           
@@ -124,7 +124,7 @@ export const LoginAdminForm: React.FC<LoginAdminFormProps> = ({ onAuthChange }) 
           
           <button
             type="submit"
-            className="bg-gradient-to-br from-[#667eea] to-[#764ba2] text-white border-none px-5 py-3.5 rounded-[10px] text-base font-semibold cursor-pointer transition-all duration-300 mt-2.5 hover:enabled:-translate-y-0.5 hover:enabled:shadow-[0_8px_20px_rgba(102,126,234,0.3)] disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
+            className="bg-gradient-to-br from-[var(--color-turquoise)] to-[var(--color-coral)] text-white border-none px-5 py-3.5 rounded-[10px] text-base font-semibold cursor-pointer transition-all duration-300 mt-2.5 hover:enabled:-translate-y-0.5 hover:enabled:shadow-[0_8px_20px_rgba(77,182,172,0.3)] disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
             disabled={loading}
           >
             {loading ? 'Verificando credenciales...' : 'Acceder al Panel'}
@@ -135,7 +135,7 @@ export const LoginAdminForm: React.FC<LoginAdminFormProps> = ({ onAuthChange }) 
           <p>
             <button
               type="button"
-              className="bg-transparent border-none text-[#667eea] underline cursor-pointer text-sm transition-colors duration-300 hover:text-[#764ba2]"
+              className="bg-transparent border-none text-[var(--color-turquoise)] underline cursor-pointer text-sm transition-colors duration-300 hover:text-[var(--color-coral)]"
               onClick={() => navigate('/')}
             >
               ← Volver al login general

@@ -89,7 +89,7 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
           {students.map((student, index) => (
             <tr 
               key={student.id}
-              className={`${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'} hover:bg-blue-50 transition-colors`}
+              className={`${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'} hover:bg-[var(--color-turquoise)]/10 transition-colors`}
             >
               <td className="py-3 px-3 border-b border-gray-300">
                 <div className="font-bold text-gray-800">
@@ -108,8 +108,8 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
                 </span>
               </td>
               <td className={`py-3 px-3 border-b border-gray-300 text-center font-bold ${
-                student.promedio >= 6.0 ? 'text-green-600' : 
-                student.promedio >= 5.5 ? 'text-orange-500' : 'text-red-600'
+                student.promedio >= 6.0 ? 'text-[var(--color-turquoise)]' : 
+                student.promedio >= 5.5 ? 'text-[var(--color-orange)]' : 'text-[var(--color-coral-dark)]'
               }`}>
                 {student.promedio.toFixed(1)}
               </td>
@@ -145,7 +145,7 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
               <td className="py-3 px-3 border-b border-gray-300 text-center">
                 <button
                   onClick={() => onViewDetails(student.id)}
-                  className="px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-xs font-bold"
+                  className="px-3 py-1.5 bg-[var(--color-turquoise)] text-white rounded hover:bg-[var(--color-turquoise-light)] transition-colors text-xs font-bold"
                 >
                   Ver Detalles
                 </button>

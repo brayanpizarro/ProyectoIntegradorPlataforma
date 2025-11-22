@@ -27,7 +27,7 @@ const mockSemestres = [
 export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ estudiante }) => {
   return (
     <div>
-      <div className="bg-green-600 text-white text-center font-bold text-xl py-3 mb-2">
+      <div className="bg-[var(--color-turquoise)] text-white text-center font-bold text-xl py-3 mb-2">
         Informe Académico General
       </div>
       <div className="bg-yellow-200 p-2 text-center font-semibold mb-4 border border-gray-300 text-sm">
@@ -94,14 +94,14 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
       >
         <thead>
           <tr>
-            <th scope="col" className="bg-green-600 text-white p-3 text-left border border-gray-300">Año</th>
-            <th scope="col" className="bg-green-600 text-white p-3 text-left border border-gray-300">Semestre</th>
-            <th scope="col" className="bg-green-600 text-white p-3 text-left border border-gray-300">Nº Semestre Carrera</th>
-            <th scope="col" className="bg-green-600 text-white p-3 text-left border border-gray-300">Ramos Aprobados</th>
-            <th scope="col" className="bg-green-600 text-white p-3 text-left border border-gray-300">Ramos Reprobados</th>
-            <th scope="col" className="bg-green-600 text-white p-3 text-left border border-gray-300">Ramos Eliminados</th>
-            <th scope="col" className="bg-green-600 text-white p-3 text-left border border-gray-300">Total Ramos</th>
-            <th scope="col" className="bg-green-600 text-white p-3 text-left border border-gray-300">Observaciones</th>
+            <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300">Año</th>
+            <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300">Semestre</th>
+            <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300">Nº Semestre Carrera</th>
+            <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300">Ramos Aprobados</th>
+            <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300">Ramos Reprobados</th>
+            <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300">Ramos Eliminados</th>
+            <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300">Total Ramos</th>
+            <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300">Observaciones</th>
           </tr>
         </thead>
         <tbody>

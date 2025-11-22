@@ -17,7 +17,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({ error, onBack }) => {
         <p className="text-slate-600 mb-4">{error}</p>
         <button 
           onClick={onBack}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="px-6 py-3 bg-[var(--color-turquoise)] text-white rounded-lg hover:bg-[var(--color-turquoise-light)] transition-colors"
         >
           ← Volver
         </button>

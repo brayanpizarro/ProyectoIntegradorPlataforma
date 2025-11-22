@@ -47,19 +47,19 @@ export const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
       <div className="flex gap-4 flex-wrap">
         <button
           onClick={handleNuevoEstudiante}
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+          className="bg-[var(--color-turquoise)] text-white px-6 py-3 rounded-lg hover:bg-[var(--color-turquoise-light)] transition-colors text-sm font-medium"
         >
           👤 Nuevo Estudiante
         </button>
         <button
           onClick={handleVerReportes}
-          className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+          className="bg-[var(--color-coral)] text-white px-6 py-3 rounded-lg hover:bg-[var(--color-coral-dark)] transition-colors text-sm font-medium"
         >
           📊 Ver Reportes
         </button>
         <button
           onClick={handleExportarDatos}
-          className="bg-amber-500 text-white px-6 py-3 rounded-lg hover:bg-amber-600 transition-colors text-sm font-medium"
+          className="bg-[var(--color-orange)] text-white px-6 py-3 rounded-lg hover:bg-[var(--color-yellow)] transition-colors text-sm font-medium"
         >
           📁 Exportar Datos
         </button>

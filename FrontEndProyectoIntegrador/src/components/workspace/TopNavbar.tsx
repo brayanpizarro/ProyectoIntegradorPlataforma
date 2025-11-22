@@ -40,7 +40,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ estudiante, onNavigateBack
       {/* ✅ CENTRO: Información del estudiante */}
       <div className="flex items-center gap-4 flex-1 justify-center">
         {/* Avatar del estudiante */}
-        <div className="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center text-xl text-cyan-600">
+        <div className="w-10 h-10 rounded-full bg-[var(--color-turquoise)]/20 flex items-center justify-center text-xl text-[var(--color-turquoise)]">
           👤
         </div>
         
@@ -64,18 +64,18 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ estudiante, onNavigateBack
               onNavigateBack();
             }
           }}
-          className="px-5 py-2.5 bg-emerald-500 text-white border-none rounded-lg cursor-pointer text-sm font-semibold shadow-sm flex items-center gap-2"
+          className="px-5 py-2.5 bg-[var(--color-turquoise)] text-white border-none rounded-lg cursor-pointer text-sm font-semibold shadow-sm flex items-center gap-2"
         >
           ✓ Terminar Entrevista
         </button>
 
         {/* Indicador de sesión activa */}
-        <div className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
+        <div className="px-3 py-1 bg-[var(--color-turquoise)]/20 text-[var(--color-turquoise)] rounded-full text-xs font-medium">
           🟢 Activa
         </div>
         
         {/* Avatar del usuario actual */}
-        <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-medium">
+        <div className="w-8 h-8 rounded-full bg-[var(--color-turquoise)] flex items-center justify-center text-white text-sm font-medium">
           A
         </div>
         
