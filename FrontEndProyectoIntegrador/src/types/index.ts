@@ -8,13 +8,15 @@ export interface Usuario {
   apellidos?: string;
   rut?: string;
   email: string;
-  tipo?: 'admin' | 'academico' | 'estudiante';
-  rol: string;
+  tipo?: 'admin' | 'academico' | 'estudiante' | 'tutor' | 'invitado';
+  role?: 'admin' | 'tutor' | 'invitado'; // Alias para tipo
+  rol?: string; // Para compatibilidad
   password?: string;
   telefono?: string;
   direccion?: string;
   fecha_nacimiento?: string;
   activo?: boolean;
+  creado_por?: string;
   fecha_creacion?: string;
   fecha_actualizacion?: string;
 }
