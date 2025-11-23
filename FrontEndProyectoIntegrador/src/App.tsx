@@ -10,6 +10,8 @@ const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m
 const GeneracionView = lazy(() => import('./pages/GeneracionView'));
 const EstudianteDetail = lazy(() => import('./pages/EstudianteDetail'));
 const EntrevistaWorkspace = lazy(() => import('./pages/EntrevistaWorkspace').then(m => ({ default: m.EntrevistaWorkspace })));
+const UserProfile = lazy(() => import('./pages/UserProfile').then(m => ({ default: m.UserProfile })));
+const UserManagement = lazy(() => import('./pages/UserManagement'));
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -78,6 +80,22 @@ function App() {
             element={
               isAuthenticated ? 
                 <EntrevistaWorkspace /> : 
+                <Navigate to="/" replace />
+            }
+          />
+          <Route 
+            path="/perfil" 
+            element={
+              isAuthenticated ? 
+                <UserProfile /> : 
+                <Navigate to="/" replace />
+            }
+          />
+          <Route 
+            path="/admin/usuarios" 
+            element={
+              isAuthenticated ? 
+                <UserManagement /> : 
                 <Navigate to="/" replace />
             }
           />
