@@ -12,16 +12,6 @@ import {
 } from '../components/Dashboard';
 import type { Estudiante, EstadisticasAdmin } from '../types';
 
-const mockGeneraciones = [
-  { año: 2024, estudiantes: 45, activos: 42, estado: 'activa' as const },
-  { año: 2023, estudiantes: 38, activos: 35, estado: 'activa' as const },
-  { año: 2022, estudiantes: 41, activos: 38, estado: 'activa' as const },
-  { año: 2021, estudiantes: 33, activos: 30, estado: 'activa' as const },
-  { año: 2020, estudiantes: 29, activos: 25, estado: 'finalizada' as const },
-  { año: 2019, estudiantes: 22, activos: 18, estado: 'finalizada' as const },
-  { año: 2018, estudiantes: 35, activos: 31, estado: 'finalizada' as const },
-];
-
 interface DashboardProps {
   onAuthChange?: (authenticated: boolean) => void;
 }
@@ -69,20 +59,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
           logger.log('✅ Datos del backend cargados exitosamente');
 
         } catch (apiError) {
-          logger.warn('⚠️ Backend no disponible, usando datos mock');
-          setGeneraciones(mockGeneraciones.map(g => ({
-            ...g,
-            estudiantesData: []
-          })));
+          logger.error('❌ Error al cargar datos del backend:', apiError);
+          setError('No se pudo conectar con el backend. Verifica que esté corriendo.');
+          setGeneraciones([]);
         }
 
       } catch (error) {
         logger.error('Error al cargar datos:', error);
         setError('Error al cargar los datos del dashboard');
-        setGeneraciones(mockGeneraciones.map(g => ({
-          ...g,
-          estudiantesData: []
-        })));
+        setGeneraciones([]);
       } finally {
         setLoading(false);
       }
@@ -208,7 +193,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
           <StatCard 
             icon="📚" 
             label="Total Generaciones" 
-            value={mockGeneraciones.length} 
+            value={generaciones.length} 
           />
           <StatCard 
             icon="👥" 

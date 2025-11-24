@@ -67,10 +67,8 @@ class AuthService {
       }
       
     } catch (error) {
-      console.warn('⚠️ Backend no disponible, usando autenticación mock');
-      
-      // FALLBACK: Autenticación mock para desarrollo
-      return this.mockLogin(credentials);
+      console.error('❌ Error al conectar con el backend:', error);
+      throw new Error('Backend no disponible. Asegúrate de que el servidor esté corriendo en http://localhost:3000');
     }
   }
 
@@ -158,9 +156,8 @@ class AuthService {
 
       console.log('✅ Código de recuperación enviado');
     } catch (error) {
-      console.warn('⚠️ Backend no disponible, simulando envío de código');
-      // En desarrollo, simular éxito
-      console.log('📧 [MOCK] Código enviado a:', email);
+      console.error('❌ Error al enviar código:', error);
+      throw new Error('No se pudo enviar el código de recuperación');
     }
   }
 
@@ -181,9 +178,8 @@ class AuthService {
       const result = await response.json();
       return result.valid;
     } catch (error) {
-      console.warn('⚠️ Backend no disponible, usando validación mock');
-      // En desarrollo, aceptar código 123456
-      return code === '123456';
+      console.error('❌ Error al verificar código:', error);
+      throw new Error('No se pudo verificar el código');
     }
   }
 
@@ -207,23 +203,14 @@ class AuthService {
 
       console.log('✅ Contraseña restablecida exitosamente');
     } catch (error) {
-      console.warn('⚠️ Backend no disponible, simulando restablecimiento');
-      console.log('🔑 [MOCK] Contraseña restablecida para:', email);
+      console.error('❌ Error al restablecer contraseña:', error);
+      throw new Error('No se pudo restablecer la contraseña');
     }
   }
 
   // ================================
   // MÉTODOS PRIVADOS Y HELPERS
   // ================================
-
-  /**
-   * Autenticación mock para desarrollo - removida
-   * Ya no se usa mock, solo backend real
-   */
-  private mockLogin(credentials: LoginCredentials): Promise<AuthResponse> {
-    console.log('❌ Mock login deshabilitado - usa el backend real');
-    return Promise.reject(new Error('Backend no disponible. Asegúrate de que el servidor esté corriendo en http://localhost:3000'));
-  }
 
   /**
    * Guardar datos de autenticación en localStorage
