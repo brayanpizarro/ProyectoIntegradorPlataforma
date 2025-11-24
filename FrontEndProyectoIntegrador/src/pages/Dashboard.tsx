@@ -62,7 +62,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
             apiService.getEstudiantes(),
             apiService.getEstadisticas()
           ]);
-
           setEstadisticas(estadisticasData);
           const generacionesCalculadas = calcularGeneracionesDesdeEstudiantes(estudiantesData);
           setGeneraciones(generacionesCalculadas);
@@ -193,7 +192,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
       <DashboardNavbar usuario={usuario} onLogout={handleLogout} />
 
       {/* Contenido Principal */}
-      <div className="p-8">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
@@ -238,8 +237,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
 
         {/* Generaciones Grid */}
         <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-2xl font-bold">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-2xl font-bold text-gray-900">
               Generaciones
             </h3>
             <button

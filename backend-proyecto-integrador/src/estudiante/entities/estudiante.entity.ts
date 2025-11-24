@@ -51,6 +51,9 @@ export class Estudiante {
   @Column()
   generacion: string;
 
+  @Column()
+  activo: boolean;
+
   @ManyToOne(() => Institucion, (institucion) => institucion.estudiantes, {
     nullable: false,
   })

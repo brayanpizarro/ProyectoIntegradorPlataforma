@@ -8,6 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Estudiante } from '../../estudiante/entities/estudiante.entity';
+import type { ObservacionesFamiliares } from '../../common/index';
 
 @Entity('familias')
 export class Familia {
@@ -29,8 +30,8 @@ export class Familia {
   @Column({ type: 'json', nullable: true })
   hermanos: any[];
 
-  @Column({ type: 'text', nullable: true })
-  observaciones: string;
+  @Column({ type: 'jsonb', nullable: true , default: { madre: [], padre: [], hermanos: [], general: [] } })
+  observaciones: ObservacionesFamiliares;
 
   @CreateDateColumn()
   created_at: Date;

@@ -26,27 +26,29 @@ export class EstudianteService {
       .createQueryBuilder('estudiante')
       .select('estudiante.generacion', 'generacion')
       .addSelect('COUNT(estudiante.id_estudiante)', 'total')
+      .addSelect(
+        'SUM(CASE WHEN estudiante.activo = true THEN 1 ELSE 0 END)',
+        'activos'
+      )
       .groupBy('estudiante.generacion')
-      .getRawMany(); // retorna array de objs { generacion: string, total: number }
-      
+      .getRawMany(); // retorna array de objs { generacion: string, total: string, activos: string }
+
     const generaciones = gensInfo.map((r) => ({
       generacion: r.generacion,
       total: parseInt(r.total, 10),
+      activos: parseInt(r.activos, 10),
     }));
 
     const totalGens = generaciones.length;
     const totalStudents = generaciones.reduce((sum, r) => sum + r.total, 0);
+    const totalActives = generaciones.reduce((sum, r) => sum + r.activos, 0);
 
     return {
       generacionesTotal: totalGens,
       estudiantesTotal: totalStudents,
+      activosTotal: totalActives,
       generaciones: generaciones,
     };
-
-    /* VER SI AGREGAR ESTO, QUE SIGNIFICA ACTIVO
-    const totalActives = this.estudianteRepository.count({
-      where: { },
-    })*/
   }
 
   findByGeneration(generation: string) {
