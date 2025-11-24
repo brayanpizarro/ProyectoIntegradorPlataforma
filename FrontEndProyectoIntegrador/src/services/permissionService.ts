@@ -23,8 +23,12 @@ export class PermissionService {
    * Verifica si un usuario es administrador
    */
   static isAdmin(user: Usuario | null): boolean {
-    if (!user) return false;
-    return user.tipo === 'admin' || user.role === 'admin';
+    if (!user) {
+      console.log('🔴 isAdmin: usuario es null');
+      return false;
+    }
+    console.log('🔍 isAdmin - Role:', user.role);
+    return user.role === 'admin';
   }
 
   /**
@@ -32,7 +36,7 @@ export class PermissionService {
    */
   static isTutor(user: Usuario | null): boolean {
     if (!user) return false;
-    return user.tipo === 'tutor' || user.role === 'tutor';
+    return user.role === 'tutor';
   }
 
   /**
@@ -40,7 +44,7 @@ export class PermissionService {
    */
   static isInvitado(user: Usuario | null): boolean {
     if (!user) return false;
-    return user.tipo === 'invitado' || user.role === 'invitado';
+    return user.role === 'invitado';
   }
 
   /**

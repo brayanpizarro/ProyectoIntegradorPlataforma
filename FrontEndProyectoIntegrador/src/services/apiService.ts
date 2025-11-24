@@ -244,10 +244,185 @@ class ApiService {
     }
   }
 
+  // ================================
+  // USUARIOS Y AUTENTICACIÓN
+  // ================================
+
+  /**
+   * Obtener todos los usuarios
+   * TODO Backend: Implementar endpoint de usuarios
+   */
+  async getUsers(): Promise<any[]> {
+    try {
+      const users = await this.request<any[]>('/users');
+      // Mapear 'rol' del backend a 'role' del frontend
+      return users.map(user => ({
+        ...user,
+        role: user.rol
+      }));
+    } catch (error) {
+      console.warn('🔄 Backend no disponible, usando datos mock para usuarios');
+      return this.getMockUsers();
+    }
+  }
+
+  /**
+   * Obtener usuario por ID
+   */
+  async getUserById(id: string): Promise<any> {
+    try {
+      const user = await this.request<any>(`/users/${id}`);
+      // Mapear 'rol' del backend a 'role' del frontend
+      if (user && 'rol' in user) {
+        user.role = user.rol;
+      }
+      return user;
+    } catch (error) {
+      console.warn(`🔄 Backend no disponible, usando mock para usuario ${id}`);
+      return this.getMockUsers().find(u => u.id === id);
+    }
+  }
+
+  /**
+   * Crear nuevo usuario
+   */
+  async createUser(data: any): Promise<any> {
+    try {
+      const user = await this.request<any>('/users', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+      // Mapear 'rol' del backend a 'role' del frontend
+      if (user && 'rol' in user) {
+        user.role = user.rol;
+      }
+      return user;
+    } catch (error) {
+      console.warn('🔄 Backend no disponible, simulando creación de usuario');
+      return { ...data, id: Date.now().toString() };
+    }
+  }
+
+  /**
+   * Actualizar usuario
+   */
+  async updateUser(id: string, data: any): Promise<any> {
+    try {
+      const user = await this.request<any>(`/users/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      });
+      // Mapear 'rol' del backend a 'role' del frontend
+      if (user && 'rol' in user) {
+        user.role = user.rol;
+      }
+      return user;
+    } catch (error) {
+      console.warn(`🔄 Backend no disponible, simulando actualización de usuario ${id}`);
+      return { ...data, id };
+    }
+  }
+
+  /**
+   * Eliminar usuario
+   */
+  async deleteUser(id: string): Promise<void> {
+    try {
+      return await this.request<void>(`/users/${id}`, {
+        method: 'DELETE',
+      });
+    } catch (error) {
+      console.warn(`🔄 Backend no disponible, simulando eliminación de usuario ${id}`);
+    }
+  }
+
+  /**
+   * Obtener perfil del usuario actual
+   */
+  async getCurrentUserProfile(): Promise<any> {
+    try {
+      const profile = await this.request<any>('/auth/profile');
+      // Mapear 'rol' del backend a 'role' del frontend
+      if (profile && 'rol' in profile) {
+        profile.role = profile.rol;
+      }
+      return profile;
+    } catch (error) {
+      console.warn('🔄 Backend no disponible, usando datos del localStorage');
+      const userStr = localStorage.getItem('user');
+      return userStr ? JSON.parse(userStr) : null;
+    }
+  }
+
+  /**
+   * Actualizar perfil del usuario actual
+   */
+  async updateCurrentUserProfile(data: any): Promise<any> {
+    try {
+      const updated = await this.request<any>('/auth/profile', {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      });
+      // Mapear 'rol' del backend a 'role' del frontend
+      if (updated && 'rol' in updated) {
+        updated.role = updated.rol;
+      }
+      return updated;
+    } catch (error) {
+      console.warn('🔄 Backend no disponible, actualizando localStorage');
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      const updatedUser = { ...currentUser, ...data };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      return updatedUser;
+    }
+  }
 
   // ================================
   // DATOS MOCK PARA DESARROLLO
   // ================================
+
+  private getMockUsers(): any[] {
+    return [
+      {
+        id: '1',
+        nombres: 'Admin',
+        apellidos: 'Sistema',
+        email: 'admin@fundacion.cl',
+        tipo: 'admin',
+        role: 'admin',
+        rut: '12.345.678-9',
+        telefono: '+56912345678',
+        activo: true,
+        fecha_creacion: new Date().toISOString()
+      },
+      {
+        id: '2',
+        nombres: 'María',
+        apellidos: 'González',
+        email: 'maria.gonzalez@fundacion.cl',
+        tipo: 'tutor',
+        role: 'tutor',
+        rut: '98.765.432-1',
+        telefono: '+56987654321',
+        activo: true,
+        creado_por: '1',
+        fecha_creacion: new Date().toISOString()
+      },
+      {
+        id: '3',
+        nombres: 'Juan',
+        apellidos: 'Pérez',
+        email: 'juan.perez@fundacion.cl',
+        tipo: 'invitado',
+        role: 'invitado',
+        rut: '11.222.333-4',
+        telefono: '+56911222333',
+        activo: true,
+        creado_por: '1',
+        fecha_creacion: new Date().toISOString()
+      }
+    ];
+  }
 
   private getMockEstudiantes(): Estudiante[] {
     return [

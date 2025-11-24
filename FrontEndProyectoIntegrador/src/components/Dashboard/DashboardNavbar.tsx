@@ -12,7 +12,14 @@ interface DashboardNavbarProps {
 
 export const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ usuario, onLogout }) => {
   const navigate = useNavigate();
-  const isAdmin = usuario?.tipo === 'admin' || usuario?.role === 'admin';
+  // Verificar role de manera flexible (compatibilidad temporal)
+  const userRole = usuario?.role || usuario?.tipo || usuario?.rol;
+  const isAdmin = userRole === 'admin';
+  
+  // Log para debug
+  console.log('🔍 Usuario en navbar:', usuario);
+  console.log('🔍 Role detectado:', userRole);
+  console.log('🔍 Es admin?:', isAdmin);
 
   return (
     <nav className="bg-[var(--color-turquoise)] text-white px-8 py-4 flex justify-between items-center shadow-md">
@@ -40,7 +47,7 @@ export const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ usuario, onLog
 
       <div className="flex items-center gap-3">
         <div className="text-sm px-3 py-1 bg-white/10 rounded-lg">
-          <span className="opacity-80">{usuario?.tipo || 'Usuario'}:</span>{' '}
+          <span className="opacity-80">{userRole || 'Usuario'}:</span>{' '}
           <span className="font-semibold">{usuario?.email || 'Cargando...'}</span>
         </div>
         

@@ -40,7 +40,7 @@ export const LoginForm: React.FC = () => {
       
       logger.log('✅ Login exitoso, redirigiendo según tipo de usuario...');
       
-      switch (response.user.tipo) {
+      switch (response.user.role) {
         case 'admin':
           navigate('/admin');
           break;

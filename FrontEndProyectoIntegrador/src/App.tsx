@@ -12,6 +12,7 @@ const EstudianteDetail = lazy(() => import('./pages/EstudianteDetail'));
 const EntrevistaWorkspace = lazy(() => import('./pages/EntrevistaWorkspace').then(m => ({ default: m.EntrevistaWorkspace })));
 const UserProfile = lazy(() => import('./pages/UserProfile').then(m => ({ default: m.UserProfile })));
 const UserManagement = lazy(() => import('./pages/UserManagement'));
+const DebugPermissions = lazy(() => import('./pages/DebugPermissions'));
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -96,6 +97,14 @@ function App() {
             element={
               isAuthenticated ? 
                 <UserManagement /> : 
+                <Navigate to="/" replace />
+            }
+          />
+          <Route 
+            path="/debug-permissions" 
+            element={
+              isAuthenticated ? 
+                <DebugPermissions /> : 
                 <Navigate to="/" replace />
             }
           />
