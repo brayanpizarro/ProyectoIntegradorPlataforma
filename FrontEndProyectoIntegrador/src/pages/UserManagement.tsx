@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
+import { apiService } from '../services/apiService';
 import { PermissionService } from '../services/permissionService';
 import type { Usuario } from '../types';
 import {
@@ -43,7 +44,6 @@ import {
 
 export const UserManagement: React.FC = () => {
   const navigate = useNavigate();
-  const [currentUser, setCurrentUser] = useState<Usuario | null>(null);
   const [users, setUsers] = useState<Usuario[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<Usuario[]>([]);
   const [tabValue, setTabValue] = useState<'todos' | 'tutores' | 'invitados'>('todos');
@@ -69,59 +69,55 @@ export const UserManagement: React.FC = () => {
     filterUsers();
   }, [tabValue, users]);
 
-  const loadData = () => {
+  const loadData = async () => {
     if (!authService.isAuthenticated()) {
+      console.log('❌ No autenticado, redirigiendo al login');
       navigate('/');
       return;
     }
 
     const user = authService.getCurrentUser();
+    console.log('👤 Usuario actual completo:', JSON.stringify(user, null, 2));
+    console.log('🔑 ¿Es admin?', PermissionService.isAdmin(user));
+    console.log('✅ ¿Puede gestionar usuarios?', PermissionService.canManageUsers(user));
+    
+    // Dar tiempo para que el usuario vea el mensaje
     if (!PermissionService.canManageUsers(user)) {
-      navigate('/dashboard');
+      console.error('🚫 Usuario sin permisos de administrador');
+      setSnackbar({ 
+        open: true, 
+        message: 'No tienes permisos para acceder a esta sección. Debes ser administrador.', 
+        severity: 'error' 
+      });
+      // Aumentar el tiempo para que el usuario pueda ver el error
+      setTimeout(() => {
+        console.log('⏰ Redirigiendo al dashboard por falta de permisos...');
+        navigate('/dashboard');
+      }, 3000);
       return;
     }
 
-    setCurrentUser(user);
-    loadUsers();
+    console.log('✅ Usuario con permisos, cargando usuarios...');
+    await loadUsers();
   };
 
-  const loadUsers = () => {
-    // TODO: Reemplazar con llamada real al backend
-    const mockUsers: Usuario[] = [
-      {
-        id: '1',
-        nombres: 'Juan',
-        apellidos: 'Pérez',
-        email: 'juan.tutor@fundacion.cl',
-        rol: 'tutor',
-        rut: '12345678-9',
-        telefono: '+56912345678',
-        activo: true,
-        fecha_creacion: '2024-01-15'
-      },
-      {
-        id: '2',
-        nombres: 'María',
-        apellidos: 'González',
-        email: 'maria.invitado@fundacion.cl',
-        rol: 'invitado',
-        rut: '98765432-1',
-        telefono: '+56987654321',
-        activo: true,
-        fecha_creacion: '2024-02-20'
-      }
-    ];
-
-    setUsers(mockUsers);
+  const loadUsers = async () => {
+    try {
+      const usersData = await apiService.getUsers();
+      setUsers(usersData);
+    } catch (error) {
+      console.error('Error al cargar usuarios:', error);
+      setSnackbar({ open: true, message: 'Error al cargar usuarios', severity: 'error' });
+    }
   };
 
   const filterUsers = () => {
     if (tabValue === 'todos') {
       setFilteredUsers(users);
     } else if (tabValue === 'tutores') {
-      setFilteredUsers(users.filter(u => u.rol === 'tutor'));
+      setFilteredUsers(users.filter(u => u.role === 'tutor'));
     } else {
-      setFilteredUsers(users.filter(u => u.rol === 'invitado'));
+      setFilteredUsers(users.filter(u => u.role === 'invitado'));
     }
   };
 
@@ -135,7 +131,7 @@ export const UserManagement: React.FC = () => {
         password: '',
         rut: user.rut || '',
         telefono: user.telefono || '',
-        rol: user.rol as 'tutor' | 'invitado'
+        rol: user.role as 'tutor' | 'invitado'
       });
     } else {
       setEditingUser(null);
@@ -179,32 +175,26 @@ export const UserManagement: React.FC = () => {
     }
 
     try {
-      // TODO: Implementar llamada al backend
       if (editingUser) {
         // Actualizar usuario existente
-        const updatedUsers = users.map(u => 
-          u.id === editingUser.id 
-            ? { ...u, ...formData, tipo: formData.rol }
-            : u
-        );
-        setUsers(updatedUsers);
+        await apiService.updateUser(editingUser.id!, {
+          ...formData,
+          role: formData.rol
+        });
         setSnackbar({ open: true, message: 'Usuario actualizado exitosamente', severity: 'success' });
       } else {
         // Crear nuevo usuario
-        const newUser: Usuario = {
-          id: Date.now().toString(),
+        await apiService.createUser({
           ...formData,
-          tipo: formData.rol,
-          activo: true,
-          fecha_creacion: new Date().toISOString(),
-          creado_por: currentUser?.id
-        };
-        setUsers([...users, newUser]);
+          role: formData.rol
+        });
         setSnackbar({ open: true, message: `${formData.rol === 'tutor' ? 'Tutor' : 'Invitado'} creado exitosamente`, severity: 'success' });
       }
       
       handleCloseDialog();
-    } catch (error) {
+      await loadUsers(); // Recargar lista
+    } catch (err) {
+      console.error('Error al guardar usuario:', err);
       setSnackbar({ open: true, message: 'Error al guardar el usuario', severity: 'error' });
     }
   };
@@ -215,10 +205,11 @@ export const UserManagement: React.FC = () => {
     }
 
     try {
-      // TODO: Implementar llamada al backend
-      setUsers(users.filter(u => u.id !== userId));
+      await apiService.deleteUser(userId);
       setSnackbar({ open: true, message: 'Usuario eliminado exitosamente', severity: 'success' });
-    } catch (error) {
+      await loadUsers(); // Recargar lista
+    } catch (err) {
+      console.error('Error al eliminar usuario:', err);
       setSnackbar({ open: true, message: 'Error al eliminar el usuario', severity: 'error' });
     }
   };
@@ -274,13 +265,13 @@ export const UserManagement: React.FC = () => {
           >
             <Tab label={`Todos (${users.length})`} value="todos" />
             <Tab 
-              label={`Tutores (${users.filter(u => u.rol === 'tutor').length})`} 
+              label={`Tutores (${users.filter(u => u.role === 'tutor').length})`} 
               value="tutores"
               icon={<TutorIcon />}
               iconPosition="start"
             />
             <Tab 
-              label={`Invitados (${users.filter(u => u.rol === 'invitado').length})`} 
+              label={`Invitados (${users.filter(u => u.role === 'invitado').length})`} 
               value="invitados"
               icon={<VisibilityIcon />}
               iconPosition="start"
@@ -317,7 +308,7 @@ export const UserManagement: React.FC = () => {
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                         <Avatar sx={{ width: 40, height: 40, bgcolor: '#e3f2fd' }}>
-                          {getRoleIcon(user.rol)}
+                          {getRoleIcon(user.role || '')}
                         </Avatar>
                         <Box>
                           <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
@@ -334,8 +325,8 @@ export const UserManagement: React.FC = () => {
                     <TableCell>{user.telefono || '-'}</TableCell>
                     <TableCell>
                       <Chip 
-                        label={user.rol.charAt(0).toUpperCase() + user.rol.slice(1)}
-                        color={getRoleColor(user.rol)}
+                        label={(user.role || '').charAt(0).toUpperCase() + (user.role || '').slice(1)}
+                        color={getRoleColor(user.role || '')}
                         size="small"
                       />
                     </TableCell>

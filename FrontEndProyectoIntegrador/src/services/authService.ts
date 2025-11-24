@@ -46,9 +46,19 @@ class AuthService {
       if (response.ok) {
         const authResponse: AuthResponse = await response.json();
         
+        // Asegurar que siempre usamos 'role' como propiedad estándar
+        if (authResponse.user) {
+          const userAny = authResponse.user as Record<string, unknown>;
+          if (!authResponse.user.role && userAny.rol) {
+            authResponse.user.role = userAny.rol as 'admin' | 'tutor' | 'invitado' | 'academico' | 'estudiante';
+          }
+        }
+        
+        // Guardar datos en localStorage
         this.saveAuthData(authResponse);
         
         console.log('✅ Login exitoso con backend real');
+        console.log('👤 Usuario:', authResponse.user.email, '- Rol:', authResponse.user.role);
         return authResponse;
       } else if (response.status === 401) {
         throw new Error('Credenciales inválidas');
@@ -125,7 +135,7 @@ class AuthService {
    */
   isAdmin(): boolean {
     const user = this.getCurrentUser();
-    return user?.tipo === 'admin'; //ver si hay que cambiar a rol
+    return user?.role === 'admin';
   }
 
   /**
@@ -207,42 +217,12 @@ class AuthService {
   // ================================
 
   /**
-   * Autenticación mock para desarrollo
+   * Autenticación mock para desarrollo - removida
+   * Ya no se usa mock, solo backend real
    */
   private mockLogin(credentials: LoginCredentials): Promise<AuthResponse> {
-    // Credenciales válidas para desarrollo
-    const validCredentials = [
-      { email: 'admin@fundacion.cl', password: 'admin123', rol: 'admin' as const },
-      { email: 'admin', password: 'admin', rol: 'admin' as const },
-      { email: 'academico@fundacion.cl', password: 'admin123', rol: 'academico' as const },
-      { email: 'estudiante@fundacion.cl', password: 'admin123', rol: 'estudiante' as const }
-    ];
-
-    const user = validCredentials.find(
-      cred => cred.email === credentials.email && cred.password === credentials.password
-    );
-
-    if (user) {
-      const authResponse: AuthResponse = {
-        accessToken: 'mock-jwt-token-' + Date.now(),
-        refreshToken: 'mock-jwt-refresh-token-' + Date.now(),
-        user: {
-          id: Date.now().toString(),
-          email: user.email,
-          rol: user.rol,
-          nombres: 'Usuario',
-          apellidos: 'Prueba',
-          rut: '12345678-9'
-        }
-      };
-
-      this.saveAuthData(authResponse);
-      console.log('✅ [MOCK] Login exitoso');
-      return Promise.resolve(authResponse);
-    } else {
-      console.log('❌ [MOCK] Credenciales inválidas');
-      return Promise.reject(new Error('Credenciales inválidas'));
-    }
+    console.log('❌ Mock login deshabilitado - usa el backend real');
+    return Promise.reject(new Error('Backend no disponible. Asegúrate de que el servidor esté corriendo en http://localhost:3000'));
   }
 
   /**
@@ -259,6 +239,8 @@ class AuthService {
    * Limpiar datos de autenticación
    */
   private clearAuthData(): void {
+    localStorage.removeItem('accesstoken');
+    localStorage.removeItem('refreshtoken');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('userType');

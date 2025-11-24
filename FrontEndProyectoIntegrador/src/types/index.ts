@@ -1,16 +1,14 @@
 // TIPOS COMPATIBLES CON BACKEND Y FRONTEND EXISTENTE
 // Mantiene la funcionalidad del frontend actual mientras se adapta al backend real
 
-// Tipos de usuario - Actualizado para coincidir con backend
+// Tipos de usuario - Estandarizado con 'role' como propiedad principal
 export interface Usuario {
   id: string;
   nombres?: string;
   apellidos?: string;
   rut?: string;
   email: string;
-  tipo?: 'admin' | 'academico' | 'estudiante' | 'tutor' | 'invitado';
-  role?: 'admin' | 'tutor' | 'invitado'; // Alias para tipo
-  rol?: string; // Para compatibilidad
+  role?: 'admin' | 'academico' | 'estudiante' | 'tutor' | 'invitado'; // ✅ Propiedad principal
   password?: string;
   telefono?: string;
   direccion?: string;

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
+import { apiService } from '../services/apiService';
 import type { Usuario } from '../types';
 import {
   Box,
@@ -46,20 +47,29 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
     loadUserData();
   }, []);
 
-  const loadUserData = () => {
+  const loadUserData = async () => {
+    console.log('🔍 UserProfile - Verificando autenticación...');
     if (!authService.isAuthenticated()) {
+      console.log('❌ UserProfile - No autenticado, redirigiendo al login');
       navigate('/');
       return;
     }
 
+    console.log('✅ UserProfile - Usuario autenticado, cargando perfil...');
     try {
+      const profileData = await apiService.getCurrentUserProfile();
+      console.log('✅ UserProfile - Perfil cargado desde API:', profileData);
+      setUser(profileData);
+      setEditedUser({ ...profileData });
+    } catch (error) {
+      console.error('⚠️ UserProfile - Error al cargar desde API:', error);
+      // Fallback a authService si falla la API
       const currentUser = authService.getCurrentUser();
+      console.log('🔄 UserProfile - Usando usuario de localStorage:', currentUser);
       if (currentUser) {
         setUser(currentUser);
         setEditedUser({ ...currentUser });
       }
-    } catch (error) {
-      console.error('Error al cargar datos del usuario:', error);
     } finally {
       setLoading(false);
     }
@@ -75,16 +85,26 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
     setEditedUser({ ...user! });
   };
 
-  const handleSave = () => {
-    // En un escenario real, aquí se haría la llamada al backend
-    // Por ahora, solo actualizamos el estado local
-    setUser({ ...editedUser! });
-    setIsEditing(false);
-    setSnackbarMessage('Perfil actualizado exitosamente');
-    setSnackbarOpen(true);
-    
-    // TODO: Implementar llamada al backend para actualizar el perfil
-    // await updateUserProfile(editedUser);
+  const handleSave = async () => {
+    if (!editedUser) return;
+
+    try {
+      const updatedProfile = await apiService.updateCurrentUserProfile({
+        nombres: editedUser.nombres,
+        apellidos: editedUser.apellidos,
+        email: editedUser.email,
+        telefono: editedUser.telefono,
+        rut: editedUser.rut
+      });
+      setUser(updatedProfile);
+      setIsEditing(false);
+      setSnackbarMessage('Perfil actualizado exitosamente');
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error('Error al actualizar perfil:', error);
+      setSnackbarMessage('Error al actualizar perfil');
+      setSnackbarOpen(true);
+    }
   };
 
   const handleInputChange = (field: keyof Usuario, value: string) => {
@@ -183,8 +203,8 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
                   </Typography>
                   
                   <Chip 
-                    label={getRoleDisplayName(user.rol)} 
-                    color={getRoleColor(user.rol)}
+                    label={getRoleDisplayName(user.role || '')} 
+                    color={getRoleColor(user.role || '')}
                     sx={{ mb: 1 }}
                   />
                   
@@ -412,8 +432,8 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
                   </Typography>
                 </Box>
                 <Chip 
-                  label={getRoleDisplayName(user.rol)} 
-                  color={getRoleColor(user.rol)}
+                  label={getRoleDisplayName(user.role || '')} 
+                  color={getRoleColor(user.role || '')}
                   size="small"
                 />
               </Grid>
