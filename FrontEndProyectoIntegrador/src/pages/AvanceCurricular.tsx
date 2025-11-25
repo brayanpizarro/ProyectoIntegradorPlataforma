@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { authService } from '../services/authService';
+import { apiService } from '../services/apiService';
 import type { Estudiante } from '../types';
-import { encontrarEstudiantePorId } from '../data/mockData';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Chip from '@mui/material/Chip';
@@ -93,32 +93,13 @@ export const AvanceCurricular: React.FC = () => {
       try {
         setLoading(true);
         
-        // Buscar estudiante
-        const estudianteEncontrado = encontrarEstudiantePorId(estudianteId || '0');
+        // Cargar estudiante desde el backend
+        const estudianteData = await apiService.getEstudiantePorId(estudianteId || '0');
+        setEstudiante(estudianteData);
         
-        if (estudianteEncontrado) {
-          const estudianteCompleto: Estudiante = {
-            id: estudianteEncontrado.id,
-            nombres: estudianteEncontrado.nombres,
-            apellidos: estudianteEncontrado.apellidos,
-            nombre: estudianteEncontrado.nombre || `${estudianteEncontrado.nombres} ${estudianteEncontrado.apellidos}`,
-            rut: estudianteEncontrado.rut,
-            email: estudianteEncontrado.email,
-            telefono: estudianteEncontrado.telefono,
-            direccion: estudianteEncontrado.direccion,
-            id_estudiante: estudianteEncontrado.id_estudiante || estudianteEncontrado.id.toString(),
-            tipo_de_estudiante: 'UNIVERSITARIO',
-            fecha_de_nacimiento: estudianteEncontrado.fecha_de_nacimiento || '',
-            region: estudianteEncontrado.region || ''
-          };
-          
-          setEstudiante(estudianteCompleto);
-          
-          // Generar datos mock de avance curricular
-          generateMockCurricularData();
-        } else {
-          setError('Estudiante no encontrado');
-        }
+        // Generar datos mock de avance curricular
+        generateMockCurricularData();
+        
       } catch (error) {
         console.error('Error al cargar datos:', error);
         setError('Error al cargar los datos del estudiante');

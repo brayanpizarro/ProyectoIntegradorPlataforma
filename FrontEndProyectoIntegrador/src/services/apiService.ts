@@ -1,6 +1,6 @@
 // SERVICIO API PARA CONECTAR CON EL BACKEND REAL
 // Sin fallback a datos mock - 100% dependiente del backend
-import type { Estudiante, Institucion, Entrevista, EstadisticasAdmin } from '../types';
+import type { Estudiante, Entrevista, EstadisticasAdmin, Usuario } from '../types';
 
 // CONFIGURACIÓN
 const API_BASE_URL = 'http://localhost:3000';
@@ -116,46 +116,38 @@ class ApiService {
   // USUARIOS Y AUTENTICACIÓN
   // ================================
 
-  async getUsers(): Promise<any[]> {
-    const users = await this.request<any[]>('/users');
-    // Mapear 'rol' del backend a 'role' del frontend
-    return users.map(user => ({
-      ...user,
-      role: user.rol || user.role,
-    }));
+  async getUsers(): Promise<Usuario[]> {
+    return await this.request<Usuario[]>('/users');
   }
 
-  async getUserById(id: string): Promise<any> {
-    const user = await this.request<any>(`/users/${id}`);
-    // Mapear 'rol' del backend a 'role' del frontend
-    if (user && 'rol' in user) {
-      user.role = user.rol;
+  async getUserById(id: string): Promise<Usuario> {
+    return await this.request<Usuario>(`/users/${id}`);
+  }
+
+  async createUser(data: Partial<Usuario>): Promise<Usuario> {
+    // Convertir 'role' del frontend a 'rol' del backend
+    const backendData = { ...data } as any;
+    if (backendData.role) {
+      backendData.rol = backendData.role;
+      delete backendData.role;
     }
-    return user;
-  }
-
-  async createUser(data: any): Promise<any> {
-    const user = await this.request<any>('/users', {
+    return await this.request<Usuario>('/users', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify(backendData),
     });
-    // Mapear 'rol' del backend a 'role' del frontend
-    if (user && 'rol' in user) {
-      user.role = user.rol;
-    }
-    return user;
   }
 
-  async updateUser(id: string, data: any): Promise<any> {
-    const user = await this.request<any>(`/users/${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify(data),
-    });
-    // Mapear 'rol' del backend a 'role' del frontend
-    if (user && 'rol' in user) {
-      user.role = user.rol;
+  async updateUser(id: string, data: Partial<Usuario>): Promise<Usuario> {
+    // Convertir 'role' del frontend a 'rol' del backend
+    const backendData = { ...data } as any;
+    if (backendData.role) {
+      backendData.rol = backendData.role;
+      delete backendData.role;
     }
-    return user;
+    return await this.request<Usuario>(`/users/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(backendData),
+    });
   }
 
   async deleteUser(id: string): Promise<void> {
@@ -164,24 +156,15 @@ class ApiService {
     });
   }
 
-  async getCurrentUserProfile(): Promise<any> {
-    const profile = await this.request<any>('/auth/profile');
-    // Mapear 'rol' del backend a 'role' del frontend
-    if (profile && 'rol' in profile) {
-      profile.role = profile.rol;
-    }
-    return profile;
+  async getCurrentUserProfile(): Promise<Usuario> {
+    return await this.request<Usuario>('/auth/profile');
   }
 
-  async updateCurrentUserProfile(data: any): Promise<any> {
-    const updated = await this.request<any>('/auth/profile', {
+  async updateCurrentUserProfile(data: Partial<Usuario>): Promise<Usuario> {
+    const updated = await this.request<Usuario>('/auth/profile', {
       method: 'PATCH',
       body: JSON.stringify(data),
     });
-    // Mapear 'rol' del backend a 'role' del frontend
-    if (updated && 'rol' in updated) {
-      updated.role = updated.rol;
-    }
     // Actualizar también el localStorage
     const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
     const updatedUser = { ...currentUser, ...updated };

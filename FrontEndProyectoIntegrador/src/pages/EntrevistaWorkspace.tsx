@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { authService } from '../services/authService';
+import { apiService } from '../services/apiService';
 import { logger } from '../config';
 import type { Estudiante } from '../types';
-import { encontrarEstudiantePorId } from '../data/mockData';
 import { useWorkspaceTabs } from '../hooks';
 import { sidebarSections } from '../config/workspaceSections';
 import { LoadingState, ErrorState } from '../components/EntrevistaWorkspace';
@@ -44,30 +44,10 @@ export const EntrevistaWorkspace: React.FC = () => {
       try {
         setLoading(true);
         
-        // ✅ Usar directamente datos mock (sin intentar backend)
-        const estudianteEncontrado = encontrarEstudiantePorId(estudianteId || '0');
+        // Cargar estudiante desde el backend
+        const estudianteData = await apiService.getEstudiantePorId(estudianteId || '0');
+        setEstudiante(estudianteData);
         
-        if (estudianteEncontrado) {
-          // ✅ Crear objeto simplificado solo con propiedades que SÍ existen en interface Estudiante
-          const estudianteCompleto: Estudiante = {
-            id: estudianteEncontrado.id,
-            nombres: estudianteEncontrado.nombres,
-            apellidos: estudianteEncontrado.apellidos,
-            nombre: estudianteEncontrado.nombre || `${estudianteEncontrado.nombres} ${estudianteEncontrado.apellidos}`,
-            rut: estudianteEncontrado.rut,
-            email: estudianteEncontrado.email,
-            telefono: estudianteEncontrado.telefono,
-            direccion: estudianteEncontrado.direccion,
-            id_estudiante: estudianteEncontrado.id_estudiante || estudianteEncontrado.id.toString(),
-            tipo_de_estudiante: (estudianteEncontrado.tipo_de_estudiante as any) || 'UNIVERSITARIO',
-            fecha_de_nacimiento: estudianteEncontrado.fecha_de_nacimiento || '',
-            region: estudianteEncontrado.region || ''
-          };
-          
-          setEstudiante(estudianteCompleto);
-        } else {
-          setError('Estudiante no encontrado');
-        }
       } catch (error) {
         logger.error('Error al cargar estudiante:', error);
         setError('Error al cargar los datos del estudiante');

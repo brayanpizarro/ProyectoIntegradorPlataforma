@@ -1,7 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { authService } from '../services/authService';
-import { encontrarEstudiantePorId } from '../data/mockData';
 import { apiService } from '../services/apiService';
 import type { Estudiante } from '../types';
 import { logger } from '../config';
@@ -38,18 +37,12 @@ const EstudianteDetail: React.FC = () => {
       try {
         setLoading(true);
         logger.log('🔍 Cargando estudiante:', id);
-        const data = await apiService.getEstudianteById(id || '');
+        const data = await apiService.getEstudiantePorId(id || '');
         setEstudiante(data);
         logger.log('✅ Estudiante cargado:', data.nombre);
       } catch (error) {
-        logger.warn('⚠️ Backend no disponible, usando datos mock para estudiante:', id);
-        const mockData = encontrarEstudiantePorId(id || '');
-        if (mockData) {
-          setEstudiante(mockData as any);
-        } else {
-          logger.error('❌ Estudiante no encontrado:', id);
-          setEstudiante(null);
-        }
+        logger.error('❌ Error al cargar estudiante:', error);
+        setEstudiante(null);
       } finally {
         setLoading(false);
       }

@@ -46,14 +46,6 @@ class AuthService {
       if (response.ok) {
         const authResponse: AuthResponse = await response.json();
         
-        // Asegurar que siempre usamos 'role' como propiedad estándar
-        if (authResponse.user) {
-          const userAny = authResponse.user as Record<string, unknown>;
-          if (!authResponse.user.role && userAny.rol) {
-            authResponse.user.role = userAny.rol as 'admin' | 'tutor' | 'invitado' | 'academico' | 'estudiante';
-          }
-        }
-        
         // Guardar datos en localStorage
         this.saveAuthData(authResponse);
         
@@ -79,7 +71,7 @@ class AuthService {
     const result = await this.login(credentials);
     
     // Verificar que sea admin
-    if (result.user.rol !== 'admin') {
+    if (result.user.role !== 'admin') {
       throw new Error('Acceso denegado: se requieren permisos de administrador');
     }
     
@@ -216,10 +208,17 @@ class AuthService {
    * Guardar datos de autenticación en localStorage
    */
   private saveAuthData(authResponse: AuthResponse): void {
+    // Mapear 'rol' del backend a 'role' del frontend si es necesario
+    const userToSave = { ...authResponse.user };
+    const userAny = userToSave as Record<string, unknown>;
+    if (!userToSave.role && userAny.rol) {
+      userToSave.role = userAny.rol as 'admin' | 'tutor' | 'invitado' | 'academico' | 'estudiante';
+    }
+    
     localStorage.setItem('accesstoken', authResponse.accessToken);
     localStorage.setItem('refreshtoken', authResponse.refreshToken);
-    localStorage.setItem('user', JSON.stringify(authResponse.user));
-    this.currentUser = authResponse.user;
+    localStorage.setItem('user', JSON.stringify(userToSave));
+    this.currentUser = userToSave;
   }
 
   /**
