@@ -1,19 +1,11 @@
-import { DataSource } from 'typeorm';
 import { User, UserRole } from './users/entities/user.entity';
+import { Estudiante, TipoEstudiante } from './estudiante/entities/estudiante.entity';
+import { Institucion } from './institucion/entities/institucion.entity';
 import * as bcrypt from 'bcrypt';
+import { AppDataSource } from './data-source';
 
 async function seed() {
-  // Crear conexión a la base de datos usando las mismas variables de entorno que el backend
-  const dataSource = new DataSource({
-    type: 'postgres',
-    host: process.env.POSTGRES_HOST || 'db',
-    port: parseInt(process.env.POSTGRES_PORT || '5432'),
-    username: process.env.POSTGRES_USER || 'postgres',
-    password: process.env.POSTGRES_PASSWORD || 'password',
-    database: process.env.POSTGRES_DB || 'myapp',
-    entities: [User],
-    synchronize: false,
-  });
+  const dataSource = AppDataSource;
 
   try {
     await dataSource.initialize();
@@ -28,12 +20,9 @@ async function seed() {
 
     if (existingAdmin) {
       console.log('⚠️  El usuario admin ya existe');
-      await dataSource.destroy();
-      return;
-    }
-
-    // Crear usuario admin
-    const hashedPassword = await bcrypt.hash('admin123', 10);
+    } else {
+      // Crear usuario admin
+      const hashedPassword = await bcrypt.hash('admin123', 10);
 
     const adminUser = userRepository.create({
       username: 'admin',
@@ -45,12 +34,50 @@ async function seed() {
       activo: true,
     });
 
-    await userRepository.save(adminUser);
+      await userRepository.save(adminUser);
 
-    console.log('✅ Usuario admin creado exitosamente');
-    console.log('📧 Email: admin@fundacion.cl');
-    console.log('🔑 Password: admin123');
-    console.log('👤 Rol: admin');
+      console.log('✅ Usuario admin creado exitosamente');
+      console.log('📧 Email: admin@fundacion.cl');
+      console.log('🔑 Password: admin123');
+      console.log('👤 Rol: admin');
+    }
+
+    // Crear institución de prueba
+    const institucionRepository = dataSource.getRepository(Institucion);
+    
+    const institucion = institucionRepository.create({
+      nombre: 'Universidad de Chile',
+      tipo_institucion: 'Universidad',
+      nivel_educativo: 'Superior',
+      carrera_especialidad: 'Ingeniería Civil en Computación',
+      duracion: '5 años',
+      anio_de_ingreso: '2024',
+      anio_de_egreso: '2029'
+    });
+
+    await institucionRepository.save(institucion);
+    console.log('✅ Institución de prueba creada');
+
+    // Crear estudiante de prueba
+    const estudianteRepository = dataSource.getRepository(Estudiante);
+    
+    const estudiante = estudianteRepository.create({
+      nombre: 'Juan Carlos Pérez González',
+      rut: '12.345.678-9',
+      email: 'juan.perez@ejemplo.cl',
+      telefono: '+56912345678',
+      fecha_de_nacimiento: new Date('2000-05-15'),
+      tipo_de_estudiante: TipoEstudiante.UNIVERSITARIO,
+      generacion: '2024',
+      activo: true,
+      institucion: institucion
+    });
+
+    await estudianteRepository.save(estudiante);
+    console.log('✅ Estudiante de prueba creado');
+    console.log('👨‍🎓 Nombre: Juan Carlos Pérez González');
+    console.log('🎓 RUT: 12.345.678-9');
+    console.log('📅 Generación: 2024');
 
     await dataSource.destroy();
     console.log('✅ Seeder completado');

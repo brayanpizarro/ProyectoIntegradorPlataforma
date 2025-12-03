@@ -7,6 +7,9 @@ import { HistorialAcademico } from './historial_academico/entities/historial_aca
 import { InformacionAcademica } from './informacion_academica/entities/informacion_academica.entity';
 import { User } from './users/entities/user.entity';
 import { Institucion } from './institucion/entities/institucion.entity';
+import { Entrevista } from './entrevistas/entities/entrevista.entity';
+import { Texto } from './entrevistas/entities/texto.entity';
+import { Etiqueta } from './entrevistas/entities/etiqueta.entity';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -25,5 +28,8 @@ export const AppDataSource = new DataSource({
     InformacionAcademica,
     User,
     Institucion,
+    Entrevista,
+    Texto,
+    Etiqueta,
   ],
 });

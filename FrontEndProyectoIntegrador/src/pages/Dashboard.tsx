@@ -8,7 +8,9 @@ import {
   DashboardNavbar, 
   FilterPanel, 
   GenerationsGrid, 
-  QuickActionsPanel 
+  QuickActionsPanel,
+  CreateGeneracionModal,
+  CreateEstudianteModal
 } from '../components/Dashboard';
 import type { Estudiante, EstadisticasAdmin } from '../types';
 
@@ -35,6 +37,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
   const [generaciones, setGeneraciones] = useState<GeneracionCalculada[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Estados para modales
+  const [openCreateGeneracion, setOpenCreateGeneracion] = useState(false);
+  const [openCreateEstudiante, setOpenCreateEstudiante] = useState(false);
+  const [selectedGeneracion, setSelectedGeneracion] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -126,6 +133,35 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
       navigate('/');
     } catch (error) {
       logger.error('❌ Error al cerrar sesión:', error);
+    }
+  };
+
+  const handleCreateGeneracion = (año: number) => {
+    // Navegar a la vista de la generación recién creada
+    navigate(`/generacion/${año}`);
+  };
+
+  const handleAddEstudianteToGeneracion = (año: number) => {
+    setSelectedGeneracion(año);
+    setOpenCreateEstudiante(true);
+  };
+
+  const handleEstudianteCreated = async () => {
+    // Recargar datos después de crear estudiante
+    setLoading(true);
+    try {
+      const [estudiantesData, estadisticasData] = await Promise.all([
+        apiService.getEstudiantes(),
+        apiService.getEstadisticas()
+      ]);
+      setEstadisticas(estadisticasData);
+      const generacionesCalculadas = calcularGeneracionesDesdeEstudiantes(estudiantesData);
+      setGeneraciones(generacionesCalculadas);
+      logger.log('✅ Datos actualizados exitosamente');
+    } catch (error) {
+      logger.error('Error al recargar datos:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -227,9 +263,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
               Generaciones
             </h3>
             <button
-              onClick={() => {
-                alert('Funcionalidad para crear nueva generación - Por implementar');
-              }}
+              onClick={() => setOpenCreateGeneracion(true)}
               className="bg-[var(--color-turquoise)] text-white px-6 py-3 rounded-lg hover:bg-[var(--color-turquoise-light)] transition-colors text-sm font-medium"
             >
               + Nueva Generación
@@ -239,12 +273,32 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
           <GenerationsGrid 
             generaciones={generacionesOrdenadas}
             onLimpiarFiltros={limpiarFiltros}
+            onAddEstudiante={handleAddEstudianteToGeneracion}
           />
         </div>
 
         {/* Acciones Rápidas */}
         <QuickActionsPanel />
       </div>
+
+      {/* Modales */}
+      <CreateGeneracionModal
+        open={openCreateGeneracion}
+        onClose={() => setOpenCreateGeneracion(false)}
+        onSuccess={handleCreateGeneracion}
+      />
+
+      {selectedGeneracion && (
+        <CreateEstudianteModal
+          open={openCreateEstudiante}
+          onClose={() => {
+            setOpenCreateEstudiante(false);
+            setSelectedGeneracion(null);
+          }}
+          onSuccess={handleEstudianteCreated}
+          generacion={selectedGeneracion}
+        />
+      )}
     </div>
   );
 };

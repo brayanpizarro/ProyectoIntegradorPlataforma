@@ -27,6 +27,11 @@ export class CreateInstitucionDto {
   @Expose()
   @IsString()
   @IsNotEmpty()
+  duracion: string;
+
+  @Expose()
+  @IsString()
+  @IsNotEmpty()
   anio_de_ingreso: string;
 
   @Expose()

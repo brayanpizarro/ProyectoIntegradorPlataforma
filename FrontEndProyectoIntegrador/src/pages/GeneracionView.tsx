@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { apiService } from '../services/apiService';
 import { logger } from '../config';
 import { GenerationHeader, StudentFilterPanel, StudentsTable } from '../components/GenerationView';
+import { CreateEstudianteModal } from '../components/Dashboard';
 
 interface Estudiante {
   id: number;
@@ -32,21 +33,32 @@ const GeneracionViewSimple: React.FC = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   const [students, setStudents] = useState<any[]>([]);
+  const [openCreateEstudiante, setOpenCreateEstudiante] = useState(false);
   
   // Obtener opciones únicas para los filtros
-  const carreras = [...new Set(students.map(student => student.carrera))];
-  const estados = [...new Set(students.map(student => student.estado))];
+  const carreras = [...new Set(students.map(student => 
+    student.carrera || student.institucion?.carrera_especialidad || 'Sin carrera'
+  ).filter(Boolean))];
+  const estados = [...new Set(students.map(student => 
+    student.estado || 'Activo'
+  ))];
 
   // Filtrar y ordenar estudiantes
   const filteredAndSortedStudents = useMemo(() => {
     let filtered = students.filter(student => {
-      const matchesSearch = 
-        student.nombres.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.apellidos.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.rut.includes(searchTerm);
+      const nombre = student.nombre || student.nombres || '';
+      const apellido = student.apellidos || '';
+      const rut = student.rut || '';
+      const carrera = student.carrera || student.institucion?.carrera_especialidad || '';
+      const estado = student.estado || 'Activo';
       
-      const matchesCarrera = !filterCarrera || student.carrera === filterCarrera;
-      const matchesEstado = !filterEstado || student.estado === filterEstado;
+      const matchesSearch = 
+        nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        apellido.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        rut.includes(searchTerm);
+      
+      const matchesCarrera = !filterCarrera || carrera === filterCarrera;
+      const matchesEstado = !filterEstado || estado === filterEstado;
       
       return matchesSearch && matchesCarrera && matchesEstado;
     });
@@ -89,6 +101,15 @@ const GeneracionViewSimple: React.FC = () => {
         const dataStudents = await apiService.EstudiantesPorGeneracion(id || '')
         setStudents(dataStudents);
         logger.log('✅ Estudiantes cargados:', dataStudents.length);
+        
+        // Si es una generación nueva sin estudiantes, abrir automáticamente el modal
+        if (dataStudents.length === 0) {
+          logger.log('📂 Generación nueva detectada, abriendo formulario...');
+          // Pequeño delay para que el usuario vea la interfaz primero
+          setTimeout(() => {
+            setOpenCreateEstudiante(true);
+          }, 500);
+        }
       } catch (error) {
         logger.error('❌ Error al cargar estudiantes de generación:', error);
         setStudents([]);
@@ -98,7 +119,18 @@ const GeneracionViewSimple: React.FC = () => {
   }, [id, generationId]);
 
   const handleAddStudent = () => {
-    logger.log('Agregar nuevo estudiante - funcionalidad por implementar');
+    setOpenCreateEstudiante(true);
+  };
+
+  const handleEstudianteCreated = async () => {
+    // Recargar estudiantes después de crear uno nuevo
+    try {
+      const dataStudents = await apiService.EstudiantesPorGeneracion(id || '')
+      setStudents(dataStudents);
+      logger.log('✅ Estudiantes actualizados:', dataStudents.length);
+    } catch (error) {
+      logger.error('❌ Error al recargar estudiantes:', error);
+    }
   };
 
   return (
@@ -127,6 +159,14 @@ const GeneracionViewSimple: React.FC = () => {
         sortDirection={sortDirection}
         onSort={handleSort}
         onViewDetails={handleVerDetalles}
+      />
+
+      {/* Modal para crear estudiante */}
+      <CreateEstudianteModal
+        open={openCreateEstudiante}
+        onClose={() => setOpenCreateEstudiante(false)}
+        onSuccess={handleEstudianteCreated}
+        generacion={generationId}
       />
     </div>
   );

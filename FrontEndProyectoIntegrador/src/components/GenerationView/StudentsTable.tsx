@@ -88,30 +88,36 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
         <tbody>
           {students.map((student, index) => (
             <tr 
-              key={student.id}
+              key={student.id_estudiante || student.id || index}
               className={`${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'} hover:bg-[var(--color-turquoise)]/10 transition-colors`}
             >
               <td className="py-3 px-3 border-b border-gray-300">
                 <div className="font-bold text-gray-800">
-                  {student.nombres} {student.apellidos}
+                  {student.nombre || `${student.nombres || ''} ${student.apellidos || ''}`}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {student.rut}
                 </div>
               </td>
               <td className="py-3 px-3 border-b border-gray-300 text-gray-600">
-                {student.carrera}
+                {student.carrera || student.institucion?.carrera_especialidad || 'N/A'}
+                <div className="text-xs text-gray-400">
+                  {student.universidad || student.institucion?.nombre || ''}
+                </div>
               </td>
               <td className="py-3 px-3 border-b border-gray-300 text-center">
                 <span 
                   className="px-2 py-1 rounded-xl text-xs font-bold text-white"
-                  style={{ backgroundColor: getEstadoColor(student.estado) }}
+                  style={{ backgroundColor: getEstadoColor(student.estado || 'Activo') }}
                 >
-                  {student.estado}
+                  {student.estado || 'Activo'}
                 </span>
               </td>
               <td className={`py-3 px-3 border-b border-gray-300 text-center font-bold ${
-                student.promedio >= 6.0 ? 'text-[var(--color-turquoise)]' : 
-                student.promedio >= 5.5 ? 'text-[var(--color-orange)]' : 'text-[var(--color-coral-dark)]'
+                (student.promedio || 0) >= 6.0 ? 'text-[var(--color-turquoise)]' : 
+                (student.promedio || 0) >= 5.5 ? 'text-[var(--color-orange)]' : 'text-[var(--color-coral-dark)]'
               }`}>
-                {student.promedio.toFixed(1)}
+                {student.promedio ? student.promedio.toFixed(1) : 'N/A'}
               </td>
               <td className="py-3 px-3 border-b border-gray-300 text-center text-sm">
                 {formatDateChilean(student.ultimaEntrevista)}
@@ -144,7 +150,7 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
               </td>
               <td className="py-3 px-3 border-b border-gray-300 text-center">
                 <button
-                  onClick={() => onViewDetails(student.id)}
+                  onClick={() => onViewDetails(student.id_estudiante || student.id)}
                   className="px-3 py-1.5 bg-[var(--color-turquoise)] text-white rounded hover:bg-[var(--color-turquoise-light)] transition-colors text-xs font-bold"
                 >
                   Ver Detalles
@@ -156,12 +162,13 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
       </table>
 
       {students.length === 0 && (
-        <div className="text-center py-10 bg-gray-100">
-          <h3 className="text-gray-600 mb-2 text-xl font-bold">
-            No se encontraron estudiantes
+        <div className="text-center py-16 bg-gradient-to-b from-gray-50 to-white">
+          <div className="text-7xl mb-4">📂</div>
+          <h3 className="text-gray-700 mb-2 text-2xl font-bold">
+            Esta generación aún no tiene estudiantes
           </h3>
-          <p className="text-gray-600">
-            Intenta ajustar los filtros de búsqueda
+          <p className="text-gray-500 text-lg">
+            Haz clic en "Agregar Estudiante" para comenzar a agregar estudiantes a esta generación
           </p>
         </div>
       )}
