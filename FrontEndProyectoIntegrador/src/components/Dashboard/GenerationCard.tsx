@@ -10,6 +10,7 @@ interface GenerationCardProps {
   activos: number;
   estado: 'activa' | 'finalizada';
   onClick: () => void;
+  onAddEstudiante?: (año: number) => void;
 }
 
 export const GenerationCard: React.FC<GenerationCardProps> = ({
@@ -18,7 +19,12 @@ export const GenerationCard: React.FC<GenerationCardProps> = ({
   activos,
   estado,
   onClick,
+  onAddEstudiante,
 }) => {
+  const handleAddEstudiante = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onAddEstudiante?.(año);
+  };
   return (
     <div
       onClick={onClick}
@@ -65,6 +71,17 @@ export const GenerationCard: React.FC<GenerationCardProps> = ({
           </p>
         </div>
       </div>
+
+      {/* Botón para agregar estudiante */}
+      {onAddEstudiante && (
+        <button
+          onClick={handleAddEstudiante}
+          className="mt-4 w-full py-2 px-4 bg-[var(--color-turquoise)] text-white rounded-lg hover:bg-[var(--color-turquoise)]/90 transition-colors duration-200 flex items-center justify-center gap-2 text-sm font-medium"
+        >
+          <span>+</span>
+          Agregar Estudiante
+        </button>
+      )}
     </div>
   );
 };

@@ -16,11 +16,13 @@ interface Generacion {
 interface GenerationsGridProps {
   generaciones: Generacion[];
   onLimpiarFiltros: () => void;
+  onAddEstudiante?: (año: number) => void;
 }
 
 export const GenerationsGrid: React.FC<GenerationsGridProps> = ({ 
   generaciones, 
-  onLimpiarFiltros 
+  onLimpiarFiltros,
+  onAddEstudiante
 }) => {
   const navigate = useNavigate();
 
@@ -56,6 +58,7 @@ export const GenerationsGrid: React.FC<GenerationsGridProps> = ({
           activos={generacion.activos}
           estado={generacion.estado}
           onClick={() => navigate(`/generacion/${generacion.año}`)}
+          onAddEstudiante={onAddEstudiante}
         />
       ))}
     </div>

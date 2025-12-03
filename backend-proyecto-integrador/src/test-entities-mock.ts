@@ -15,15 +15,13 @@ function testEntitiesStructure() {
   // 1. Crear institución mock
   const institucion = new Institucion();
   institucion.nombre = 'Universidad Test Mock';
-  institucion.tipo_institucion = 'Universidad';
-  institucion.nivel_educativo = 'Superior';
-  institucion.carrera_especialidad = 'Ingeniería Informática';
+  institucion.duracion = '4 años';
   institucion.anio_de_ingreso = '2023';
   institucion.anio_de_egreso = '2027';
   
   console.log('✅ Institución mock creada:', {
     nombre: institucion.nombre,
-    tipo: institucion.tipo_institucion,
+    duracion: institucion.duracion,
   });
 
   // 2. Crear estudiante mock
@@ -49,7 +47,7 @@ function testEntitiesStructure() {
   familia.padre_nombre = 'Roberto García';
   familia.padre_edad = 46;
   familia.hermanos = [{ nombre: 'Carlos', edad: 15 }];
-  familia.observaciones = 'Familia mock de prueba';
+  familia.observaciones = { madre: [], padre: [], hermanos: [], general: [{ fecha: new Date().toISOString(), contenido: 'Familia mock de prueba' }] };
   familia.estudiante = estudiante;
 
   console.log('✅ Familia mock creada:', {

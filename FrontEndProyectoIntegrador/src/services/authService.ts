@@ -46,14 +46,6 @@ class AuthService {
       if (response.ok) {
         const authResponse: AuthResponse = await response.json();
         
-        // Asegurar que siempre usamos 'role' como propiedad estándar
-        if (authResponse.user) {
-          const userAny = authResponse.user as Record<string, unknown>;
-          if (!authResponse.user.role && userAny.rol) {
-            authResponse.user.role = userAny.rol as 'admin' | 'tutor' | 'invitado' | 'academico' | 'estudiante';
-          }
-        }
-        
         // Guardar datos en localStorage
         this.saveAuthData(authResponse);
         
@@ -67,10 +59,8 @@ class AuthService {
       }
       
     } catch (error) {
-      console.warn('⚠️ Backend no disponible, usando autenticación mock');
-      
-      // FALLBACK: Autenticación mock para desarrollo
-      return this.mockLogin(credentials);
+      console.error('❌ Error al conectar con el backend:', error);
+      throw new Error('Backend no disponible. Asegúrate de que el servidor esté corriendo en http://localhost:3000');
     }
   }
 
@@ -81,7 +71,7 @@ class AuthService {
     const result = await this.login(credentials);
     
     // Verificar que sea admin
-    if (result.user.rol !== 'admin') {
+    if (result.user.role !== 'admin') {
       throw new Error('Acceso denegado: se requieren permisos de administrador');
     }
     
@@ -158,9 +148,8 @@ class AuthService {
 
       console.log('✅ Código de recuperación enviado');
     } catch (error) {
-      console.warn('⚠️ Backend no disponible, simulando envío de código');
-      // En desarrollo, simular éxito
-      console.log('📧 [MOCK] Código enviado a:', email);
+      console.error('❌ Error al enviar código:', error);
+      throw new Error('No se pudo enviar el código de recuperación');
     }
   }
 
@@ -181,9 +170,8 @@ class AuthService {
       const result = await response.json();
       return result.valid;
     } catch (error) {
-      console.warn('⚠️ Backend no disponible, usando validación mock');
-      // En desarrollo, aceptar código 123456
-      return code === '123456';
+      console.error('❌ Error al verificar código:', error);
+      throw new Error('No se pudo verificar el código');
     }
   }
 
@@ -207,8 +195,8 @@ class AuthService {
 
       console.log('✅ Contraseña restablecida exitosamente');
     } catch (error) {
-      console.warn('⚠️ Backend no disponible, simulando restablecimiento');
-      console.log('🔑 [MOCK] Contraseña restablecida para:', email);
+      console.error('❌ Error al restablecer contraseña:', error);
+      throw new Error('No se pudo restablecer la contraseña');
     }
   }
 
@@ -217,22 +205,20 @@ class AuthService {
   // ================================
 
   /**
-   * Autenticación mock para desarrollo - removida
-   * Ya no se usa mock, solo backend real
-   */
-  private mockLogin(credentials: LoginCredentials): Promise<AuthResponse> {
-    console.log('❌ Mock login deshabilitado - usa el backend real');
-    return Promise.reject(new Error('Backend no disponible. Asegúrate de que el servidor esté corriendo en http://localhost:3000'));
-  }
-
-  /**
    * Guardar datos de autenticación en localStorage
    */
   private saveAuthData(authResponse: AuthResponse): void {
+    // Mapear 'rol' del backend a 'role' del frontend si es necesario
+    const userToSave = { ...authResponse.user };
+    const userAny = userToSave as Record<string, unknown>;
+    if (!userToSave.role && userAny.rol) {
+      userToSave.role = userAny.rol as 'admin' | 'tutor' | 'invitado' | 'academico' | 'estudiante';
+    }
+    
     localStorage.setItem('accesstoken', authResponse.accessToken);
     localStorage.setItem('refreshtoken', authResponse.refreshToken);
-    localStorage.setItem('user', JSON.stringify(authResponse.user));
-    this.currentUser = authResponse.user;
+    localStorage.setItem('user', JSON.stringify(userToSave));
+    this.currentUser = userToSave;
   }
 
   /**

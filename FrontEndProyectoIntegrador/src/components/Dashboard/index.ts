@@ -7,3 +7,5 @@ export { FilterPanel } from './FilterPanel';
 export { GenerationCard } from './GenerationCard';
 export { GenerationsGrid } from './GenerationsGrid';
 export { QuickActionsPanel } from './QuickActionsPanel';
+export { CreateGeneracionModal } from './CreateGeneracionModal';
+export { CreateEstudianteModal } from './CreateEstudianteModal';

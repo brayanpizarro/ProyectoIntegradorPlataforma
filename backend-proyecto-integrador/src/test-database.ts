@@ -22,10 +22,8 @@ async function testSQL() {
 
     // 1. Crear institución
     const institucion = new Institucion();
-      institucion.nombre = 'Universidad Test SQL';
-    institucion.tipo_institucion = 'Universidad';
-    institucion.nivel_educativo = 'Superior';
-    institucion.carrera_especialidad = 'Ingeniería Informática';
+    institucion.nombre = 'Universidad Test SQL';
+    institucion.duracion = '4 años';
     institucion.anio_de_ingreso = '2023';
     institucion.anio_de_egreso = '2027';
 
@@ -53,7 +51,7 @@ async function testSQL() {
       padre_nombre: 'Roberto García',
       padre_edad: 46,
       hermanos: [{ nombre: 'Carlos', edad: 15 }],
-      observaciones: 'Familia con PostgreSQL',
+      observaciones: { madre: [], padre: [], hermanos: [], general: [{ fecha: new Date().toISOString(), contenido: 'Familia con PostgreSQL' }] },
       // No incluimos estudiante ni id_estudiante aquí
     };
 
