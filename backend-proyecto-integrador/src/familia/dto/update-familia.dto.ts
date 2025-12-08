@@ -6,22 +6,22 @@ export class UpdateFamiliaDto {
   @Expose()
   @IsString()
   @IsOptional()
-  madre_nombre?: string;
+  nombre_madre?: string;
 
   @Expose()
-  @IsNumber()
+  @IsArray()
   @IsOptional()
-  madre_edad?: number;
+  descripcion_madre?: string[];
 
   @Expose()
   @IsString()
   @IsOptional()
-  padre_nombre?: string;
+  nombre_padre?: string;
 
   @Expose()
-  @IsNumber()
+  @IsArray()
   @IsOptional()
-  padre_edad?: number;
+  descripcion_padre?: string[];
 
   @Expose()
   @IsArray()
@@ -29,7 +29,11 @@ export class UpdateFamiliaDto {
   hermanos?: any[];
 
   @Expose()
-  @IsString()
+  @IsArray()
   @IsOptional()
-  observaciones?: string;
+  otros_familiares?: any[];
+
+  @Expose()
+  @IsOptional()
+  observaciones?: any;
 }

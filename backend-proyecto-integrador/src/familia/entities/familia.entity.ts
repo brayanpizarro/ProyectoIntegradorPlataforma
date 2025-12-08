@@ -16,19 +16,22 @@ export class Familia {
   id_familia: number;
 
   @Column({ nullable: true })
-  madre_nombre: string;
+  nombre_madre: string;
+
+  @Column({ type: 'json', nullable: true, default: [] })
+  descripcion_madre: string[];
 
   @Column({ nullable: true })
-  madre_edad: number;
+  nombre_padre: string;
 
-  @Column({ nullable: true })
-  padre_nombre: string;
-
-  @Column({ nullable: true })
-  padre_edad: number;
+  @Column({ type: 'json', nullable: true, default: [] })
+  descripcion_padre: string[];
 
   @Column({ type: 'json', nullable: true })
   hermanos: any[];
+
+  @Column({ type: 'json', nullable: true })
+  otros_familiares: any[];
 
   @Column({ type: 'jsonb', nullable: true , default: { madre: [], padre: [], hermanos: [], general: [] } })
   observaciones: ObservacionesFamiliares;
