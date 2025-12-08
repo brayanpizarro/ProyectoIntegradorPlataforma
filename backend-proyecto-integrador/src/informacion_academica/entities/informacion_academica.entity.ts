@@ -74,8 +74,8 @@ export class InformacionAcademica {
     observaciones?: string;
   }[];
 
-  @Column({ type: 'json', nullable: true })
-  beneficios: any;
+  @Column({ type: 'text', nullable: true })
+  beneficios: string;
 
   @CreateDateColumn()
   created_at: Date;

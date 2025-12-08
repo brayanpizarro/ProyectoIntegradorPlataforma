@@ -84,6 +84,7 @@ export class UpdateInformacionAcademicaDto {
   }[];
 
   @Expose()
+  @IsString()
   @IsOptional()
-  beneficios?: any;
+  beneficios?: string; // Descripción de beneficios
 }
