@@ -15,7 +15,16 @@ export class InformacionAcademica {
   id_info_academico: number;
 
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
-  promedio_media: number;
+  promedio_1: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  promedio_2: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  promedio_3: number;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  promedio_4: number;
 
   @Column({ nullable: true })
   via_acceso: string;

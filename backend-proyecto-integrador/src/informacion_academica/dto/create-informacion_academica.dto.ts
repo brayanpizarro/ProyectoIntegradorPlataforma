@@ -11,7 +11,22 @@ export class CreateInformacionAcademicaDto {
   @Expose()
   @IsNumber()
   @IsOptional()
-  promedio_media?: number;
+  promedio_1?: number;
+
+  @Expose()
+  @IsNumber()
+  @IsOptional()
+  promedio_2?: number;
+
+  @Expose()
+  @IsNumber()
+  @IsOptional()
+  promedio_3?: number;
+
+  @Expose()
+  @IsNumber()
+  @IsOptional()
+  promedio_4?: number;
 
   @Expose()
   @IsString()
@@ -19,9 +34,28 @@ export class CreateInformacionAcademicaDto {
   via_acceso?: string;
 
   @Expose()
+  @IsNumber()
+  @IsOptional()
+  ingreso_beca?: number;
+
+  @Expose()
   @IsString()
   @IsOptional()
-  beneficios?: string; // JSON string
+  colegio?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  especialidad_colegio?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  comuna_colegio?: string;
+
+  @Expose()
+  @IsOptional()
+  beneficios?: any; // JSON object
 
   @Expose()
   @IsString()
