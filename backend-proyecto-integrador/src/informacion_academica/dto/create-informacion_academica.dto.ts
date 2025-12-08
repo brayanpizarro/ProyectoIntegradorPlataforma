@@ -89,6 +89,7 @@ export class CreateInformacionAcademicaDto {
   }[];
 
   @Expose()
+  @IsString()
   @IsOptional()
-  beneficios?: any; // JSON object
+  beneficios?: string; // Descripción de beneficios
 }

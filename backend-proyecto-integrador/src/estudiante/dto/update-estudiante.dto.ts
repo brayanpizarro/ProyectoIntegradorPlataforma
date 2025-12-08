@@ -5,11 +5,12 @@ import {
   IsString,
   IsEmail,
   IsDateString,
-  IsBoolean,
+  IsEnum,
   IsUUID,
   MinLength,
 } from 'class-validator';
 import { Exclude, Expose } from 'class-transformer';
+import { TipoEstudiante, StatusEstudiante } from '../entities/estudiante.entity';
 
 @Exclude()
 export class UpdateEstudianteDto extends PartialType(CreateEstudianteDto) {
@@ -41,16 +42,21 @@ export class UpdateEstudianteDto extends PartialType(CreateEstudianteDto) {
 
   @Expose()
   @IsOptional()
-  @IsString()
-  tipo?: string;
+  @IsEnum(TipoEstudiante)
+  tipo_de_estudiante?: TipoEstudiante;
 
   @Expose()
   @IsOptional()
-  @IsBoolean()
-  estado?: boolean;
+  @IsEnum(StatusEstudiante)
+  status?: StatusEstudiante;
 
   @Expose()
   @IsOptional()
   @IsUUID()
   institucionId?: string;
+  
+  @Expose()
+  @IsOptional()
+  @IsString()
+  generacion?: string;
 }

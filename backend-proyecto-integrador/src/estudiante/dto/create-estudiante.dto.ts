@@ -6,9 +6,10 @@ import {
   IsOptional,
   IsDateString,
   IsEmail,
-  IsBoolean,
+  IsEnum,
   IsUUID,
 } from 'class-validator';
+import { TipoEstudiante, StatusEstudiante } from '../entities/estudiante.entity';
 
 @Exclude()
 export class CreateEstudianteDto {
@@ -38,18 +39,19 @@ export class CreateEstudianteDto {
 
   @Expose()
   @IsOptional()
-  @IsString()
-  tipo?: string;
+  @IsEnum(TipoEstudiante)
+  tipo_de_estudiante?: TipoEstudiante;
 
   @Expose()
   @IsOptional()
-  @IsBoolean()
-  estado?: boolean = true;
+  @IsEnum(StatusEstudiante)
+  status?: StatusEstudiante;
 
   @Expose()
   @IsOptional()
   @IsUUID()
   institucionId?: string;
+  
   // Revisar si es necesario la generacion, asumo que se refiere al año de egreso
   @Expose()
   @IsString()

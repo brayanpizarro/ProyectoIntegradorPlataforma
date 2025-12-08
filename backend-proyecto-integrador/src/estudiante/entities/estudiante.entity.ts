@@ -21,6 +21,13 @@ export enum TipoEstudiante {
   UNIVERSITARIO = 'universitario',
 }
 
+export enum StatusEstudiante {
+  ACTIVO = 'activo',
+  INACTIVO = 'inactivo',
+  EGRESADO = 'egresado',
+  RETIRADO = 'retirado',
+}
+
 @Entity('estudiante')
 export class Estudiante {
   @PrimaryGeneratedColumn('uuid')
@@ -44,15 +51,19 @@ export class Estudiante {
   @Column({
     type: 'enum',
     enum: TipoEstudiante,
-    default: TipoEstudiante.UNIVERSITARIO,
+    default: TipoEstudiante.MEDIA,
   })
   tipo_de_estudiante: TipoEstudiante;
   // Ver si la generacion es algo que se pone al crear al estudiante o despues
   @Column()
   generacion: string;
 
-  @Column()
-  activo: boolean;
+  @Column({
+    type: 'enum',
+    enum: StatusEstudiante,
+    default: StatusEstudiante.ACTIVO,
+  })
+  status: StatusEstudiante;
 
   @ManyToOne(() => Institucion, (institucion) => institucion.estudiantes, {
     nullable: false,
