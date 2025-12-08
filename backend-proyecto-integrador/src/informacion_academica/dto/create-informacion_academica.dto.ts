@@ -11,7 +11,22 @@ export class CreateInformacionAcademicaDto {
   @Expose()
   @IsNumber()
   @IsOptional()
-  promedio_media?: number;
+  promedio_1?: number;
+
+  @Expose()
+  @IsNumber()
+  @IsOptional()
+  promedio_2?: number;
+
+  @Expose()
+  @IsNumber()
+  @IsOptional()
+  promedio_3?: number;
+
+  @Expose()
+  @IsNumber()
+  @IsOptional()
+  promedio_4?: number;
 
   @Expose()
   @IsString()
@@ -19,12 +34,61 @@ export class CreateInformacionAcademicaDto {
   via_acceso?: string;
 
   @Expose()
-  @IsString()
+  @IsNumber()
   @IsOptional()
-  beneficios?: string; // JSON string
+  ingreso_beca?: number;
 
   @Expose()
   @IsString()
   @IsOptional()
-  status_actual?: string;
+  colegio?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  especialidad_colegio?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  comuna_colegio?: string;
+
+  @Expose()
+  @IsOptional()
+  puntajes_admision?: {
+    paes?: {
+      competencia_lectora?: number;
+      competencia_matematica_m1?: number;
+      competencia_matematica_m2?: number;
+      ciencias?: number;
+      historia?: number;
+    };
+    psu?: {
+      lenguaje?: number;
+      matematicas?: number;
+      ciencias?: number;
+      historia?: number;
+    };
+    nem?: number;
+    ranking?: number;
+    ponderado_total?: number;
+    año_rendicion?: number;
+    observaciones?: string;
+  };
+
+  @Expose()
+  @IsOptional()
+  ensayos_paes?: {
+    fecha: string;
+    competencia_lectora?: number;
+    competencia_matematica_m1?: number;
+    competencia_matematica_m2?: number;
+    ciencias?: number;
+    historia?: number;
+    observaciones?: string;
+  }[];
+
+  @Expose()
+  @IsOptional()
+  beneficios?: any; // JSON object
 }
