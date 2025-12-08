@@ -82,6 +82,58 @@ export class InformacionAcademicaService {
     return await this.informacionAcademicaRepository.save(informacionAcademica);
   }
 
+  async addEnsayoPaes(id: number, ensayo: {
+    fecha: string;
+    competencia_lectora?: number;
+    competencia_matematica_m1?: number;
+    competencia_matematica_m2?: number;
+    ciencias?: number;
+    historia?: number;
+    observaciones?: string;
+  }): Promise<InformacionAcademica> {
+    const informacionAcademica = await this.findOne(id);
+    
+    if (!informacionAcademica.ensayos_paes) {
+      informacionAcademica.ensayos_paes = [];
+    }
+    
+    informacionAcademica.ensayos_paes.push(ensayo);
+    
+    return await this.informacionAcademicaRepository.save(informacionAcademica);
+  }
+
+  async updateEnsayoPaes(id: number, index: number, ensayo: {
+    fecha: string;
+    competencia_lectora?: number;
+    competencia_matematica_m1?: number;
+    competencia_matematica_m2?: number;
+    ciencias?: number;
+    historia?: number;
+    observaciones?: string;
+  }): Promise<InformacionAcademica> {
+    const informacionAcademica = await this.findOne(id);
+    
+    if (!informacionAcademica.ensayos_paes || index < 0 || index >= informacionAcademica.ensayos_paes.length) {
+      throw new NotFoundException(`Ensayo PAES en índice ${index} no encontrado`);
+    }
+    
+    informacionAcademica.ensayos_paes[index] = ensayo;
+    
+    return await this.informacionAcademicaRepository.save(informacionAcademica);
+  }
+
+  async deleteEnsayoPaes(id: number, index: number): Promise<InformacionAcademica> {
+    const informacionAcademica = await this.findOne(id);
+    
+    if (!informacionAcademica.ensayos_paes || index < 0 || index >= informacionAcademica.ensayos_paes.length) {
+      throw new NotFoundException(`Ensayo PAES en índice ${index} no encontrado`);
+    }
+    
+    informacionAcademica.ensayos_paes.splice(index, 1);
+    
+    return await this.informacionAcademicaRepository.save(informacionAcademica);
+  }
+
   async remove(id: number): Promise<void> {
     const informacionAcademica = await this.findOne(id);
     await this.informacionAcademicaRepository.remove(informacionAcademica);

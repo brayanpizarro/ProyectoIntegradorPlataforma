@@ -55,6 +55,41 @@ export class CreateInformacionAcademicaDto {
 
   @Expose()
   @IsOptional()
+  puntajes_admision?: {
+    paes?: {
+      competencia_lectora?: number;
+      competencia_matematica_m1?: number;
+      competencia_matematica_m2?: number;
+      ciencias?: number;
+      historia?: number;
+    };
+    psu?: {
+      lenguaje?: number;
+      matematicas?: number;
+      ciencias?: number;
+      historia?: number;
+    };
+    nem?: number;
+    ranking?: number;
+    ponderado_total?: number;
+    año_rendicion?: number;
+    observaciones?: string;
+  };
+
+  @Expose()
+  @IsOptional()
+  ensayos_paes?: {
+    fecha: string;
+    competencia_lectora?: number;
+    competencia_matematica_m1?: number;
+    competencia_matematica_m2?: number;
+    ciencias?: number;
+    historia?: number;
+    observaciones?: string;
+  }[];
+
+  @Expose()
+  @IsOptional()
   beneficios?: any; // JSON object
 
   @Expose()

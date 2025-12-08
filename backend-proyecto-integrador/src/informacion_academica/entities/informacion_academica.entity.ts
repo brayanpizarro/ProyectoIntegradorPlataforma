@@ -41,7 +41,38 @@ export class InformacionAcademica {
   @Column()
   comuna_colegio: string;
 
-  /* TO DO: CREAR PUNTAJE PAES, VER SI ES UN ARRAY */
+  @Column({ type: 'json', nullable: true, default: () => "'{}'" })
+  puntajes_admision: {
+    paes?: {
+      competencia_lectora?: number;
+      competencia_matematica_m1?: number;
+      competencia_matematica_m2?: number;
+      ciencias?: number;
+      historia?: number;
+    };
+    psu?: {
+      lenguaje?: number;
+      matematicas?: number;
+      ciencias?: number;
+      historia?: number;
+    };
+    nem?: number;
+    ranking?: number;
+    ponderado_total?: number;
+    año_rendicion?: number;
+    observaciones?: string;
+  };
+
+  @Column({ type: 'json', nullable: true, default: () => "'[]'" })
+  ensayos_paes: {
+    fecha: string;
+    competencia_lectora?: number;
+    competencia_matematica_m1?: number;
+    competencia_matematica_m2?: number;
+    ciencias?: number;
+    historia?: number;
+    observaciones?: string;
+  }[];
 
   @Column({ type: 'json', nullable: true })
   beneficios: any;

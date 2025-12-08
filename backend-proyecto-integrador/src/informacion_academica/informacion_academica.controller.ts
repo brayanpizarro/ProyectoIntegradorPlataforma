@@ -47,6 +47,50 @@ export class InformacionAcademicaController {
     return await this.informacionAcademicaService.updatePromedio(+id, nivel, body.promedio);
   }
 
+  @Post(':id/ensayo-paes')
+  @HttpCode(HttpStatus.CREATED)
+  async addEnsayoPaes(
+    @Param('id') id: string,
+    @Body() ensayo: {
+      fecha: string;
+      competencia_lectora?: number;
+      competencia_matematica_m1?: number;
+      competencia_matematica_m2?: number;
+      ciencias?: number;
+      historia?: number;
+      observaciones?: string;
+    },
+  ) {
+    return await this.informacionAcademicaService.addEnsayoPaes(+id, ensayo);
+  }
+
+  @Patch(':id/ensayo-paes/:index')
+  @HttpCode(HttpStatus.OK)
+  async updateEnsayoPaes(
+    @Param('id') id: string,
+    @Param('index') index: string,
+    @Body() ensayo: {
+      fecha: string;
+      competencia_lectora?: number;
+      competencia_matematica_m1?: number;
+      competencia_matematica_m2?: number;
+      ciencias?: number;
+      historia?: number;
+      observaciones?: string;
+    },
+  ) {
+    return await this.informacionAcademicaService.updateEnsayoPaes(+id, +index, ensayo);
+  }
+
+  @Delete(':id/ensayo-paes/:index')
+  @HttpCode(HttpStatus.OK)
+  async deleteEnsayoPaes(
+    @Param('id') id: string,
+    @Param('index') index: string,
+  ) {
+    return await this.informacionAcademicaService.deleteEnsayoPaes(+id, +index);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: string) {
