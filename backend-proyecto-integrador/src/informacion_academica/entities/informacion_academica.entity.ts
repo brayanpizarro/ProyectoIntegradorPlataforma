@@ -77,9 +77,6 @@ export class InformacionAcademica {
   @Column({ type: 'json', nullable: true })
   beneficios: any;
 
-  @Column({ nullable: true })
-  status_actual: string;
-
   @CreateDateColumn()
   created_at: Date;
 

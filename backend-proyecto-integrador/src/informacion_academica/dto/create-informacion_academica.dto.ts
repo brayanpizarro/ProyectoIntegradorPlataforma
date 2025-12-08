@@ -91,9 +91,4 @@ export class CreateInformacionAcademicaDto {
   @Expose()
   @IsOptional()
   beneficios?: any; // JSON object
-
-  @Expose()
-  @IsString()
-  @IsOptional()
-  status_actual?: string;
 }

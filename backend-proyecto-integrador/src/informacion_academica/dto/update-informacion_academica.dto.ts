@@ -86,9 +86,4 @@ export class UpdateInformacionAcademicaDto {
   @Expose()
   @IsOptional()
   beneficios?: any;
-
-  @Expose()
-  @IsString()
-  @IsOptional()
-  status_actual?: string;
 }
