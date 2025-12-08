@@ -10,37 +10,41 @@ import { Exclude, Expose } from 'class-transformer';
 @Exclude()
 export class CreateFamiliaDto {
   @Expose()
-  @IsNumber()
+  @IsString()
   @IsNotEmpty()
-  id_estudiante: number;
+  id_estudiante: string;
 
   @Expose()
   @IsString()
   @IsOptional()
-  madre_nombre?: string;
-
-  @Expose()
-  @IsNumber()
-  @IsOptional()
-  madre_edad?: number;
-
-  @Expose()
-  @IsString()
-  @IsOptional()
-  padre_nombre?: string;
-
-  @Expose()
-  @IsNumber()
-  @IsOptional()
-  padre_edad?: number;
+  nombre_madre?: string;
 
   @Expose()
   @IsArray()
   @IsOptional()
-  hermanos?: any[]; // JSON array
+  descripcion_madre?: string[];
 
   @Expose()
   @IsString()
   @IsOptional()
-  observaciones?: string;
+  nombre_padre?: string;
+
+  @Expose()
+  @IsArray()
+  @IsOptional()
+  descripcion_padre?: string[];
+
+  @Expose()
+  @IsArray()
+  @IsOptional()
+  hermanos?: any[];
+
+  @Expose()
+  @IsArray()
+  @IsOptional()
+  otros_familiares?: any[];
+
+  @Expose()
+  @IsOptional()
+  observaciones?: any;
 }
