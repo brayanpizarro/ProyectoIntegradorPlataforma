@@ -27,7 +27,7 @@ export class EstudianteService {
       .select('estudiante.generacion', 'generacion')
       .addSelect('COUNT(estudiante.id_estudiante)', 'total')
       .addSelect(
-        'SUM(CASE WHEN estudiante.activo = true THEN 1 ELSE 0 END)',
+        "SUM(CASE WHEN estudiante.status = 'activo' THEN 1 ELSE 0 END)",
         'activos'
       )
       .groupBy('estudiante.generacion')
