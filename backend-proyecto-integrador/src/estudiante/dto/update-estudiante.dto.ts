@@ -7,6 +7,7 @@ import {
   IsDateString,
   IsEnum,
   IsUUID,
+  IsNumber,
   MinLength,
 } from 'class-validator';
 import { Exclude, Expose } from 'class-transformer';

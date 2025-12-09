@@ -35,7 +35,7 @@ export class InformacionAcademica {
   @Column()
   colegio: string; //liceo
 
-  @Column({nullable: true})
+  @Column({ nullable: true })
   especialidad_colegio: string; // Si es que aplica
 
   @Column()

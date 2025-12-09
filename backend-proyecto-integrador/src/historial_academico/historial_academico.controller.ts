@@ -72,12 +72,9 @@ export class HistorialAcademicoController {
   }
 
   @Delete(':id')
+  @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: string) {
     await this.historialAcademicoService.remove(+id);
-  }
-}
-  remove(@Param('id') id: string) {
-    return this.historialAcademicoService.remove(+id);
   }
 }

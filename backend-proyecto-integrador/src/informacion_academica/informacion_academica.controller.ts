@@ -22,7 +22,7 @@ export class InformacionAcademicaController {
   @Get('estudiante/:idEstudiante')
   @HttpCode(HttpStatus.OK)
   async findByEstudiante(@Param('idEstudiante') idEstudiante: string) {
-    return await this.informacionAcademicaService.findByEstudiante(+idEstudiante);
+    return await this.informacionAcademicaService.findByEstudiante(idEstudiante);
   }
 
   @Get(':id')
@@ -77,10 +77,7 @@ export class InformacionAcademicaController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id') id: string) {
-    await this.informacionAcademicaService.remove(+id);
-  }
-}
+  @Delete(':id')
   remove(@Param('id') id: string) {
     return this.informacionAcademicaService.remove(+id);
   }

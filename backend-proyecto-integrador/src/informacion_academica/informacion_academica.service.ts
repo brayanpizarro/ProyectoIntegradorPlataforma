@@ -52,7 +52,7 @@ export class InformacionAcademicaService {
     return informacionAcademica;
   }
 
-  async findByEstudiante(idEstudiante: number): Promise<InformacionAcademica> {
+  async findByEstudiante(idEstudiante: string): Promise<InformacionAcademica> {
     const informacionAcademica = await this.informacionAcademicaRepository.findOne({
       where: { estudiante: { id_estudiante: idEstudiante } },
       relations: ['estudiante'],
