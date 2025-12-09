@@ -19,6 +19,19 @@ export interface Usuario {
   fecha_actualizacion?: string;
 }
 
+// ENUMS DEL BACKEND
+export enum TipoEstudiante {
+  MEDIA = 'media',
+  UNIVERSITARIO = 'universitario',
+}
+
+export enum StatusEstudiante {
+  ACTIVO = 'activo',
+  INACTIVO = 'inactivo',
+  EGRESADO = 'egresado',
+  RETIRADO = 'retirado',
+}
+
 // ESTUDIANTE - ESTRUCTURA HÍBRIDA: Backend real + Frontend actual
 export interface Estudiante {
   // Campos del backend real (estructura principal)
@@ -28,8 +41,10 @@ export interface Estudiante {
   telefono?: string;
   fecha_de_nacimiento?: Date | string;
   email?: string;
-  tipo_de_estudiante: 'media' | 'universitario';// | 'EGRESADO' | 'RETIRADO';  // ✅ EXPANDIDO
+  tipo_de_estudiante: TipoEstudiante;  // ✅ ENUM ACTUALIZADO
   generacion?: string;
+  numero_carrera?: number;  // ✅ NUEVO CAMPO
+  status: StatusEstudiante; // ✅ NUEVO ENUM (reemplaza 'activo' boolean)
   institucion?: Institucion;
 
   // Campos del frontend actual (compatibilidad)
@@ -95,11 +110,14 @@ export interface Institucion {
 
 export interface Familia {
   id_familia: string;
-  madre_nombre?: string;
-  madre_edad?: number;
-  padre_nombre?: string;
-  padre_edad?: number;
-  hermanos?: { nombre: string; edad: number }[];
+  // ✅ CAMPOS ACTUALIZADOS DEL BACKEND
+  nombre_madre?: string;        // Renombrado
+  descripcion_madre?: string[]; // ✅ NUEVO: Array incremental
+  nombre_padre?: string;        // Renombrado
+  descripcion_padre?: string[]; // ✅ NUEVO: Array incremental
+  hermanos?: any[];            // ✅ FLEXIBLE
+  otros_familiares?: any[];    // ✅ NUEVO CAMPO
+  // Eliminado: madre_edad, padre_edad (reemplazados por descripciones)
   observaciones?: string;
   estudiante: Estudiante;
 }
@@ -119,20 +137,51 @@ export interface HistorialAcademico {
   id_historial_academico: string;
   año: number;
   semestre: number;
-  nivel_educativo: string;
-  ramos_aprobados: number;
-  ramos_reprobados: number;
-  promedio_semestre: number;
+  nivel_educativo?: string;
+  ramos_aprobados?: number;
+  ramos_reprobados?: number;
+  promedio_semestre?: number;
+  trayectoria_academica?: string[]; // ✅ NUEVO: Array incremental de seguimiento
   estudiante: Estudiante;
+  created_at?: Date;
+  updated_at?: Date;
 }
 
 export interface InformacionAcademica {
-  id_informacion_academica?: string;
-  promedio_media?: number;
+  id_info_academico?: number;
+  // ✅ PROMEDIOS INDIVIDUALES POR NIVEL
+  promedio_1?: number;  // 1° medio
+  promedio_2?: number;  // 2° medio
+  promedio_3?: number;  // 3° medio
+  promedio_4?: number;  // 4° medio
   via_acceso?: string;
-  beneficios?: { tipo: string; monto: number };
-  status_actual?: string;
+  año_ingreso_beca?: number; // ✅ RENOMBRADO de ingreso_beca
+  colegio?: string;
+  especialidad_colegio?: string;
+  comuna_colegio?: string;
+  // ✅ CAMPOS JSONB FLEXIBLES
+  puntajes_admision?: any;     // JSONB flexible para PAES/PSU
+  ensayos_paes?: any[];        // Array JSONB flexible
+  beneficios?: string;         // ✅ CAMBIADO a texto simple
+  // Eliminado: status_actual (ahora en Estudiante)
   estudiante?: Estudiante;
+  created_at?: Date;
+  updated_at?: Date;
+}
+
+// ✅ INTERFACES AUXILIARES PARA FUNCIONALIDAD INCREMENTAL
+export interface FamiliaDescripcionRequest {
+  nuevaDescripcion: string;
+}
+
+export interface TrayectoriaAcademicaRequest {
+  trayectoria: string;
+}
+
+export interface EnsayoPaesRequest {
+  fecha: string;
+  [key: string]: any; // Flexible para cualquier estructura
+}
   
   // ✅ CAMPOS ADICIONALES que busca el código
   carrera?: string;

@@ -8,6 +8,7 @@ import {
   IsEmail,
   IsEnum,
   IsUUID,
+  IsNumber,
 } from 'class-validator';
 import { TipoEstudiante, StatusEstudiante } from '../entities/estudiante.entity';
 

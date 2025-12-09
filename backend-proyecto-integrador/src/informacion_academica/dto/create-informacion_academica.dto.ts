@@ -4,9 +4,9 @@ import { Exclude, Expose } from 'class-transformer';
 @Exclude()
 export class CreateInformacionAcademicaDto {
   @Expose()
-  @IsNumber()
+  @IsString()
   @IsNotEmpty()
-  id_estudiante: number;
+  id_estudiante: string;
 
   @Expose()
   @IsNumber()
