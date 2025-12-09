@@ -32,4 +32,8 @@ export class UpdateHistorialAcademicoDto {
   @IsNumber()
   @IsOptional()
   promedio_semestre?: number;
+
+  @Expose()
+  @IsOptional()
+  trayectoria_academica?: string[]; // Array de textos incrementales
 }
