@@ -51,15 +51,7 @@ export class InformacionAcademicaController {
   @HttpCode(HttpStatus.CREATED)
   async addEnsayoPaes(
     @Param('id') id: string,
-    @Body() ensayo: {
-      fecha: string;
-      competencia_lectora?: number;
-      competencia_matematica_m1?: number;
-      competencia_matematica_m2?: number;
-      ciencias?: number;
-      historia?: number;
-      observaciones?: string;
-    },
+    @Body() ensayo: any, // JSONB flexible
   ) {
     return await this.informacionAcademicaService.addEnsayoPaes(+id, ensayo);
   }
@@ -69,15 +61,7 @@ export class InformacionAcademicaController {
   async updateEnsayoPaes(
     @Param('id') id: string,
     @Param('index') index: string,
-    @Body() ensayo: {
-      fecha: string;
-      competencia_lectora?: number;
-      competencia_matematica_m1?: number;
-      competencia_matematica_m2?: number;
-      ciencias?: number;
-      historia?: number;
-      observaciones?: string;
-    },
+    @Body() ensayo: any, // JSONB flexible
   ) {
     return await this.informacionAcademicaService.updateEnsayoPaes(+id, +index, ensayo);
   }

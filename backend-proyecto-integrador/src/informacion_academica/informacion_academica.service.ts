@@ -82,15 +82,7 @@ export class InformacionAcademicaService {
     return await this.informacionAcademicaRepository.save(informacionAcademica);
   }
 
-  async addEnsayoPaes(id: number, ensayo: {
-    fecha: string;
-    competencia_lectora?: number;
-    competencia_matematica_m1?: number;
-    competencia_matematica_m2?: number;
-    ciencias?: number;
-    historia?: number;
-    observaciones?: string;
-  }): Promise<InformacionAcademica> {
+  async addEnsayoPaes(id: number, ensayo: any): Promise<InformacionAcademica> {
     const informacionAcademica = await this.findOne(id);
     
     if (!informacionAcademica.ensayos_paes) {
@@ -102,15 +94,7 @@ export class InformacionAcademicaService {
     return await this.informacionAcademicaRepository.save(informacionAcademica);
   }
 
-  async updateEnsayoPaes(id: number, index: number, ensayo: {
-    fecha: string;
-    competencia_lectora?: number;
-    competencia_matematica_m1?: number;
-    competencia_matematica_m2?: number;
-    ciencias?: number;
-    historia?: number;
-    observaciones?: string;
-  }): Promise<InformacionAcademica> {
+  async updateEnsayoPaes(id: number, index: number, ensayo: any): Promise<InformacionAcademica> {
     const informacionAcademica = await this.findOne(id);
     
     if (!informacionAcademica.ensayos_paes || index < 0 || index >= informacionAcademica.ensayos_paes.length) {

@@ -36,7 +36,7 @@ export class CreateInformacionAcademicaDto {
   @Expose()
   @IsNumber()
   @IsOptional()
-  ingreso_beca?: number;
+  año_ingreso_beca?: number;
 
   @Expose()
   @IsString()
@@ -55,38 +55,11 @@ export class CreateInformacionAcademicaDto {
 
   @Expose()
   @IsOptional()
-  puntajes_admision?: {
-    paes?: {
-      competencia_lectora?: number;
-      competencia_matematica_m1?: number;
-      competencia_matematica_m2?: number;
-      ciencias?: number;
-      historia?: number;
-    };
-    psu?: {
-      lenguaje?: number;
-      matematicas?: number;
-      ciencias?: number;
-      historia?: number;
-    };
-    nem?: number;
-    ranking?: number;
-    ponderado_total?: number;
-    año_rendicion?: number;
-    observaciones?: string;
-  };
+  puntajes_admision?: any; // JSONB flexible
 
   @Expose()
   @IsOptional()
-  ensayos_paes?: {
-    fecha: string;
-    competencia_lectora?: number;
-    competencia_matematica_m1?: number;
-    competencia_matematica_m2?: number;
-    ciencias?: number;
-    historia?: number;
-    observaciones?: string;
-  }[];
+  ensayos_paes?: any[]; // Array JSONB flexible
 
   @Expose()
   @IsString()
