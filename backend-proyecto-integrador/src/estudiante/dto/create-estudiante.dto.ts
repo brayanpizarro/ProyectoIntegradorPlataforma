@@ -56,4 +56,9 @@ export class CreateEstudianteDto {
   @Expose()
   @IsString()
   generacion: string;
+
+  @Expose()
+  @IsOptional()
+  @IsNumber()
+  numero_carrera?: number;
 }

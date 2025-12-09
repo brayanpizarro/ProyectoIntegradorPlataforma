@@ -30,7 +30,7 @@ export class InformacionAcademica {
   via_acceso: string;
 
   @Column()
-  ingreso_beca: number;
+  año_ingreso_beca: number;
 
   @Column()
   colegio: string; //liceo
@@ -41,38 +41,11 @@ export class InformacionAcademica {
   @Column()
   comuna_colegio: string;
 
-  @Column({ type: 'json', nullable: true, default: () => "'{}'" })
-  puntajes_admision: {
-    paes?: {
-      competencia_lectora?: number;
-      competencia_matematica_m1?: number;
-      competencia_matematica_m2?: number;
-      ciencias?: number;
-      historia?: number;
-    };
-    psu?: {
-      lenguaje?: number;
-      matematicas?: number;
-      ciencias?: number;
-      historia?: number;
-    };
-    nem?: number;
-    ranking?: number;
-    ponderado_total?: number;
-    año_rendicion?: number;
-    observaciones?: string;
-  };
+  @Column({ type: 'jsonb', nullable: true, default: () => "'{}'" })
+  puntajes_admision: any;
 
-  @Column({ type: 'json', nullable: true, default: () => "'[]'" })
-  ensayos_paes: {
-    fecha: string;
-    competencia_lectora?: number;
-    competencia_matematica_m1?: number;
-    competencia_matematica_m2?: number;
-    ciencias?: number;
-    historia?: number;
-    observaciones?: string;
-  }[];
+  @Column({ type: 'jsonb', nullable: true, default: () => "'[]'" })
+  ensayos_paes: any[];
 
   @Column({ type: 'text', nullable: true })
   beneficios: string;

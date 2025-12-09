@@ -58,6 +58,9 @@ export class Estudiante {
   @Column()
   generacion: string;
 
+  @Column({ type: 'int', default: 1 })
+  numero_carrera: number;
+
   @Column({
     type: 'enum',
     enum: StatusEstudiante,

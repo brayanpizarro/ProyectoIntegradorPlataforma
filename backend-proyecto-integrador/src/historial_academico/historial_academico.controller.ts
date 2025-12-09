@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
 import { HistorialAcademicoService } from './historial_academico.service';
 import { CreateHistorialAcademicoDto } from './dto/create-historial_academico.dto';
 import { UpdateHistorialAcademicoDto } from './dto/update-historial_academico.dto';
@@ -8,26 +8,75 @@ export class HistorialAcademicoController {
   constructor(private readonly historialAcademicoService: HistorialAcademicoService) {}
 
   @Post()
-  create(@Body() createHistorialAcademicoDto: CreateHistorialAcademicoDto) {
-    return this.historialAcademicoService.create(createHistorialAcademicoDto);
+  @HttpCode(HttpStatus.CREATED)
+  async create(@Body() createHistorialAcademicoDto: CreateHistorialAcademicoDto) {
+    return await this.historialAcademicoService.create(createHistorialAcademicoDto);
   }
 
   @Get()
-  findAll() {
-    return this.historialAcademicoService.findAll();
+  @HttpCode(HttpStatus.OK)
+  async findAll() {
+    return await this.historialAcademicoService.findAll();
+  }
+
+  @Get('estudiante/:idEstudiante')
+  @HttpCode(HttpStatus.OK)
+  async findByEstudiante(@Param('idEstudiante') idEstudiante: string) {
+    return await this.historialAcademicoService.findByEstudiante(idEstudiante);
+  }
+
+  @Get('semestre/:año/:semestre')
+  @HttpCode(HttpStatus.OK)
+  async findBySemestre(@Param('año') año: string, @Param('semestre') semestre: string) {
+    return await this.historialAcademicoService.findBySemestre(+año, +semestre);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.historialAcademicoService.findOne(+id);
+  @HttpCode(HttpStatus.OK)
+  async findOne(@Param('id') id: string) {
+    return await this.historialAcademicoService.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateHistorialAcademicoDto: UpdateHistorialAcademicoDto) {
-    return this.historialAcademicoService.update(+id, updateHistorialAcademicoDto);
+  @HttpCode(HttpStatus.OK)
+  async update(@Param('id') id: string, @Body() updateHistorialAcademicoDto: UpdateHistorialAcademicoDto) {
+    return await this.historialAcademicoService.update(+id, updateHistorialAcademicoDto);
+  }
+
+  @Post(':id/trayectoria')
+  @HttpCode(HttpStatus.CREATED)
+  async addTrayectoria(
+    @Param('id') id: string,
+    @Body() body: { trayectoria: string },
+  ) {
+    return await this.historialAcademicoService.addTrayectoria(+id, body.trayectoria);
+  }
+
+  @Patch(':id/trayectoria/:index')
+  @HttpCode(HttpStatus.OK)
+  async updateTrayectoria(
+    @Param('id') id: string,
+    @Param('index') index: string,
+    @Body() body: { trayectoria: string },
+  ) {
+    return await this.historialAcademicoService.updateTrayectoria(+id, +index, body.trayectoria);
+  }
+
+  @Delete(':id/trayectoria/:index')
+  @HttpCode(HttpStatus.OK)
+  async deleteTrayectoria(
+    @Param('id') id: string,
+    @Param('index') index: string,
+  ) {
+    return await this.historialAcademicoService.deleteTrayectoria(+id, +index);
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Param('id') id: string) {
+    await this.historialAcademicoService.remove(+id);
+  }
+}
   remove(@Param('id') id: string) {
     return this.historialAcademicoService.remove(+id);
   }
