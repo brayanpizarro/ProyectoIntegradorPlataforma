@@ -245,7 +245,13 @@ class ApiService {
     try {
       return await this.request<Estudiante[]>(`/estudiante/generacion/${año}`);
     } catch (error) {
-      throw error;
+      console.warn(`🔄 Backend no disponible, filtrando estudiantes mock para generación ${año}`);
+      const estudiantes = this.getMockEstudiantes();
+      return estudiantes.filter(e => 
+        e.institucion?.anio_de_ingreso === año || 
+        e.año_generacion?.toString() === año ||
+        e.anio_de_ingreso?.toString() === año
+      );
     }
   }
 
@@ -253,7 +259,8 @@ class ApiService {
     try {
       return await this.request<Estudiante>(`/estudiante/${id}`);
     } catch (error) {
-      throw error;
+      console.warn(`🔄 Backend no disponible, buscando estudiante ${id} en mock`);
+      return this.getMockEstudianteById(id);
     }
   }
 
