@@ -11,6 +11,9 @@ export default registerAs('database', () => ({
     username: process.env.DB_USERNAME || 'postgres',
     password: process.env.DB_PASSWORD || 'postgres',
     database: process.env.DB_DATABASE || 'myapp',
+    ssl: {
+      rejectUnauthorized: false,
+    },
     synchronize: process.env.NODE_ENV !== 'production',
     logging: process.env.NODE_ENV === 'development',
   },

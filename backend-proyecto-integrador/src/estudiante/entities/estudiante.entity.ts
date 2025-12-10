@@ -11,9 +11,9 @@ import {
 } from 'typeorm';
 import { Institucion } from '../../institucion/entities/institucion.entity';
 import { Familia } from '../../familia/entities/familia.entity';
-import { RamosCursados } from 'src/ramos_cursados/entities/ramos_cursado.entity';
-import { HistorialAcademico } from 'src/historial_academico/entities/historial_academico.entity';
-import { InformacionAcademica } from 'src/informacion_academica/entities/informacion_academica.entity';
+import { RamosCursados } from '../../ramos_cursados/entities/ramos_cursado.entity';
+import { HistorialAcademico } from '../../historial_academico/entities/historial_academico.entity';
+import { InformacionAcademica } from '../../informacion_academica/entities/informacion_academica.entity';
 import { Entrevista } from '../../entrevistas/entities/entrevista.entity';
 
 export enum TipoEstudiante {
