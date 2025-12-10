@@ -31,6 +31,11 @@ export class UpdateHistorialAcademicoDto {
   @Expose()
   @IsNumber()
   @IsOptional()
+  ramos_eliminados?: number;
+
+  @Expose()
+  @IsNumber()
+  @IsOptional()
   promedio_semestre?: number;
 
   @Expose()

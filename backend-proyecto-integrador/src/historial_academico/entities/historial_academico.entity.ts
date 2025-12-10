@@ -29,6 +29,9 @@ export class HistorialAcademico {
   @Column({ nullable: true, default: null })
   ramos_reprobados: number;
 
+  @Column({ nullable: true, default: 0 })
+  ramos_eliminados: number;
+
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   promedio_semestre: number;
 

@@ -8,25 +8,18 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import type { DropResult } from '@hello-pangea/dnd';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
-import LinearProgress from '@mui/material/LinearProgress';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
 import Fab from '@mui/material/Fab';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import EditIcon from '@mui/icons-material/Edit';
-import SaveIcon from '@mui/icons-material/Save';
-import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { 
   SemesterCard, 
-  SubjectCard, 
-  StatsCard,
+  SubjectCard,
   EditSubjectModal,
   AddSubjectModal,
   SemesterModal,
@@ -47,6 +40,7 @@ interface MallaCurricular {
     prerequisitos: string[];
     estado: 'pendiente' | 'cursando' | 'aprobado' | 'reprobado';
     nota?: number;
+    backendId?: number | string;
   }[];
 }
 
@@ -71,7 +65,8 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
   const [mallaCurricular, setMallaCurricular] = useState<MallaCurricular[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [vistaActiva, setVistaActiva] = useState<'malla' | 'progreso' | 'estadisticas'>('malla');
+  // Estado para vista activa (pendiente de implementar)
+  // const [vistaActiva, setVistaActiva] = useState<'malla' | 'progreso' | 'estadisticas'>('malla');
   
   // Estados para funcionalidad de edición
   const [isEditMode, setIsEditMode] = useState(false);
@@ -85,72 +80,81 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
   const [editingSemester, setEditingSemester] = useState<MallaCurricular | null>(null);
   const [isCreateSemesterModalOpen, setIsCreateSemesterModalOpen] = useState(false);
 
-  // Generar datos mock de malla curricular (similar al original)
-  const generateMockCurricularData = () => {
-    const mallaMock: MallaCurricular[] = [
-      {
-        semestre: 1,
-        periodo: '2021-1',
-        fechaInicio: '2021-03-01',
-        fechaFin: '2021-07-30',
-        ramos: [
-          { id: 1, codigo: 'DCCB-00106', nombre: 'CÁLCULO I', creditos: 6, prerequisitos: [], estado: 'aprobado', nota: 6.1 },
-          { id: 2, codigo: 'DCCB-00107', nombre: 'ÁLGEBRA I', creditos: 6, prerequisitos: [], estado: 'aprobado', nota: 6.4 },
-          { id: 3, codigo: 'DCCB-00119', nombre: 'INTRODUCCIÓN A LA FÍSICA', creditos: 6, prerequisitos: [], estado: 'aprobado', nota: 6.4 },
-          { id: 4, codigo: 'ECIN-00100', nombre: 'PR. INTRO. A LA INGENIERÍA', creditos: 5, prerequisitos: [], estado: 'aprobado', nota: 6.1 },
-        ]
-      },
-      {
-        semestre: 2,
-        periodo: '2021-2',
-        fechaInicio: '2021-08-15',
-        fechaFin: '2021-12-20',
-        ramos: [
-          { id: 5, codigo: 'DCCB-00216', nombre: 'MECÁNICA', creditos: 6, prerequisitos: [], estado: 'aprobado', nota: 4.7 },
-          { id: 6, codigo: 'DCCB-00265', nombre: 'CÁLCULO II', creditos: 6, prerequisitos: ['DCCB-00106'], estado: 'aprobado', nota: 4.5 },
-          { id: 7, codigo: 'ECIN-00201', nombre: 'PROGRAMACIÓN', creditos: 6, prerequisitos: [], estado: 'aprobado', nota: 4.7 },
-        ]
-      },
-      {
-        semestre: 3,
-        periodo: '2022-1',
-        ramos: [
-          { id: 8, codigo: 'DCCB-00264', nombre: 'QUÍMICA GENERAL', creditos: 6, prerequisitos: [], estado: 'cursando', nota: 5.2 },
-          { id: 9, codigo: 'ECIN-00307', nombre: 'PROGRAMACIÓN ORIENTADA A OBJETO', creditos: 5, prerequisitos: ['ECIN-00201'], estado: 'cursando' },
-        ]
-      }
-    ];
-
-    // Calcular progreso
-    let totalCreditos = 0;
-    let creditosAprobados = 0;
-    let notaSum = 0;
-    let notaCount = 0;
-
-    mallaMock.forEach(semestre => {
-      semestre.ramos.forEach(ramo => {
-        totalCreditos += ramo.creditos;
-        if (ramo.estado === 'aprobado') {
-          creditosAprobados += ramo.creditos;
-          if (ramo.nota) {
-            notaSum += ramo.nota;
-            notaCount++;
+  // Cargar datos reales desde el backend
+  const cargarDatosReales = async () => {
+    try {
+      // Obtener ramos cursados del estudiante
+      const ramosReales = await apiService.getRamosCursadosByEstudiante(String(estudiante.id_estudiante));
+      
+      console.log('📥 Datos recibidos del backend:', ramosReales);
+      
+      if (ramosReales && ramosReales.length > 0) {
+        // Agrupar ramos por semestre
+        const semestreMap: { [key: number]: MallaCurricular } = {};
+        
+        ramosReales.forEach((ramo: any) => {
+          console.log('🔄 Procesando ramo del backend:', ramo);
+          
+          const semestre = ramo.semestre || 1;
+          
+          if (!semestreMap[semestre]) {
+            semestreMap[semestre] = {
+              semestre,
+              periodo: `${ramo.año || new Date().getFullYear()}-${semestre}`,
+              ramos: []
+            };
           }
-        }
+          
+          const ramoMapeado = {
+            id: ramo.id_ramo || Date.now() + Math.random(),
+            codigo: ramo.codigo_ramo || 'SIN-CODIGO',
+            nombre: ramo.nombre_ramo || 'Sin nombre',
+            creditos: 6, // Valor por defecto, se puede ajustar
+            prerequisitos: [],
+            estado: ramo.estado || 'pendiente',
+            nota: ramo.promedio_final || undefined,
+            // Guardar referencia al ID original del backend
+            backendId: ramo.id_ramo
+          };
+          
+          console.log('✅ Ramo mapeado:', ramoMapeado);
+          
+          semestreMap[semestre].ramos.push(ramoMapeado);
+        });
+        
+        // Convertir a array y ordenar
+        const mallaCurricularReal = Object.values(semestreMap)
+          .sort((a, b) => a.semestre - b.semestre);
+        
+        setMallaCurricular(mallaCurricularReal);
+        return mallaCurricularReal;
+      } else {
+        // Si no hay ramos, crear estructura vacía
+        setMallaCurricular([]);
+        setProgreso({
+          totalCreditos: 0,
+          creditosAprobados: 0,
+          creditosPendientes: 0,
+          porcentajeAvance: 0,
+          semestreActual: 1,
+          promedioGeneral: 0
+        });
+        return [];
+      }
+    } catch (error) {
+      console.error('Error cargando datos reales:', error);
+      // En caso de error, usar estructura vacía
+      setMallaCurricular([]);
+      setProgreso({
+        totalCreditos: 0,
+        creditosAprobados: 0,
+        creditosPendientes: 0,
+        porcentajeAvance: 0,
+        semestreActual: 1,
+        promedioGeneral: 0
       });
-    });
-
-    const progresoCalculado: ProgresoCurricular = {
-      totalCreditos,
-      creditosAprobados,
-      creditosPendientes: totalCreditos - creditosAprobados,
-      porcentajeAvance: Math.round((creditosAprobados / totalCreditos) * 100),
-      semestreActual: 3,
-      promedioGeneral: notaCount > 0 ? Math.round((notaSum / notaCount) * 10) / 10 : 0
-    };
-
-    setMallaCurricular(mallaMock);
-    setProgreso(progresoCalculado);
+      return [];
+    }
   };
 
   // Cargar datos al montar el componente
@@ -158,37 +162,90 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
     const loadData = async () => {
       try {
         setLoading(true);
+        setError(null);
         
-        // Intentar obtener ramos cursados reales del backend
-        try {
-          const ramosReales = await apiService.getRamosCursadosByEstudiante(estudiante.id_estudiante);
-          
-          if (ramosReales && ramosReales.length > 0) {
-            // Procesar datos reales aquí si es necesario
-            console.log('Datos reales obtenidos:', ramosReales);
-          }
-        } catch (backendError) {
-          console.log('No hay datos en backend, usando datos de ejemplo');
+        // Cargar datos reales desde el backend
+        const mallaCargada = await cargarDatosReales();
+        
+        // Si se cargaron datos, recalcular el progreso
+        if (mallaCargada && mallaCargada.length > 0) {
+          // El progreso se calculará automáticamente en el useEffect del recalcularProgreso
         }
-        
-        // Por ahora usar siempre datos mock para demostración
-        generateMockCurricularData();
         
       } catch (error) {
         console.error('Error al cargar datos:', error);
-        setError('Error al cargar los datos del estudiante');
+        setError('Error al cargar los datos del avance curricular');
       } finally {
         setLoading(false);
       }
     };
 
-    loadData();
+    if (estudiante?.id_estudiante) {
+      loadData();
+    }
   }, [estudiante.id_estudiante]);
+
+  // Función para recalcular progreso
+  const recalcularProgreso = async () => {
+    const totalCreditos = mallaCurricular.reduce((acc, sem) => acc + (sem.ramos.length * 4), 0);
+    const creditosAprobados = mallaCurricular.reduce((acc, sem) => 
+      acc + sem.ramos.filter(r => r.estado === 'aprobado').length * 4, 0);
+    const creditosPendientes = totalCreditos - creditosAprobados;
+    const porcentajeAvance = totalCreditos > 0 ? (creditosAprobados / totalCreditos) * 100 : 0;
+    
+    const todasLasNotas = mallaCurricular.reduce((acc, sem) => {
+      const notasAprobadas = sem.ramos.filter(r => r.estado === 'aprobado' && r.nota).map(r => r.nota!);
+      return [...acc, ...notasAprobadas];
+    }, [] as number[]);
+    
+    const promedioGeneral = todasLasNotas.length > 0 
+      ? todasLasNotas.reduce((sum, nota) => sum + nota, 0) / todasLasNotas.length 
+      : 0;
+
+    setProgreso({
+      totalCreditos,
+      creditosAprobados,
+      creditosPendientes,
+      porcentajeAvance: Number(porcentajeAvance.toFixed(1)),
+      semestreActual: Math.max(...mallaCurricular.map(m => m.semestre), 0),
+      promedioGeneral: Number(promedioGeneral.toFixed(2))
+    });
+  };
 
   // Recalcular progreso cuando cambie la malla curricular
   useEffect(() => {
     if (mallaCurricular.length > 0) {
-      recalcularProgreso();
+      const totalCreditos = mallaCurricular.reduce((acc, sem) => acc + (sem.ramos.length * 4), 0);
+      const creditosAprobados = mallaCurricular.reduce((acc, sem) => 
+        acc + sem.ramos.filter(r => r.estado === 'aprobado').length * 4, 0);
+      const creditosPendientes = totalCreditos - creditosAprobados;
+      const porcentajeAvance = totalCreditos > 0 ? (creditosAprobados / totalCreditos) * 100 : 0;
+
+      const notasAprobadas = mallaCurricular.flatMap(sem => 
+        sem.ramos.filter(r => r.estado === 'aprobado' && r.nota).map(r => r.nota!)
+      );
+      const promedioGeneral = notasAprobadas.length > 0 
+        ? notasAprobadas.reduce((sum, nota) => sum + nota, 0) / notasAprobadas.length 
+        : 0;
+
+      setProgreso({
+        totalCreditos,
+        creditosAprobados,
+        creditosPendientes,
+        porcentajeAvance: Number(porcentajeAvance.toFixed(1)),
+        semestreActual: mallaCurricular.length,
+        promedioGeneral: Number(promedioGeneral.toFixed(2))
+      });
+    } else {
+      // Si no hay datos, resetear progreso
+      setProgreso({
+        totalCreditos: 0,
+        creditosAprobados: 0,
+        creditosPendientes: 0,
+        porcentajeAvance: 0,
+        semestreActual: 1,
+        promedioGeneral: 0
+      });
     }
   }, [mallaCurricular]);
 
@@ -305,32 +362,6 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
     }
   };
 
-  const recalcularProgreso = async () => {
-    const totalCreditos = mallaCurricular.reduce((acc, sem) => acc + (sem.ramos.length * 4), 0);
-    const creditosAprobados = mallaCurricular.reduce((acc, sem) => 
-      acc + sem.ramos.filter(r => r.estado === 'aprobado').length * 4, 0);
-    const creditosPendientes = totalCreditos - creditosAprobados;
-    const porcentajeAvance = totalCreditos > 0 ? (creditosAprobados / totalCreditos) * 100 : 0;
-    
-    const todasLasNotas = mallaCurricular.reduce((acc, sem) => {
-      const notasAprobadas = sem.ramos.filter(r => r.estado === 'aprobado' && r.nota).map(r => r.nota!);
-      return [...acc, ...notasAprobadas];
-    }, [] as number[]);
-    
-    const promedioGeneral = todasLasNotas.length > 0 
-      ? todasLasNotas.reduce((sum, nota) => sum + nota, 0) / todasLasNotas.length 
-      : 0;
-
-    setProgreso({
-      totalCreditos,
-      creditosAprobados,
-      creditosPendientes,
-      porcentajeAvance: Number(porcentajeAvance.toFixed(1)),
-      semestreActual: Math.max(...mallaCurricular.map(m => m.semestre), 0),
-      promedioGeneral: Number(promedioGeneral.toFixed(2))
-    });
-  };
-
   const showSnackbar = (message: string) => {
     setSnackbarMessage(message);
     setSnackbarOpen(true);
@@ -363,9 +394,6 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
                 }
               }}
             >
-              <div className="subject-code">
-                {ramo.codigo}
-              </div>
               <div className="subject-name">
                 {ramo.nombre.toUpperCase()}
               </div>
@@ -510,7 +538,7 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
           <DragDropContext onDragEnd={handleDragEnd}>
             <Grid container spacing={3}>
               {mallaCurricular.map((semestre) => (
-                <Grid item xs={12} md={6} lg={4} key={semestre.semestre}>
+                <Grid xs={12} md={6} lg={4} key={semestre.semestre}>
                   <SemesterCard>
                     <div className="semester-header">
                       <Typography className="semester-title" variant="h6">
@@ -568,7 +596,7 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
               ))}
               
               {mallaCurricular.length === 0 && (
-                <Grid item xs={12}>
+                <Grid xs={12}>
                   <Box 
                     sx={{ 
                       textAlign: 'center', 
@@ -606,18 +634,54 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
             setIsModalOpen(false);
             setEditingSubject(null);
           }}
-          onSave={(updatedSubject) => {
-            // Actualizar el ramo en la malla curricular
-            setMallaCurricular(prev => prev.map(semestre => ({
-              ...semestre,
-              ramos: semestre.ramos.map(ramo => 
-                ramo.id === editingSubject.id ? updatedSubject : ramo
-              )
-            })));
-            
-            showSnackbar('Ramo actualizado correctamente');
-            setIsModalOpen(false);
-            setEditingSubject(null);
+          onSave={async (updatedSubject) => {
+            try {
+              console.log('🔄 Actualizando ramo:', {
+                editingSubject,
+                updatedSubject,
+                backendId: editingSubject?.backendId
+              });
+
+              // Usar backendId si está disponible, sino usar id
+              const idToUse = editingSubject?.backendId || updatedSubject.id;
+              
+              if (idToUse) {
+                const ramoData = {
+                  estado: updatedSubject.estado,
+                  promedio_final: updatedSubject.nota || null
+                };
+                
+                console.log('📤 Enviando actualización al backend:', {
+                  id: String(idToUse),
+                  data: ramoData
+                });
+                
+                await apiService.updateRamoCursado(String(idToUse), ramoData);
+                
+                // Recargar todos los datos desde el backend para asegurar consistencia
+                console.log('🔄 Recargando datos desde el backend...');
+                await cargarDatosReales();
+                
+                showSnackbar('Ramo actualizado correctamente');
+              } else {
+                console.log('⚠️ No hay ID disponible, actualizando solo localmente');
+                // Si no hay ID, solo actualizar localmente
+                setMallaCurricular(prev => prev.map(semestre => ({
+                  ...semestre,
+                  ramos: semestre.ramos.map(ramo => 
+                    ramo.id === editingSubject.id ? updatedSubject : ramo
+                  )
+                })));
+                
+                showSnackbar('Ramo actualizado localmente');
+              }
+              
+              setIsModalOpen(false);
+              setEditingSubject(null);
+            } catch (error) {
+              console.error('❌ Error actualizando ramo:', error);
+              showSnackbar('Error al actualizar el ramo');
+            }
           }}
         />
       )}

@@ -12,20 +12,55 @@ interface AcademicReportSectionProps {
 
 
 
-const mockSemestres = [
-  { anio: 2021, sem: 1, nSem: 1, aprob: 6, reprob: 0, elim: 0, total: 6 },
-  { anio: 2021, sem: 2, nSem: 2, aprob: 6, reprob: 0, elim: 0, total: 6 },
-  { anio: 2022, sem: 1, nSem: 3, aprob: 6, reprob: 0, elim: 0, total: 6 },
-  { anio: 2022, sem: 2, nSem: 4, aprob: 6, reprob: 0, elim: 0, total: 6 },
-  { anio: 2023, sem: 1, nSem: 5, aprob: 6, reprob: 0, elim: 0, total: 6 },
-  { anio: 2023, sem: 2, nSem: 6, aprob: 6, reprob: 0, elim: 0, total: 6 },
-  { anio: 2024, sem: 1, nSem: 7, aprob: 6, reprob: 0, elim: 0, total: 6 },
-  { anio: 2024, sem: 2, nSem: 8, aprob: 7, reprob: 0, elim: 0, total: 7 },
-  { anio: 2025, sem: 1, nSem: 9, aprob: 0, reprob: 0, elim: 0, total: 0 },
-  { anio: 2025, sem: 2, nSem: 10, aprob: 0, reprob: 0, elim: 0, total: 0 },
-];
-
 export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ estudiante, modoEdicion }) => {
+  // Helper functions para calcular estadísticas académicas
+  const historialAcademico = estudiante.historial_academico || estudiante.historialesAcademicos || [];
+  const ramosCursados = estudiante.ramosCursados || [];
+  
+  // Calcular totales de ramos
+  const calcularTotalRamos = () => {
+    const aprobados = ramosCursados.filter(r => r.estado === 'aprobado' || r.estado === 'A').length;
+    const reprobados = ramosCursados.filter(r => r.estado === 'reprobado' || r.estado === 'R').length;
+    const eliminados = ramosCursados.filter(r => r.estado === 'eliminado' || r.estado === 'E').length;
+    const total = aprobados + reprobados + eliminados;
+    
+    return { aprobados, reprobados, eliminados, total };
+  };
+  
+  // Calcular semestres finalizados
+  const calcularSemestresFinalizados = () => {
+    return historialAcademico.length;
+  };
+  
+  // Calcular porcentajes
+  const calcularPorcentajes = () => {
+    const { aprobados, reprobados, total } = calcularTotalRamos();
+    if (total === 0) return { porcAprobados: 0, porcReprobados: 0, porcTotal: 0 };
+    
+    return {
+      porcAprobados: ((aprobados / total) * 100).toFixed(1),
+      porcReprobados: ((reprobados / total) * 100).toFixed(1),
+      porcTotal: 100.0
+    };
+  };
+  
+  // Preparar datos por semestre
+  const prepararDatosPorSemestre = () => {
+    return historialAcademico.map((historial, index) => ({
+      año: historial.año,
+      semestre: historial.semestre,
+      nSemestreCarrera: index + 1,
+      ramosAprobados: historial.ramos_aprobados || 0,
+      ramosReprobados: historial.ramos_reprobados || 0,
+      ramosEliminados: historial.ramos_eliminados || 0,
+      totalRamos: (historial.ramos_aprobados || 0) + (historial.ramos_reprobados || 0),
+      observaciones: historial.trayectoria_academica?.join(', ') || ''
+    }));
+  };
+  
+  const { aprobados, reprobados, eliminados, total } = calcularTotalRamos();
+  const { porcAprobados, porcReprobados, porcTotal } = calcularPorcentajes();
+  const datosPorSemestre = prepararDatosPorSemestre();
   return (
     <div>
       <div className="bg-[var(--color-turquoise)] text-white text-center font-bold text-xl py-3 mb-2">
@@ -42,66 +77,66 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
       >
         <tbody>
           <tr>
-            <td className="bg-rose-200 text-center align-middle font-bold text-lg p-4 border border-gray-300" rowSpan={10}>
-              {estudiante.nombres} {estudiante.apellidos}
+            <td className="bg-rose-200 text-center align-middle font-bold text-sm p-2 border border-gray-300 w-32" rowSpan={10}>
+              {estudiante.nombre || 'Sin nombre'}
             </td>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Nº de carrera cursada</td>
             <td className="p-2 border border-gray-300 bg-white">
-              {modoEdicion ? <input type="number" defaultValue={1} className="w-full px-2 py-1 border border-gray-300 rounded" /> : '1'}
+              {modoEdicion ? <input type="number" defaultValue={estudiante.numero_carrera || 1} className="w-full px-2 py-1 border border-gray-300 rounded" /> : (estudiante.numero_carrera || 1)}
             </td>
           </tr>
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Nº semestres finalizados</td>
             <td className="p-2 border border-gray-300 bg-white">
-              {modoEdicion ? <input type="number" defaultValue={7} className="w-full px-2 py-1 border border-gray-300 rounded" /> : '7'}
+              {modoEdicion ? <input type="number" defaultValue={calcularSemestresFinalizados()} className="w-full px-2 py-1 border border-gray-300 rounded" /> : calcularSemestresFinalizados()}
             </td>
           </tr>
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Nº semestres suspendidos</td>
             <td className="p-2 border border-gray-300 bg-white">
-              {modoEdicion ? <input type="number" defaultValue={0} className="w-full px-2 py-1 border border-gray-300 rounded" /> : '0'}
+              {modoEdicion ? <input type="number" defaultValue={estudiante.semestres_suspendidos || 0} className="w-full px-2 py-1 border border-gray-300 rounded" /> : (estudiante.semestres_suspendidos || 0)}
             </td>
           </tr>
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Nº semestres de carrera</td>
             <td className="p-2 border border-gray-300 bg-white">
-              {modoEdicion ? <input type="number" defaultValue={10} className="w-full px-2 py-1 border border-gray-300 rounded" /> : '10'}
+              {modoEdicion ? <input type="number" defaultValue={estudiante.semestres_total_carrera || 10} className="w-full px-2 py-1 border border-gray-300 rounded" /> : (estudiante.semestres_total_carrera || 10)}
             </td>
           </tr>
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Total ramos aprobados</td>
             <td className="p-2 border border-gray-300 bg-white">
-              {modoEdicion ? <input type="number" defaultValue={43} className="w-full px-2 py-1 border border-gray-300 rounded" /> : '43'}
+              {modoEdicion ? <input type="number" defaultValue={aprobados} className="w-full px-2 py-1 border border-gray-300 rounded" /> : aprobados}
             </td>
           </tr>
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Total ramos reprobados</td>
             <td className="p-2 border border-gray-300 bg-white">
-              {modoEdicion ? <input type="number" defaultValue={0} className="w-full px-2 py-1 border border-gray-300 rounded" /> : '0'}
+              {modoEdicion ? <input type="number" defaultValue={reprobados} className="w-full px-2 py-1 border border-gray-300 rounded" /> : reprobados}
             </td>
           </tr>
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Total eliminados</td>
             <td className="p-2 border border-gray-300 bg-white">
-              {modoEdicion ? <input type="number" defaultValue={0} className="w-full px-2 py-1 border border-gray-300 rounded" /> : '0'}
+              {modoEdicion ? <input type="number" defaultValue={eliminados} className="w-full px-2 py-1 border border-gray-300 rounded" /> : eliminados}
             </td>
           </tr>
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">% Ramos aprobados</td>
             <td className="p-2 border border-gray-300 bg-white">
-              {modoEdicion ? <input type="number" step="0.1" defaultValue={100.0} className="w-full px-2 py-1 border border-gray-300 rounded" /> : '100.0'}
+              {modoEdicion ? <input type="number" step="0.1" defaultValue={porcAprobados} className="w-full px-2 py-1 border border-gray-300 rounded" /> : `${porcAprobados}%`}
             </td>
           </tr>
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">% Reprobados</td>
             <td className="p-2 border border-gray-300 bg-white">
-              {modoEdicion ? <input type="number" step="0.1" defaultValue={0.0} className="w-full px-2 py-1 border border-gray-300 rounded" /> : '0.0'}
+              {modoEdicion ? <input type="number" step="0.1" defaultValue={porcReprobados} className="w-full px-2 py-1 border border-gray-300 rounded" /> : `${porcReprobados}%`}
             </td>
           </tr>
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">% Total cursados</td>
             <td className="p-2 border border-gray-300 bg-white">
-              {modoEdicion ? <input type="number" step="0.1" defaultValue={100.0} className="w-full px-2 py-1 border border-gray-300 rounded" /> : '100.0'}
+              {modoEdicion ? <input type="number" step="0.1" defaultValue={porcTotal} className="w-full px-2 py-1 border border-gray-300 rounded" /> : `${porcTotal}%`}
             </td>
           </tr>
         </tbody>
@@ -126,34 +161,42 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
           </tr>
         </thead>
         <tbody>
-          {mockSemestres.map((fila, idx) => (
-            <tr key={idx}>
-              <td className="p-2 text-center border">
-                {modoEdicion ? <input type="number" defaultValue={fila.anio} className="w-full px-2 py-1 border border-gray-300 rounded text-center" /> : fila.anio}
-              </td>
-              <td className="p-2 text-center border">
-                {modoEdicion ? <input type="number" defaultValue={fila.sem} className="w-full px-2 py-1 border border-gray-300 rounded text-center" /> : fila.sem}
-              </td>
-              <td className="p-2 text-center border">
-                {modoEdicion ? <input type="number" defaultValue={fila.nSem} className="w-full px-2 py-1 border border-gray-300 rounded text-center" /> : fila.nSem}
-              </td>
-              <td className="p-2 text-center border">
-                {modoEdicion ? <input type="number" defaultValue={fila.aprob} className="w-full px-2 py-1 border border-gray-300 rounded text-center" /> : fila.aprob}
-              </td>
-              <td className="p-2 text-center border">
-                {modoEdicion ? <input type="number" defaultValue={fila.reprob} className="w-full px-2 py-1 border border-gray-300 rounded text-center" /> : fila.reprob}
-              </td>
-              <td className="p-2 text-center border">
-                {modoEdicion ? <input type="number" defaultValue={fila.elim} className="w-full px-2 py-1 border border-gray-300 rounded text-center" /> : fila.elim}
-              </td>
-              <td className="p-2 text-center border">
-                {modoEdicion ? <input type="number" defaultValue={fila.total} className="w-full px-2 py-1 border border-gray-300 rounded text-center" /> : fila.total}
-              </td>
-              <td className="p-2 border">
-                {modoEdicion ? <input type="text" placeholder="Observaciones..." className="w-full px-2 py-1 border border-gray-300 rounded" /> : ''}
+          {datosPorSemestre.length > 0 ? (
+            datosPorSemestre.map((fila, idx) => (
+              <tr key={idx}>
+                <td className="p-2 text-center border">
+                  {modoEdicion ? <input type="number" defaultValue={fila.año} className="w-full px-2 py-1 border border-gray-300 rounded text-center" /> : (fila.año || '-')}
+                </td>
+                <td className="p-2 text-center border">
+                  {modoEdicion ? <input type="number" defaultValue={fila.semestre} className="w-full px-2 py-1 border border-gray-300 rounded text-center" /> : (fila.semestre || '-')}
+                </td>
+                <td className="p-2 text-center border">
+                  {modoEdicion ? <input type="number" defaultValue={fila.nSemestreCarrera} className="w-full px-2 py-1 border border-gray-300 rounded text-center" /> : fila.nSemestreCarrera}
+                </td>
+                <td className="p-2 text-center border">
+                  {modoEdicion ? <input type="number" defaultValue={fila.ramosAprobados} className="w-full px-2 py-1 border border-gray-300 rounded text-center" /> : fila.ramosAprobados}
+                </td>
+                <td className="p-2 text-center border">
+                  {modoEdicion ? <input type="number" defaultValue={fila.ramosReprobados} className="w-full px-2 py-1 border border-gray-300 rounded text-center" /> : fila.ramosReprobados}
+                </td>
+                <td className="p-2 text-center border">
+                  {modoEdicion ? <input type="number" defaultValue={fila.ramosEliminados} className="w-full px-2 py-1 border border-gray-300 rounded text-center" /> : fila.ramosEliminados}
+                </td>
+                <td className="p-2 text-center border">
+                  {modoEdicion ? <input type="number" defaultValue={fila.totalRamos} className="w-full px-2 py-1 border border-gray-300 rounded text-center" /> : fila.totalRamos}
+                </td>
+                <td className="p-2 border">
+                  {modoEdicion ? <input type="text" defaultValue={fila.observaciones} placeholder="Observaciones..." className="w-full px-2 py-1 border border-gray-300 rounded" /> : (fila.observaciones || '')}
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={8} className="p-4 text-center text-gray-500 border">
+                No hay datos académicos disponibles
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
     </div>

@@ -76,8 +76,8 @@ const EstudianteDetail: React.FC = () => {
     const cargarHistorialAcademico = async () => {
       try {
         const historiales = await historialAcademicoService.getByEstudiante(id);
-        setInformesGuardados(historiales);
-        logger.log('📂 Historial académico cargado:', historiales.length, 'registros');
+        setInformesGuardados(Array.isArray(historiales) ? historiales : []);
+        logger.log('📂 Historial académico cargado:', Array.isArray(historiales) ? historiales.length : 0, 'registros');
       } catch (err) {
         logger.error('❌ Error al cargar historial académico:', err);
       }
@@ -169,7 +169,7 @@ const EstudianteDetail: React.FC = () => {
       const response = await historialAcademicoService.create(historialData);
       
       const nuevoInforme = {
-        ...response,
+        ...(response || {}),
         fechaFormateada: new Date().toLocaleDateString('es-CL', { 
           year: 'numeric', 
           month: 'long', 
@@ -216,9 +216,14 @@ const EstudianteDetail: React.FC = () => {
     <div className="min-h-screen bg-slate-50">
       {/* Header del estudiante */}
       <StudentHeader
+<<<<<<< Updated upstream
         nombres={estudianteConEdiciones.nombre || ''}
         apellidos={estudianteConEdiciones.apellidos || ''}
         estado={estudianteConEdiciones.status || 'activo'}
+=======
+        nombres={estudiante.nombre || ''}
+        estado={estudiante.status || 'activo'}
+>>>>>>> Stashed changes
         modoEdicion={modoEdicion}
         onToggleEdicion={handleToggleEdicion}
         onGuardar={handleGuardar}
@@ -249,7 +254,10 @@ const EstudianteDetail: React.FC = () => {
 
         {/* Información Familiar */}
         {seccionActiva === 'familiar' && (
-          <FamilyInfoSection modoEdicion={modoEdicion} />
+          <FamilyInfoSection 
+            estudiante={estudiante} 
+            modoEdicion={modoEdicion} 
+          />
         )}
 
         {/* Informe Académico */}
@@ -285,7 +293,10 @@ const EstudianteDetail: React.FC = () => {
                 </button>
               </div>
             )}
-            <SemesterPerformanceSection modoEdicion={modoEdicion} />
+            <SemesterPerformanceSection 
+              estudiante={estudiante} 
+              modoEdicion={modoEdicion} 
+            />
           </div>
         )}
 

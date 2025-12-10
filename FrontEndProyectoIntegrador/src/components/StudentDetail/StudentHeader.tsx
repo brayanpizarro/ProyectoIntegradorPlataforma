@@ -8,7 +8,6 @@ import { getEstadoColor } from '../../utils/estadoColors';
 
 interface StudentHeaderProps {
   nombres: string;
-  apellidos: string;
   estado: string;
   modoEdicion: boolean;
   onToggleEdicion: () => void;
@@ -18,7 +17,6 @@ interface StudentHeaderProps {
 
 export const StudentHeader: React.FC<StudentHeaderProps> = ({
   nombres,
-  apellidos,
   estado,
   modoEdicion,
   onToggleEdicion,
@@ -38,7 +36,7 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
             Volver
           </button>
           <h1 className="text-2xl text-gray-900 font-semibold flex items-center gap-3">
-            {nombres} {apellidos}
+            {nombres}
             <span 
               className="px-3 py-1 text-white rounded-lg text-sm font-semibold"
               style={{ backgroundColor: getEstadoColor(estado) }}

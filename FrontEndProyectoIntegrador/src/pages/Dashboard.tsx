@@ -1,6 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authService, estudianteService, estadisticasService } from '../services';
+import { authService, estadisticasService } from '../services';
+import { apiService } from '../services/apiService';
 import { logger } from '../config';
 import { LoadingSpinner, ErrorMessage, StatCard } from '../components/common';
 import { 
@@ -55,7 +56,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
           logger.log('📊 Cargando datos del backend...');
 
           const [estudiantesData, estadisticasData] = await Promise.all([
-            estudianteService.getAll(),
+            apiService.getEstudiantes(),
             estadisticasService.getDashboard()
           ]);
           setEstadisticas(estadisticasData);
@@ -146,15 +147,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
 
   const handleEstudianteCreated = async () => {
     // Recargar datos después de crear estudiante
+    console.log('🔄 Recargando datos del dashboard después de crear estudiante...');
     setLoading(true);
     try {
       const [estudiantesData, estadisticasData] = await Promise.all([
-        estudianteService.getAll(),
+        apiService.getEstudiantes(),
         estadisticasService.getDashboard()
       ]);
       setEstadisticas(estadisticasData);
       const generacionesCalculadas = calcularGeneracionesDesdeEstudiantes(estudiantesData);
       setGeneraciones(generacionesCalculadas);
+      console.log('✅ Dashboard actualizado - Nuevos datos:', {
+        totalEstudiantes: estudiantesData.length,
+        generaciones: generacionesCalculadas.length,
+        ultimoEstudiante: estudiantesData[estudiantesData.length - 1]
+      });
       logger.log('✅ Datos actualizados exitosamente');
     } catch (error) {
       logger.error('Error al recargar datos:', error);

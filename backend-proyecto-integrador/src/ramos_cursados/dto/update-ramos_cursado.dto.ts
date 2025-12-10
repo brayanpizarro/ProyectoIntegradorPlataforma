@@ -9,6 +9,16 @@ export class UpdateRamosCursadosDto {
   semestre?: number;
 
   @Expose()
+  @IsNumber()
+  @IsOptional()
+  año?: number;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  codigo_ramo?: string;
+
+  @Expose()
   @IsString()
   @IsOptional()
   nivel_educativo?: string;
@@ -31,4 +41,9 @@ export class UpdateRamosCursadosDto {
   @IsString()
   @IsOptional()
   estado?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  comentarios?: string;
 }

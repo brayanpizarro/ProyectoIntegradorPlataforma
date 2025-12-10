@@ -80,4 +80,14 @@ export class UpdateEstudianteDto extends PartialType(CreateEstudianteDto) {
   @IsOptional()
   @IsString()
   observaciones?: string;
+
+  @Expose()
+  @IsOptional()
+  @IsNumber()
+  semestres_suspendidos?: number;
+
+  @Expose()
+  @IsOptional()
+  @IsNumber()
+  semestres_total_carrera?: number;
 }

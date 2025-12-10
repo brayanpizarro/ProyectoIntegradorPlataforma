@@ -10,6 +10,14 @@ export class CreateRamosCursadosDto {
   semestre?: number;
 
   @IsOptional()
+  @IsNumber()
+  año?: number;
+
+  @IsOptional()
+  @IsString()
+  codigo_ramo?: string;
+
+  @IsOptional()
   @IsString()
   nivel_educativo?: string;
 
@@ -27,4 +35,8 @@ export class CreateRamosCursadosDto {
   @IsOptional()
   @IsString()
   estado?: string;
+
+  @IsOptional()
+  @IsString()
+  comentarios?: string;
 }

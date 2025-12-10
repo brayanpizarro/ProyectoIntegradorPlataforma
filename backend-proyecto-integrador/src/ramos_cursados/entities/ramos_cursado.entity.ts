@@ -18,6 +18,12 @@ export class RamosCursados {
   semestre: number;
 
   @Column({ nullable: true, default: null })
+  año: number;
+
+  @Column({ nullable: true, default: null })
+  codigo_ramo: string;
+
+  @Column({ nullable: true, default: null })
   nivel_educativo: string;
 
   @Column({ nullable: true, default: null })
@@ -31,6 +37,9 @@ export class RamosCursados {
 
   @Column({ nullable: true })
   estado: string;
+
+  @Column({ type: 'text', nullable: true })
+  comentarios: string;
 
   @Column({ nullable: true })
   id_estudiante: string;

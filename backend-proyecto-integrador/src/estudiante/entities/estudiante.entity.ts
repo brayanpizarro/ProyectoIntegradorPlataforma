@@ -57,6 +57,12 @@ export class Estudiante {
   @Column({ type: 'text', nullable: true })
   observaciones: string;
 
+  @Column({ type: 'int', nullable: true, default: 0 })
+  semestres_suspendidos: number;
+
+  @Column({ type: 'int', nullable: true, default: 10 })
+  semestres_total_carrera: number;
+
   @Column({
     type: 'enum',
     enum: TipoEstudiante,

@@ -79,6 +79,8 @@ export interface Estudiante {
   edad?: number;
   genero?: string;
   observaciones?: string;
+  semestres_suspendidos?: number;
+  semestres_total_carrera?: number;
   activo?: boolean;
   fecha_creacion?: string;
   fecha_actualizacion?: string;
@@ -125,10 +127,13 @@ export interface Familia {
 export interface RamosCursados {
   id_ramos_cursados: string;
   semestre: number;
+  año?: number;
+  codigo_ramo?: string;
   nombre_ramo: string;
   notas_parciales: number[];
   promedio_final: number;
   estado: string;
+  comentarios?: string;
   nivel_educativo: string;
   estudiante: Estudiante;
 }
@@ -140,6 +145,7 @@ export interface HistorialAcademico {
   nivel_educativo?: string;
   ramos_aprobados?: number;
   ramos_reprobados?: number;
+  ramos_eliminados?: number;
   promedio_semestre?: number;
   trayectoria_academica?: string[]; // ✅ NUEVO: Array incremental de seguimiento
   estudiante: Estudiante;

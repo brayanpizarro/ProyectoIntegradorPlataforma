@@ -35,7 +35,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({ estudiante }) =>
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <p className="text-sm text-gray-500 mb-1">Nombre Completo</p>
-                <p className="text-base font-semibold">{estudiante.nombres} {estudiante.apellidos}</p>
+                <p className="text-base font-semibold">{estudiante.nombre || 'No especificado'}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500 mb-1">RUT</p>

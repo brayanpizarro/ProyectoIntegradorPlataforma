@@ -79,17 +79,41 @@ class ApiService {
     return await this.request<Estudiante[]>(`/estudiante/generacion/${año}`);
   }
 
+  async createEstudiante(estudianteData: any): Promise<Estudiante> {
+    return await this.request<Estudiante>('/estudiante', {
+      method: 'POST',
+      body: JSON.stringify(estudianteData),
+    });
+  }
+
   // ================================
   // RAMOS CURSADOS
   // ================================
 
-  async getRamosCursadosByEstudiante(estudianteId: string): Promise<any[]> {
-    return await this.request<any[]>(`/ramos-cursados/estudiante/${estudianteId}`);
+  async getRamosCursadosByEstudiante(estudianteId: string, año?: number, semestre?: number): Promise<any[]> {
+    let url = `/ramos-cursados/estudiante/${estudianteId}`;
+    const params = new URLSearchParams();
+    
+    if (año) params.append('año', año.toString());
+    if (semestre) params.append('semestre', semestre.toString());
+    
+    if (params.toString()) {
+      url += `?${params.toString()}`;
+    }
+    
+    return await this.request<any[]>(url);
   }
 
   async createRamoCursado(ramoData: any): Promise<any> {
     return await this.request<any>('/ramos-cursados', {
       method: 'POST',
+      body: JSON.stringify(ramoData),
+    });
+  }
+
+  async updateRamoCursado(id: string, ramoData: any): Promise<any> {
+    return await this.request<any>(`/ramos-cursados/${id}`, {
+      method: 'PATCH',
       body: JSON.stringify(ramoData),
     });
   }
