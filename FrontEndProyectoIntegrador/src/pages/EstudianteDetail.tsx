@@ -26,6 +26,7 @@ const EstudianteDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [mostrarModalNuevaEntrevista, setMostrarModalNuevaEntrevista] = useState(false);
   const [mostrarModalSemestresAnteriores, setMostrarModalSemestresAnteriores] = useState(false);
+  const [informesGuardados, setInformesGuardados] = useState<any[]>([]);
 
   useEffect(() => {
     if (!authService.isAuthenticated()) {
@@ -71,8 +72,43 @@ const EstudianteDetail: React.FC = () => {
   };
 
   const handleGenerarInforme = () => {
-    alert('Funcionalidad de generación de informe - Por implementar');
+    // Capturar los datos actuales del informe académico y desempeño
+    const nuevoInforme = {
+      id: Date.now(),
+      fecha: new Date().toISOString(),
+      fechaFormateada: new Date().toLocaleDateString('es-CL', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      }),
+      semestre: `${new Date().getFullYear()}-${new Date().getMonth() < 6 ? '1S' : '2S'}`,
+      // Aquí se guardarían los datos del formulario
+      // Por ahora guardamos estructura básica
+    };
+
+    const informesActualizados = [...informesGuardados, nuevoInforme];
+    setInformesGuardados(informesActualizados);
+    
+    // Guardar en localStorage para persistencia
+    localStorage.setItem(`informes_estudiante_${id}`, JSON.stringify(informesActualizados));
+    
+    alert(`✅ Informe generado correctamente\nSemestre: ${nuevoInforme.semestre}\nFecha: ${nuevoInforme.fechaFormateada}`);
+    logger.log('✅ Informe guardado:', nuevoInforme);
   };
+
+  // Cargar informes guardados al montar el componente
+  useEffect(() => {
+    const informesGuardadosStr = localStorage.getItem(`informes_estudiante_${id}`);
+    if (informesGuardadosStr) {
+      try {
+        const informes = JSON.parse(informesGuardadosStr);
+        setInformesGuardados(informes);
+        logger.log('📂 Informes cargados:', informes.length);
+      } catch (error) {
+        logger.error('❌ Error al cargar informes:', error);
+      }
+    }
+  }, [id]);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -105,11 +141,35 @@ const EstudianteDetail: React.FC = () => {
         )}
 
         {seccionActiva === 'informe' && (
-          <AcademicReportSection estudiante={estudiante} modoEdicion={modoEdicion} />
+          <div>
+            {informesGuardados.length > 0 && (
+              <div className="mb-4">
+                <button
+                  onClick={() => setMostrarModalSemestresAnteriores(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+                >
+                  📋 Ver Semestres Anteriores ({informesGuardados.length})
+                </button>
+              </div>
+            )}
+            <AcademicReportSection estudiante={estudiante} modoEdicion={modoEdicion} />
+          </div>
         )}
 
         {seccionActiva === 'desempeno' && (
-          <SemesterPerformanceSection modoEdicion={modoEdicion} />
+          <div>
+            {informesGuardados.length > 0 && (
+              <div className="mb-4">
+                <button
+                  onClick={() => setMostrarModalSemestresAnteriores(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+                >
+                  📋 Ver Semestres Anteriores ({informesGuardados.length})
+                </button>
+              </div>
+            )}
+            <SemesterPerformanceSection modoEdicion={modoEdicion} />
+          </div>
         )}
 
         {seccionActiva === 'entrevistas' && (
@@ -208,68 +268,38 @@ const EstudianteDetail: React.FC = () => {
 
             {/* Lista de Semestres Guardados */}
             <div className="flex flex-col gap-4">
-              {/* Semestre 2024/2S */}
-              <div className="border-2 border-gray-200 rounded-lg p-6 cursor-pointer transition-all hover:border-[var(--color-turquoise)]">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h4 className="m-0 mb-2 text-lg font-semibold text-gray-800">
-                      Semestre 2024/2S
-                    </h4>
-                    <div className="text-sm text-gray-500">
-                      <span>📅 Guardado: 20/12/2024</span>
-                      <span className="mx-2">•</span>
-                      <span>📊 Promedio: 5.2</span>
-                      <span className="mx-2">•</span>
-                      <span>📚 5 ramos (4 aprobados, 1 reprobado)</span>
+              {informesGuardados.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  <p className="text-lg mb-2">📭 No hay semestres guardados aún</p>
+                  <p className="text-sm">Usa el botón "Generar Informe" para guardar el estado actual</p>
+                </div>
+              ) : (
+                informesGuardados.map((informe) => (
+                  <div 
+                    key={informe.id}
+                    className="border-2 border-gray-200 rounded-lg p-6 cursor-pointer transition-all hover:border-[var(--color-turquoise)]"
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h4 className="m-0 mb-2 text-lg font-semibold text-gray-800">
+                          Semestre {informe.semestre}
+                        </h4>
+                        <div className="text-sm text-gray-500">
+                          <span>📅 Guardado: {informe.fechaFormateada}</span>
+                          <span className="mx-2">•</span>
+                          <span>🕐 {new Date(informe.fecha).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => alert(`Ver detalles del semestre ${informe.semestre}\n\nEsta funcionalidad mostrará:\n- Informe Académico General\n- Desempeño por Semestre\n- Datos guardados en ese momento`)}
+                        className="px-4 py-2 bg-[var(--color-turquoise)] text-white border-none rounded-md cursor-pointer text-sm font-medium hover:bg-[var(--color-turquoise)]/90 transition-colors"
+                      >
+                        Ver Detalle →
+                      </button>
                     </div>
                   </div>
-                  <button className="px-4 py-2 bg-[var(--color-turquoise)] text-white border-none rounded-md cursor-pointer text-sm font-medium">
-                    Ver Detalle →
-                  </button>
-                </div>
-              </div>
-
-              {/* Semestre 2024/1S */}
-              <div className="border-2 border-gray-200 rounded-lg p-6 cursor-pointer transition-all hover:border-[var(--color-turquoise)]">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h4 className="m-0 mb-2 text-lg font-semibold text-gray-800">
-                      Semestre 2024/1S
-                    </h4>
-                    <div className="text-sm text-gray-500">
-                      <span>📅 Guardado: 30/06/2024</span>
-                      <span className="mx-2">•</span>
-                      <span>📊 Promedio: 5.5</span>
-                      <span className="mx-2">•</span>
-                      <span>📚 6 ramos (6 aprobados)</span>
-                    </div>
-                  </div>
-                  <button className="px-4 py-2 bg-[var(--color-turquoise)] text-white border-none rounded-md cursor-pointer text-sm font-medium">
-                    Ver Detalle →
-                  </button>
-                </div>
-              </div>
-
-              {/* Semestre 2023/2S */}
-              <div className="border-2 border-gray-200 rounded-lg p-6 cursor-pointer transition-all hover:border-[var(--color-turquoise)]">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h4 className="m-0 mb-2 text-lg font-semibold text-gray-800">
-                      Semestre 2023/2S
-                    </h4>
-                    <div className="text-sm text-gray-500">
-                      <span>📅 Guardado: 15/12/2023</span>
-                      <span className="mx-2">•</span>
-                      <span>📊 Promedio: 5.8</span>
-                      <span className="mx-2">•</span>
-                      <span>📚 6 ramos (6 aprobados)</span>
-                    </div>
-                  </div>
-                  <button className="px-4 py-2 bg-[var(--color-turquoise)] text-white border-none rounded-md cursor-pointer text-sm font-medium">
-                    Ver Detalle →
-                  </button>
-                </div>
-              </div>
+                ))
+              )}
             </div>
 
             <div className="mt-8 p-4 bg-gray-100 rounded-lg">
