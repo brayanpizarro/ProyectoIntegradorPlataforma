@@ -1,22 +1,66 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import type { Estudiante } from '../../types';
 
 interface PersonalDataSectionProps {
   estudiante: Estudiante;
   modoEdicion: boolean;
+  onCampoChange?: (campo: string, valor: any) => void;
 }
 
 export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({ 
   estudiante, 
-  modoEdicion 
+  modoEdicion,
+  onCampoChange 
 }) => {
-  // Helpers para acceder a datos anidados de forma segura
+  // ✅ Estado local para manejar los valores editables
+  const [formData, setFormData] = useState({
+    nombre: estudiante.nombre || '',
+    rut: estudiante.rut || '',
+    telefono: estudiante.telefono || '',
+    email: estudiante.email || '',
+    fecha_de_nacimiento: estudiante.fecha_de_nacimiento 
+      ? (typeof estudiante.fecha_de_nacimiento === 'string' 
+          ? estudiante.fecha_de_nacimiento.split('T')[0]
+          : new Date(estudiante.fecha_de_nacimiento).toISOString().split('T')[0])
+      : '',
+    // ... más campos
+  });
+
+  // ✅ Actualizar formData cuando cambie el estudiante
+  useEffect(() => {
+    setFormData({
+      nombre: estudiante.nombre || '',
+      rut: estudiante.rut || '',
+      telefono: estudiante.telefono || '',
+      email: estudiante.email || '',
+      fecha_de_nacimiento: estudiante.fecha_de_nacimiento 
+        ? (typeof estudiante.fecha_de_nacimiento === 'string' 
+            ? estudiante.fecha_de_nacimiento.split('T')[0]
+            : new Date(estudiante.fecha_de_nacimiento).toISOString().split('T')[0])
+        : '',
+    });
+  }, [estudiante]);
+
+  // ✅ Handler para cambios en inputs
+  const handleInputChange = (campo: string, valor: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [campo]: valor
+    }));
+
+    // Notificar al componente padre si existe callback
+    if (onCampoChange) {
+      onCampoChange(campo, valor);
+    }
+  };
+
+  // Helpers (sin cambios)
   const getInstitucionData = (field: keyof NonNullable<typeof estudiante.institucion>) => {
     return estudiante.institucion?.[field] || 'Sin definir';
   };
 
-  const getInfoAcademicaData = (field: keyof NonNullable<typeof estudiante.informacion_academica>) => {
-    return estudiante.informacion_academica?.[field] || 'Sin definir';
+  const getInfoAcademicaData = (field: keyof NonNullable<typeof estudiante.informacionAcademica>) => {
+    return estudiante.informacionAcademica?.[field] || 'Sin definir';
   };
 
   const calcularEdad = (fechaNacimiento?: Date | string) => {
@@ -32,7 +76,7 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
   };
 
   const formatearPromedios = () => {
-    const infoAcad = estudiante.informacion_academica;
+    const infoAcad = estudiante.informacionAcademica;
     if (!infoAcad) return 'Sin definir';
     
     const promedios = [
@@ -46,7 +90,7 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
   };
 
   const formatearPuntajesPAES = () => {
-    const puntajes = estudiante.informacion_academica?.puntajes_admision;
+    const puntajes = estudiante.informacionAcademica?.puntajes_admision;
     if (!puntajes || typeof puntajes !== 'object') return 'Sin definir';
     
     return Object.entries(puntajes)
@@ -55,14 +99,14 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
   };
 
   const getHistorialStatus = (año: number, semestre: number) => {
-    const historial = estudiante.historial_academico?.find(
+    const historial = estudiante.historialesAcademicos?.find(
       h => h.año === año && h.semestre === semestre
     );
     return historial ? 'Registrado' : 'Sin definir';
   };
 
   const getTrayectoriaAcademica = () => {
-    const historiales = estudiante.historial_academico;
+    const historiales = estudiante.historialesAcademicos;
     if (!historiales || historiales.length === 0) return 'Sin definir';
     
     const trayectorias = historiales
@@ -83,89 +127,94 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
         aria-label="Tabla de datos personales del estudiante"
       >
         <tbody>
-          {/* Datos Básicos del Estudiante */}
+          {/* ✅ INPUT CONTROLADO - Nombre */}
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Nombre</td>
             <td className="p-2 border border-gray-300 bg-white">
               {modoEdicion ? (
                 <input 
                   type="text" 
-                  defaultValue={estudiante.nombre || ''}
-                  className="w-full px-2 py-1 border border-gray-300 rounded"
+                  value={formData.nombre}
+                  onChange={(e) => handleInputChange('nombre', e.target.value)}
+                  className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
                 <span>{estudiante.nombre || 'Sin definir'}</span>
               )}
             </td>
           </tr>
+
+          {/* Apellidos - Sin campo en backend aún */}
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Apellidos</td>
             <td className="p-2 border border-gray-300 bg-white">
-              {modoEdicion ? (
-                <input 
-                  type="text" 
-                  defaultValue={'Sin definir'}
-                  className="w-full px-2 py-1 border border-gray-300 rounded"
-                />
-              ) : (
-                <span>Sin definir</span>
-              )}
+              <span className="text-gray-400 italic">Campo no disponible en backend</span>
             </td>
           </tr>
+
+          {/* ✅ INPUT CONTROLADO - RUT */}
           <tr>
-            <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Rut</td>
+            <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300"> RUT </td>
             <td className="p-2 border border-gray-300 bg-white">
               {modoEdicion ? (
                 <input 
                   type="text" 
-                  defaultValue={estudiante.rut || ''}
-                  className="w-full px-2 py-1 border border-gray-300 rounded"
+                  value={formData.rut}
+                  onChange={(e) => handleInputChange('rut', e.target.value)}
+                  className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="12345678-9"
                 />
               ) : (
                 <span>{estudiante.rut || 'Sin definir'}</span>
               )}
             </td>
           </tr>
+
+          {/* ✅ INPUT CONTROLADO - Teléfono */}
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Teléfono</td>
             <td className="p-2 border border-gray-300 bg-white">
               {modoEdicion ? (
                 <input 
                   type="tel" 
-                  defaultValue={estudiante.telefono || ''}
-                  className="w-full px-2 py-1 border border-gray-300 rounded"
+                  value={formData.telefono}
+                  onChange={(e) => handleInputChange('telefono', e.target.value)}
+                  className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="+56912345678"
                 />
               ) : (
                 <span>{estudiante.telefono || 'Sin definir'}</span>
               )}
             </td>
           </tr>
+
+          {/* Año Ingreso Beca */}
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Año Ingreso Beca</td>
             <td className="p-2 border border-gray-300 bg-white">
               {modoEdicion ? (
                 <input 
                   type="number" 
-                  defaultValue={estudiante.informacion_academica?.año_ingreso_beca || ''}
-                  className="w-full px-2 py-1 border border-gray-300 rounded"
+                  value={estudiante.informacionAcademica?.año_ingreso_beca || ''}
+                  onChange={(e) => handleInputChange('año_ingreso_beca', parseInt(e.target.value))}
+                  className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
-                <span>{estudiante.informacion_academica?.año_ingreso_beca || 'Sin definir'}</span>
+                <span>{estudiante.informacionAcademica?.año_ingreso_beca || 'Sin definir'}</span>
               )}
             </td>
           </tr>
+
+          {/* ✅ INPUT CONTROLADO - Fecha de Nacimiento */}
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Fecha de Nacimiento</td>
             <td className="p-2 border border-gray-300 bg-white">
               {modoEdicion ? (
                 <input 
                   type="date" 
-                  defaultValue={
-                    typeof estudiante.fecha_de_nacimiento === 'string' 
-                      ? estudiante.fecha_de_nacimiento 
-                      : estudiante.fecha_de_nacimiento?.toISOString().split('T')[0] || ''
-                  }
-                  className="w-full px-2 py-1 border border-gray-300 rounded"
+                  value={formData.fecha_de_nacimiento}
+                  onChange={(e) => handleInputChange('fecha_de_nacimiento', e.target.value)}
+                  className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
                 <span>
@@ -177,232 +226,126 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
               )}
             </td>
           </tr>
+
+          {/* Edad (calculada, no editable) */}
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Edad</td>
             <td className="p-2 border border-gray-300 bg-white">
-              <span>{calcularEdad(estudiante.fecha_de_nacimiento)}</span>
+              <span>{calcularEdad(formData.fecha_de_nacimiento || estudiante.fecha_de_nacimiento)}</span>
             </td>
           </tr>
+
+          {/* Género - Campo no disponible aún */}
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Género</td>
             <td className="p-2 border border-gray-300 bg-white">
-              {modoEdicion ? (
-                <select 
-                  defaultValue={'Sin definir'}
-                  className="w-full px-2 py-1 border border-gray-300 rounded"
-                >
-                  <option value="Masculino">Masculino</option>
-                  <option value="Femenino">Femenino</option>
-                  <option value="Otro">Otro</option>
-                  <option value="Sin definir">Prefiero no decir</option>
-                </select>
-              ) : (
-                <span>Sin definir</span>
-              )}
+              <span className="text-gray-400 italic">Campo no disponible en backend</span>
             </td>
           </tr>
+
+          {/* ✅ INPUT CONTROLADO - Email */}
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Email</td>
             <td className="p-2 border border-gray-300 bg-white">
               {modoEdicion ? (
                 <input 
                   type="email" 
-                  defaultValue={estudiante.email || ''}
-                  className="w-full px-2 py-1 border border-gray-300 rounded"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="ejemplo@correo.com"
                 />
               ) : (
                 <span>{estudiante.email || 'Sin definir'}</span>
               )}
             </td>
           </tr>
+
+          {/* Dirección - Campo no disponible */}
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Dirección</td>
             <td className="p-2 border border-gray-300 bg-white">
-              {modoEdicion ? (
-                <input 
-                  type="text" 
-                  defaultValue={'Sin definir'}
-                  className="w-full px-2 py-1 border border-gray-300 rounded"
-                />
-              ) : (
-                <span>Sin definir</span>
-              )}
+              <span className="text-gray-400 italic">Campo no disponible en backend</span>
             </td>
           </tr>
 
-          {/* Información Académica Previa (Liceo) */}
+          {/* Información Académica Previa (Liceo) - Solo lectura por ahora */}
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Liceo</td>
             <td className="p-2 border border-gray-300 bg-white">
-              {modoEdicion ? (
-                <input 
-                  type="text" 
-                  defaultValue={String(getInfoAcademicaData('colegio'))}
-                  className="w-full px-2 py-1 border border-gray-300 rounded"
-                />
-              ) : (
-                <span>{getInfoAcademicaData('colegio')}</span>
-              )}
+              <span>{getInfoAcademicaData('colegio')}</span>
             </td>
           </tr>
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Especialidad</td>
             <td className="p-2 border border-gray-300 bg-white">
-              {modoEdicion ? (
-                <input 
-                  type="text" 
-                  defaultValue={String(getInfoAcademicaData('especialidad_colegio'))}
-                  className="w-full px-2 py-1 border border-gray-300 rounded"
-                />
-              ) : (
-                <span>{getInfoAcademicaData('especialidad_colegio')}</span>
-              )}
+              <span>{getInfoAcademicaData('especialidad_colegio')}</span>
             </td>
           </tr>
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Comuna Liceo</td>
             <td className="p-2 border border-gray-300 bg-white">
-              {modoEdicion ? (
-                <input 
-                  type="text" 
-                  defaultValue={String(getInfoAcademicaData('comuna_colegio'))}
-                  className="w-full px-2 py-1 border border-gray-300 rounded"
-                />
-              ) : (
-                <span>{getInfoAcademicaData('comuna_colegio')}</span>
-              )}
+              <span>{getInfoAcademicaData('comuna_colegio')}</span>
             </td>
           </tr>
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Promedios Enseñanza Media</td>
             <td className="p-2 border border-gray-300 bg-white">
-              {modoEdicion ? (
-                <input 
-                  type="text" 
-                  defaultValue={formatearPromedios()}
-                  className="w-full px-2 py-1 border border-gray-300 rounded"
-                />
-              ) : (
-                <span>{formatearPromedios()}</span>
-              )}
+              <span>{formatearPromedios()}</span>
             </td>
           </tr>
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Puntajes PAES 2021/1|2</td>
             <td className="p-2 border border-gray-300 bg-white">
-              {modoEdicion ? (
-                <input 
-                  type="text" 
-                  defaultValue={formatearPuntajesPAES()}
-                  className="w-full px-2 py-1 border border-gray-300 rounded"
-                />
-              ) : (
-                <span>{formatearPuntajesPAES()}</span>
-              )}
+              <span>{formatearPuntajesPAES()}</span>
             </td>
           </tr>
 
-          {/* Información Universidad/Carrera */}
+          {/* Información Universidad/Carrera - Solo lectura */}
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Carrera</td>
             <td className="p-2 border border-gray-300 bg-white">
-              {modoEdicion ? (
-                <input 
-                  type="text" 
-                  defaultValue={String(getInstitucionData('carrera_especialidad'))}
-                  className="w-full px-2 py-1 border border-gray-300 rounded"
-                />
-              ) : (
-                <span>{getInstitucionData('carrera_especialidad')}</span>
-              )}
+              <span>{getInstitucionData('carrera_especialidad')}</span>
             </td>
           </tr>
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Duración Carrera</td>
             <td className="p-2 border border-gray-300 bg-white">
-              {modoEdicion ? (
-                <input 
-                  type="text" 
-                  defaultValue={String(getInstitucionData('duracion'))}
-                  className="w-full px-2 py-1 border border-gray-300 rounded"
-                />
-              ) : (
-                <span>{getInstitucionData('duracion')}</span>
-              )}
+              <span>{getInstitucionData('duracion')}</span>
             </td>
           </tr>
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Universidad</td>
             <td className="p-2 border border-gray-300 bg-white">
-              {modoEdicion ? (
-                <input 
-                  type="text" 
-                  defaultValue={String(getInstitucionData('nombre'))}
-                  className="w-full px-2 py-1 border border-gray-300 rounded"
-                />
-              ) : (
-                <span>{getInstitucionData('nombre')}</span>
-              )}
+              <span>{getInstitucionData('nombre')}</span>
             </td>
           </tr>
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Vía de acceso</td>
             <td className="p-2 border border-gray-300 bg-white">
-              {modoEdicion ? (
-                <input 
-                  type="text" 
-                  defaultValue={String(getInfoAcademicaData('via_acceso'))}
-                  className="w-full px-2 py-1 border border-gray-300 rounded"
-                />
-              ) : (
-                <span>{getInfoAcademicaData('via_acceso')}</span>
-              )}
+              <span>{getInfoAcademicaData('via_acceso')}</span>
             </td>
           </tr>
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Trayectoria Académica</td>
             <td className="p-2 border border-gray-300 bg-white">
-              {modoEdicion ? (
-                <input 
-                  type="text" 
-                  defaultValue={getTrayectoriaAcademica()}
-                  className="w-full px-2 py-1 border border-gray-300 rounded"
-                />
-              ) : (
-                <span>{getTrayectoriaAcademica()}</span>
-              )}
+              <span>{getTrayectoriaAcademica()}</span>
             </td>
           </tr>
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Otros Beneficios</td>
             <td className="p-2 border border-gray-300 bg-white">
-              {modoEdicion ? (
-                <input 
-                  type="text" 
-                  defaultValue={String(getInfoAcademicaData('beneficios'))}
-                  className="w-full px-2 py-1 border border-gray-300 rounded"
-                />
-              ) : (
-                <span>{getInfoAcademicaData('beneficios')}</span>
-              )}
+              <span>{getInfoAcademicaData('beneficios')}</span>
             </td>
           </tr>
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Vencimiento Gratuidad</td>
             <td className="p-2 border border-gray-300 bg-white">
-              {modoEdicion ? (
-                <input 
-                  type="date" 
-                  defaultValue={''}
-                  className="w-full px-2 py-1 border border-gray-300 rounded"
-                />
-              ) : (
-                <span>Sin definir</span>
-              )}
+              <span className="text-gray-400 italic">Campo no disponible en backend</span>
             </td>
           </tr>
 
-          {/* Status por Semestre - Historial Académico */}
+          {/* Status por Semestre - Historial Académico (solo lectura) */}
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Status 2022/1S</td>
             <td className="p-2 border border-gray-300 bg-white">
@@ -452,16 +395,11 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
             </td>
           </tr>
 
-          {/* Observaciones */}
+          {/* Observaciones - Campo no disponible */}
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Observaciones</td>
             <td className="p-2 border border-gray-300 bg-white">
-              <textarea 
-                className="w-full min-h-[100px] px-2 py-1 border border-gray-300 rounded resize-y"
-                placeholder="Agregar observaciones..."
-                disabled={!modoEdicion}
-                defaultValue={'Sin definir'}
-              />
+              <span className="text-gray-400 italic">Campo no disponible en backend</span>
             </td>
           </tr>
         </tbody>

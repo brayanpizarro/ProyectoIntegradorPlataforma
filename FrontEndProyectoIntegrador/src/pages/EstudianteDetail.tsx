@@ -32,6 +32,9 @@ const EstudianteDetail: React.FC = () => {
   
   const [informesGuardados, setInformesGuardados] = useState<any[]>([]);
 
+  // ✅ NUEVO: Estado para almacenar cambios temporales
+  const [datosEditados, setDatosEditados] = useState<Partial<Estudiante>>({});
+
   // Verificar autenticación y cargar estudiante
   useEffect(() => {
     if (!authService.isAuthenticated()) {
@@ -83,30 +86,66 @@ const EstudianteDetail: React.FC = () => {
     cargarHistorialAcademico();
   }, [id]);
 
+  // ✅ NUEVO: Handler para capturar cambios en campos editables
+  const handleCampoChange = (campo: string, valor: any) => {
+    setDatosEditados(prev => ({
+      ...prev,
+      [campo]: valor
+    }));
+    
+    logger.log(`📝 Campo editado: ${campo} =`, valor);
+  };
+
+  // ✅ ACTUALIZADO: Handler de guardado con datos editados
   const handleGuardar = async () => {
     if (!estudiante || !id) return;
 
-    try {
-      logger.log('💾 Guardando cambios del estudiante...');
-      
-      // TODO: Implementar actualizaciones cuando los DTOs estén listos
-      // await estudianteService.update(id, datosEditados);
-      
-      // Simular guardado
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+    // Validar que haya cambios
+    if (Object.keys(datosEditados).length === 0) {
+      alert('⚠️ No hay cambios para guardar');
       setModoEdicion(false);
+      return;
+    }
+
+    try {
+      logger.log('💾 Guardando cambios:', datosEditados);
+
+      // Enviar solo los campos modificados
+      await estudianteService.update(id, datosEditados);
       
-      // Recargar datos
+      logger.log('✅ Cambios guardados exitosamente');
+      
+      // Recargar datos actualizados
       const dataActualizada = await estudianteService.getById(id);
       setEstudiante(dataActualizada);
       
-      logger.log('✅ Cambios guardados');
+      // Limpiar estado temporal y salir del modo edición
+      setDatosEditados({});
+      setModoEdicion(false);
+      
       alert('✅ Cambios guardados correctamente');
+      
     } catch (err: any) {
       logger.error('❌ Error al guardar cambios:', err);
-      alert(`❌ Error al guardar: ${err.message}`);
+      
+      // Mensaje de error más específico
+      const errorMsg = err.response?.data?.message || err.message || 'Error desconocido';
+      alert(`❌ Error al guardar cambios:\n\n${errorMsg}`);
     }
+  };
+
+  // ✅ ACTUALIZADO: Manejar activación/cancelación de modo edición
+  const handleToggleEdicion = () => {
+    if (!modoEdicion) {
+      // Activar modo edición → Limpiar cambios previos
+      setDatosEditados({});
+      logger.log('✏️ Modo edición ACTIVADO');
+    } else {
+      // Cancelar edición → Limpiar cambios temporales
+      setDatosEditados({});
+      logger.log('❌ Modo edición CANCELADO (cambios descartados)');
+    }
+    setModoEdicion(!modoEdicion);
   };
 
   const handleGenerarInforme = async () => {
@@ -120,7 +159,7 @@ const EstudianteDetail: React.FC = () => {
         id_estudiante: id,
         año: añoActual,
         semestre: semestreActual,
-        nivel_educativo: estudiante.institucion?.nivel_educativo,
+        nivel_educativo: estudiante.institucion?.nivel_educativo || 'Superior',
         ramos_aprobados: 0,
         ramos_reprobados: 0,
         promedio_semestre: 0,
@@ -167,15 +206,21 @@ const EstudianteDetail: React.FC = () => {
     );
   }
 
+  // ✅ Combinar datos originales con ediciones temporales
+  const estudianteConEdiciones = {
+    ...estudiante,
+    ...datosEditados
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header del estudiante */}
       <StudentHeader
-        nombres={estudiante.nombre || ''}
-        apellidos={estudiante.apellidos || ''}
-        estado={estudiante.status || 'activo'}
+        nombres={estudianteConEdiciones.nombre || ''}
+        apellidos={estudianteConEdiciones.apellidos || ''}
+        estado={estudianteConEdiciones.status || 'activo'}
         modoEdicion={modoEdicion}
-        onToggleEdicion={() => setModoEdicion(!modoEdicion)}
+        onToggleEdicion={handleToggleEdicion}
         onGuardar={handleGuardar}
         onGenerarInforme={handleGenerarInforme}
       />
@@ -190,14 +235,15 @@ const EstudianteDetail: React.FC = () => {
       <div className="p-8 max-w-[1400px] mx-auto">
         {/* Perfil General */}
         {seccionActiva === 'perfil' && (
-          <ProfileSection estudiante={estudiante} />
+          <ProfileSection estudiante={estudianteConEdiciones} />
         )}
 
-        {/* Datos Personales */}
+        {/* ✅ Datos Personales - Con callback para cambios */}
         {seccionActiva === 'personal' && (
           <PersonalDataSection 
-            estudiante={estudiante} 
+            estudiante={estudianteConEdiciones}
             modoEdicion={modoEdicion} 
+            onCampoChange={handleCampoChange}
           />
         )}
 
@@ -220,7 +266,7 @@ const EstudianteDetail: React.FC = () => {
               </div>
             )}
             <AcademicReportSection 
-              estudiante={estudiante} 
+              estudiante={estudianteConEdiciones}
               modoEdicion={modoEdicion} 
             />
           </div>
@@ -245,7 +291,7 @@ const EstudianteDetail: React.FC = () => {
 
         {/* Avance Curricular */}
         {seccionActiva === 'avance' && (
-          <AvanceCurricularSection estudiante={estudiante} />
+          <AvanceCurricularSection estudiante={estudianteConEdiciones} />
         )}
 
         {/* Entrevistas */}
@@ -256,7 +302,7 @@ const EstudianteDetail: React.FC = () => {
         )}
       </div>
 
-      {/* Modal: Nueva Entrevista */}
+      {/* MODALES (sin cambios) */}
       {mostrarModalNuevaEntrevista && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000]">
           <div className="bg-white rounded-xl p-8 max-w-[500px] w-[90%] shadow-2xl">
@@ -288,7 +334,6 @@ const EstudianteDetail: React.FC = () => {
         </div>
       )}
 
-      {/* Modal: Semestres Anteriores */}
       {mostrarModalSemestresAnteriores && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000] p-8">
           <div className="bg-white rounded-xl p-8 max-w-[900px] w-full max-h-[90vh] overflow-auto shadow-2xl">
@@ -308,7 +353,6 @@ const EstudianteDetail: React.FC = () => {
               Snapshots de semestres anteriores. Selecciona uno para ver su información.
             </p>
 
-            {/* Lista de Semestres */}
             <div className="flex flex-col gap-4">
               {informesGuardados.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
