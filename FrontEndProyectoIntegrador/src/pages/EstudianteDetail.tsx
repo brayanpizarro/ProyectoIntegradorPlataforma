@@ -13,6 +13,7 @@ import {
   AcademicReportSection,
   SemesterPerformanceSection,
   InterviewsSection,
+  AvanceCurricularSection,
   type SeccionActiva 
 } from '../components/StudentDetail';
 
@@ -240,6 +241,11 @@ const EstudianteDetail: React.FC = () => {
             )}
             <SemesterPerformanceSection modoEdicion={modoEdicion} />
           </div>
+        )}
+
+        {/* Avance Curricular */}
+        {seccionActiva === 'avance' && (
+          <AvanceCurricularSection estudiante={estudiante} />
         )}
 
         {/* Entrevistas */}

@@ -32,6 +32,9 @@ export class RamosCursados {
   @Column({ nullable: true })
   estado: string;
 
+  @Column({ nullable: true })
+  id_estudiante: string;
+
   @CreateDateColumn()
   created_at: Date;
 

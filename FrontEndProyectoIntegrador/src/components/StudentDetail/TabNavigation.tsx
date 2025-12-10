@@ -3,7 +3,7 @@
  */
 import React from 'react';
 
-export type SeccionActiva = 'perfil' | 'personal' | 'familiar' | 'informe' | 'desempeno' | 'entrevistas';
+export type SeccionActiva = 'perfil' | 'personal' | 'familiar' | 'informe' | 'desempeno' | 'entrevistas' | 'avance';
 
 interface TabNavigationProps {
   seccionActiva: SeccionActiva;
@@ -16,6 +16,7 @@ const tabs = [
   { id: 'familiar' as SeccionActiva, label: 'Información Familiar' },
   { id: 'informe' as SeccionActiva, label: 'Informe Académico General' },
   { id: 'desempeno' as SeccionActiva, label: 'Desempeño por Semestre' },
+  { id: 'avance' as SeccionActiva, label: 'Avance Curricular' },
   { id: 'entrevistas' as SeccionActiva, label: 'Entrevistas' },
 ];
 

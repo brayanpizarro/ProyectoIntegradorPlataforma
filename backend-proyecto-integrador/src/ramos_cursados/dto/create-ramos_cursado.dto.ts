@@ -1,9 +1,9 @@
 import { IsString, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
 
 export class CreateRamosCursadosDto {
-  @IsNumber()
+  @IsString()
   @IsNotEmpty()
-  id_estudiante: number;
+  id_estudiante: string;
 
   @IsOptional()
   @IsNumber()

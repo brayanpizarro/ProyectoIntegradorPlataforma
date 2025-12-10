@@ -19,9 +19,8 @@ export class UpdateRamosCursadosDto {
   nombre_ramo?: string;
 
   @Expose()
-  @IsString()
   @IsOptional()
-  notas_parciales?: string;
+  notas_parciales?: any;
 
   @Expose()
   @IsNumber()

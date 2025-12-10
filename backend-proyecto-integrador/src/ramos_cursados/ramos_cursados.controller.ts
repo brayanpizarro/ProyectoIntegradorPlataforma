@@ -17,6 +17,11 @@ export class RamosCursadosController {
     return this.ramosCursadosService.findAll();
   }
 
+  @Get('estudiante/:estudianteId')
+  findByEstudiante(@Param('estudianteId') estudianteId: string) {
+    return this.ramosCursadosService.findByEstudiante(estudianteId);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.ramosCursadosService.findOne(+id);
