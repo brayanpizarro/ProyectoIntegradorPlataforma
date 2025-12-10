@@ -69,10 +69,10 @@ export class Estudiante {
   status: StatusEstudiante;
 
   @ManyToOne(() => Institucion, (institucion) => institucion.estudiantes, {
-    nullable: false,
+    nullable: true,
   })
   @JoinColumn({ name: 'id_institucion' })
-  institucion: Institucion;
+  institucion?: Institucion;
 
   @OneToOne(() => Familia, (familia) => familia.estudiante, { nullable: true })
   familia: Familia;

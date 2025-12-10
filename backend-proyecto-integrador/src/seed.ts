@@ -35,7 +35,6 @@ async function seed() {
       telefono: '+56912345678',
       fecha_de_nacimiento: new Date('2000-05-15'),
       generacion: '2024',
-      institucion: institucion,
     });
 
     await estudianteRepository.save(estudiante);
