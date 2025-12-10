@@ -30,8 +30,17 @@ export const FamilyInfoSection: React.FC<FamilyInfoSectionProps> = ({ modoEdicio
         <tbody>
           <tr>
             <td className="font-bold p-2 bg-gray-100 border border-gray-300">
-              <div className="font-bold mb-1">Mamá</div>
-              <div className="text-sm font-normal">María (65 años)</div>
+              {modoEdicion ? (
+                <div>
+                  <input type="text" defaultValue="Mamá" className="font-bold mb-1 w-full px-2 py-1 border border-gray-300 rounded" />
+                  <input type="text" defaultValue="María (65 años)" className="text-sm font-normal w-full px-2 py-1 border border-gray-300 rounded mt-1" />
+                </div>
+              ) : (
+                <div>
+                  <div className="font-bold mb-1">Mamá</div>
+                  <div className="text-sm font-normal">María (65 años)</div>
+                </div>
+              )}
             </td>
             <td className="p-2 border border-gray-300">
               {modoEdicion ? (
@@ -50,8 +59,17 @@ export const FamilyInfoSection: React.FC<FamilyInfoSectionProps> = ({ modoEdicio
           </tr>
           <tr>
             <td className="font-bold p-2 bg-gray-100 border border-gray-300">
-              <div className="font-bold mb-1">Papá</div>
-              <div className="text-sm font-normal">Pedro (61 años)</div>
+              {modoEdicion ? (
+                <div>
+                  <input type="text" defaultValue="Papá" className="font-bold mb-1 w-full px-2 py-1 border border-gray-300 rounded" />
+                  <input type="text" defaultValue="Pedro (61 años)" className="text-sm font-normal w-full px-2 py-1 border border-gray-300 rounded mt-1" />
+                </div>
+              ) : (
+                <div>
+                  <div className="font-bold mb-1">Papá</div>
+                  <div className="text-sm font-normal">Pedro (61 años)</div>
+                </div>
+              )}
             </td>
             <td className="p-2 border border-gray-300">
               {modoEdicion ? (
@@ -68,8 +86,17 @@ export const FamilyInfoSection: React.FC<FamilyInfoSectionProps> = ({ modoEdicio
           </tr>
           <tr>
             <td className="font-bold p-2 bg-gray-100 border border-gray-300">
-              <div className="font-bold mb-1">Hermanas/os</div>
-              <div className="text-sm font-normal">Carlos (25); Pedro (18); María (11)</div>
+              {modoEdicion ? (
+                <div>
+                  <input type="text" defaultValue="Hermanas/os" className="font-bold mb-1 w-full px-2 py-1 border border-gray-300 rounded" />
+                  <input type="text" defaultValue="Carlos (25); Pedro (18); María (11)" className="text-sm font-normal w-full px-2 py-1 border border-gray-300 rounded mt-1" />
+                </div>
+              ) : (
+                <div>
+                  <div className="font-bold mb-1">Hermanas/os</div>
+                  <div className="text-sm font-normal">Carlos (25); Pedro (18); María (11)</div>
+                </div>
+              )}
             </td>
             <td className="p-2 border border-gray-300">
               {modoEdicion ? (
@@ -87,8 +114,17 @@ export const FamilyInfoSection: React.FC<FamilyInfoSectionProps> = ({ modoEdicio
           </tr>
           <tr>
             <td className="font-bold p-2 bg-gray-100 border border-gray-300">
-              <div className="font-bold mb-1">Otros familiares significativos</div>
-              <div className="text-sm font-normal">Abuela materna (Juana); Tío materno (Claudio)</div>
+              {modoEdicion ? (
+                <div>
+                  <input type="text" defaultValue="Otros familiares significativos" className="font-bold mb-1 w-full px-2 py-1 border border-gray-300 rounded" />
+                  <input type="text" defaultValue="Abuela materna (Juana); Tío materno (Claudio)" className="text-sm font-normal w-full px-2 py-1 border border-gray-300 rounded mt-1" />
+                </div>
+              ) : (
+                <div>
+                  <div className="font-bold mb-1">Otros familiares significativos</div>
+                  <div className="text-sm font-normal">Abuela materna (Juana); Tío materno (Claudio)</div>
+                </div>
+              )}
             </td>
             <td className="p-2 border border-gray-300">
               {modoEdicion ? (
