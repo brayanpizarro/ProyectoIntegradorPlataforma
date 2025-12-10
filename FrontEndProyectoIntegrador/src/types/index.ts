@@ -183,11 +183,6 @@ export interface EnsayoPaesRequest {
   [key: string]: any; // Flexible para cualquier estructura
 }
   
-  // ✅ CAMPOS ADICIONALES que busca el código
-  carrera?: string;
-  promedio_actual?: number;
-  semestre_carrera?: number;
-}
 
 // ENTREVISTAS - MongoDB Schema del backend
 export interface Entrevista {
