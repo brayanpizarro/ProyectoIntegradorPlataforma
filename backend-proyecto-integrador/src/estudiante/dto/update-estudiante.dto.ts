@@ -65,4 +65,19 @@ export class UpdateEstudianteDto extends PartialType(CreateEstudianteDto) {
   @IsOptional()
   @IsNumber()
   numero_carrera?: number;
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  genero?: string;
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  direccion?: string;
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  observaciones?: string;
 }

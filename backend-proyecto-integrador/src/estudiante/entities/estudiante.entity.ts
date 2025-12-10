@@ -48,6 +48,15 @@ export class Estudiante {
   @Column()
   email: string;
 
+  @Column({ nullable: true })
+  genero: string;
+
+  @Column({ nullable: true })
+  direccion: string;
+
+  @Column({ type: 'text', nullable: true })
+  observaciones: string;
+
   @Column({
     type: 'enum',
     enum: TipoEstudiante,
