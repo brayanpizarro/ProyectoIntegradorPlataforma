@@ -150,6 +150,87 @@ class ApiService {
     });
   }
 
+  /**
+   * Actualizar información familiar del estudiante
+   * TODO Backend: Crear endpoint específico o agregar a estudiante entity
+   */
+  async actualizarInformacionFamiliar(idEstudiante: string, data: {
+    mama?: { nombre: string; edad: string; observaciones: string };
+    papa?: { nombre: string; edad: string; observaciones: string };
+    hermanos?: { nombres: string; observaciones: string };
+    otros_familiares?: { nombres: string; observaciones: string };
+    observaciones_generales?: string;
+  }) {
+    return this.request(`/estudiante/${idEstudiante}/familia`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // ================================
+  // ASIGNATURAS - Desempeño académico por semestre
+  // ================================
+
+  /**
+   * Obtener asignaturas de un estudiante (todas o por semestre)
+   * TODO Backend: Implementar en asignatura.service.ts
+   */
+  async getAsignaturasPorEstudiante(idEstudiante: string, año?: number, semestre?: number) {
+    let url = `/asignatura/estudiante/${idEstudiante}`;
+    if (año && semestre) {
+      url += `?año=${año}&semestre=${semestre}`;
+    }
+    return this.request(url);
+  }
+
+  /**
+   * Crear nueva asignatura para un estudiante
+   * POST /asignatura
+   * TODO Backend: Validar que el estudiante existe
+   */
+  async crearAsignatura(data: {
+    id_estudiante: string;
+    nombre: string;
+    nota?: number;
+    estado: 'cursando' | 'aprobado' | 'reprobado';
+    año: number;
+    semestre: number;
+    observaciones?: string;
+  }) {
+    return this.request('/asignatura', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Actualizar asignatura existente
+   * PATCH /asignatura/:id
+   * TODO Backend: Validar permisos y datos
+   */
+  async actualizarAsignatura(id: number, data: {
+    nombre?: string;
+    nota?: number;
+    estado?: 'cursando' | 'aprobado' | 'reprobado';
+    observaciones?: string;
+  }) {
+    return this.request(`/asignatura/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Eliminar asignatura
+   * DELETE /asignatura/:id
+   * TODO Backend: Implementar
+   */
+  async eliminarAsignatura(id: number) {
+    return this.request(`/asignatura/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
   // ================================
   // INSTITUCIONES
   // ================================

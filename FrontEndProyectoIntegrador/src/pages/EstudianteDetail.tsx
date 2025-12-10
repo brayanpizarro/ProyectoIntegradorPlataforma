@@ -27,6 +27,9 @@ const EstudianteDetail: React.FC = () => {
   const [mostrarModalNuevaEntrevista, setMostrarModalNuevaEntrevista] = useState(false);
   const [mostrarModalSemestresAnteriores, setMostrarModalSemestresAnteriores] = useState(false);
   const [informesGuardados, setInformesGuardados] = useState<any[]>([]);
+  // Estado para almacenar cambios en modo edición (se usará cuando se implementen refs o controlled inputs)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [datosEditados, setDatosEditados] = useState<any>({});
 
   useEffect(() => {
     if (!authService.isAuthenticated()) {
@@ -92,8 +95,174 @@ const EstudianteDetail: React.FC = () => {
     );
   }
 
-  const handleGuardar = () => {
-    alert('Funcionalidad de guardado - Por implementar');
+  const handleGuardar = async () => {
+    if (!estudiante) return;
+
+    try {
+      logger.log('💾 Iniciando guardado de datos del estudiante...', datosEditados);
+
+      // TODO Backend: Cuando el backend esté listo, descomentar estas secciones
+      
+      // ==========================================
+      // 1. ACTUALIZAR DATOS PERSONALES
+      // ==========================================
+      // Endpoint: PATCH /estudiante/:id
+      // Campos editables en PersonalDataSection:
+      // - nombre, rut, telefono, fecha_de_nacimiento, email, tipo_de_estudiante
+      // - dirección, región, comuna
+      // - universidad, carrera, año_ingreso, estado_académico
+      // - tipo_beca, monto_beca, duracion_beca
+      
+      /* TODO Backend: Descomentar cuando esté listo
+      if (datosEditados.datosPersonales) {
+        const updateData = {
+          nombre: datosEditados.datosPersonales.nombre,
+          rut: datosEditados.datosPersonales.rut,
+          telefono: datosEditados.datosPersonales.telefono,
+          fecha_de_nacimiento: datosEditados.datosPersonales.fecha_nacimiento,
+          email: datosEditados.datosPersonales.email,
+          tipo_de_estudiante: datosEditados.datosPersonales.tipo_estudiante,
+          // ... más campos
+        };
+        
+        await apiService.actualizarEstudiante(id, updateData);
+        logger.log('✅ Datos personales actualizados');
+      }
+      */
+
+      // ==========================================
+      // 2. ACTUALIZAR INFORMACIÓN FAMILIAR
+      // ==========================================
+      // Endpoint: PATCH /estudiante/:id/familia (o crear endpoint específico)
+      // Campos editables en FamilyInfoSection:
+      // - Familiar (tipo: mamá, papá, hermanos, etc.) con nombres y edades
+      // - Observaciones de cada familiar
+      // - Observaciones generales
+      
+      /* TODO Backend: Descomentar cuando esté listo
+      if (datosEditados.informacionFamiliar) {
+        const familiaData = {
+          mama: datosEditados.informacionFamiliar.mama,
+          papa: datosEditados.informacionFamiliar.papa,
+          hermanos: datosEditados.informacionFamiliar.hermanos,
+          otros_familiares: datosEditados.informacionFamiliar.otros,
+          observaciones_generales: datosEditados.informacionFamiliar.observaciones
+        };
+        
+        await apiService.actualizarInformacionFamiliar(id, familiaData);
+        logger.log('✅ Información familiar actualizada');
+      }
+      */
+
+      // ==========================================
+      // 3. ACTUALIZAR INFORME ACADÉMICO GENERAL
+      // ==========================================
+      // Endpoint: PATCH /historial-academico/:id
+      // Campos editables en AcademicReportSection:
+      // - Nº de carrera cursada, semestres finalizados, suspendidos
+      // - Total ramos aprobados, reprobados, eliminados
+      // - Porcentajes de aprobación
+      // - Tabla de semestres (año, semestre, ramos, observaciones)
+      
+      /* TODO Backend: Descomentar cuando esté listo
+      if (datosEditados.informeAcademico) {
+        const informeData = {
+          numero_carreras: datosEditados.informeAcademico.numero_carreras,
+          semestres_finalizados: datosEditados.informeAcademico.semestres_finalizados,
+          semestres_suspendidos: datosEditados.informeAcademico.semestres_suspendidos,
+          semestres_carrera: datosEditados.informeAcademico.semestres_carrera,
+          total_ramos_aprobados: datosEditados.informeAcademico.total_aprobados,
+          total_ramos_reprobados: datosEditados.informeAcademico.total_reprobados,
+          total_eliminados: datosEditados.informeAcademico.total_eliminados,
+          porcentaje_aprobados: datosEditados.informeAcademico.porcentaje_aprobados,
+          porcentaje_reprobados: datosEditados.informeAcademico.porcentaje_reprobados,
+          porcentaje_cursados: datosEditados.informeAcademico.porcentaje_cursados,
+          // Tabla de semestres
+          semestres: datosEditados.informeAcademico.semestres
+        };
+        
+        // Puede ser actualización de historial existente o creación de uno nuevo
+        if (datosEditados.informeAcademico.id_historial) {
+          await apiService.actualizarHistorialAcademico(
+            datosEditados.informeAcademico.id_historial, 
+            informeData
+          );
+        } else {
+          await apiService.crearHistorialAcademico({
+            id_estudiante: id,
+            ...informeData
+          });
+        }
+        logger.log('✅ Informe académico actualizado');
+      }
+      */
+
+      // ==========================================
+      // 4. ACTUALIZAR DESEMPEÑO POR SEMESTRE
+      // ==========================================
+      // Endpoint: POST/PATCH /asignatura (o endpoint específico para desempeño)
+      // Campos editables en SemesterPerformanceSection:
+      // - Asignaturas del semestre actual
+      // - Notas, estado (aprobado/reprobado/cursando)
+      // - Observaciones por asignatura
+      
+      /* TODO Backend: Descomentar cuando esté listo
+      if (datosEditados.desempenoSemestre) {
+        // Guardar cada asignatura del semestre
+        for (const asignatura of datosEditados.desempenoSemestre.asignaturas) {
+          if (asignatura.id) {
+            // Actualizar asignatura existente
+            await apiService.actualizarAsignatura(asignatura.id, {
+              nombre: asignatura.nombre,
+              nota: asignatura.nota,
+              estado: asignatura.estado,
+              observaciones: asignatura.observaciones
+            });
+          } else {
+            // Crear nueva asignatura
+            await apiService.crearAsignatura({
+              id_estudiante: id,
+              nombre: asignatura.nombre,
+              nota: asignatura.nota,
+              estado: asignatura.estado,
+              observaciones: asignatura.observaciones,
+              semestre: datosEditados.desempenoSemestre.semestre,
+              año: datosEditados.desempenoSemestre.año
+            });
+          }
+        }
+        logger.log('✅ Desempeño por semestre actualizado');
+      }
+      */
+
+      // ==========================================
+      // SIMULACIÓN TEMPORAL (hasta tener backend)
+      // ==========================================
+      // Por ahora, simular guardado exitoso
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      alert('✅ Cambios guardados correctamente\n\n' +
+            '📝 Datos actualizados:\n' +
+            '- Datos personales\n' +
+            '- Información familiar\n' +
+            '- Informe académico\n' +
+            '- Desempeño semestre\n\n' +
+            '⚠️ NOTA: Actualmente los cambios no persisten (mock).\n' +
+            'Descomentar las secciones TODO Backend en handleGuardar() para conectar con el backend real.');
+
+      // Desactivar modo edición después de guardar
+      setModoEdicion(false);
+      
+      // Recargar datos del estudiante
+      const dataActualizada = await apiService.getEstudiantePorId(id || '');
+      setEstudiante(dataActualizada);
+      
+      logger.log('✅ Guardado completado');
+
+    } catch (error) {
+      logger.error('❌ Error al guardar cambios:', error);
+      alert('❌ Error al guardar los cambios\n\nPor favor, intenta nuevamente.');
+    }
   };
 
   const handleGenerarInforme = async () => {
