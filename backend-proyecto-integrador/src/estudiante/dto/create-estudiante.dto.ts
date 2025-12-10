@@ -14,6 +14,7 @@ import { TipoEstudiante, StatusEstudiante } from '../entities/estudiante.entity'
 
 @Exclude()
 export class CreateEstudianteDto {
+  // CAMPOS REQUERIDOS - Solo estos son obligatorios al crear un estudiante
   @Expose()
   @IsString()
   @IsNotEmpty()
@@ -26,18 +27,24 @@ export class CreateEstudianteDto {
   rut: string;
 
   @Expose()
-  @IsOptional()
+  @IsEmail()
+  email: string;
+
+  @Expose()
   @IsString()
-  telefono?: string;
+  @IsNotEmpty()
+  telefono: string;
 
   @Expose()
   @IsDateString()
   fecha_de_nacimiento: string;
 
   @Expose()
-  @IsEmail()
-  email: string;
+  @IsString()
+  @IsNotEmpty()
+  generacion: string;
 
+  // CAMPOS OPCIONALES - Se pueden agregar posteriormente
   @Expose()
   @IsOptional()
   @IsEnum(TipoEstudiante)
@@ -51,12 +58,7 @@ export class CreateEstudianteDto {
   @Expose()
   @IsOptional()
   @IsUUID()
-  institucionId?: string;
-  
-  // Revisar si es necesario la generacion, asumo que se refiere al año de egreso
-  @Expose()
-  @IsString()
-  generacion: string;
+  id_institucion?: string;
 
   @Expose()
   @IsOptional()
