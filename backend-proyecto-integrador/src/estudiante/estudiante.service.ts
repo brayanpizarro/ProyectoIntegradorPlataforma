@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateEstudianteDto } from './dto/create-estudiante.dto';
 import { UpdateEstudianteDto } from './dto/update-estudiante.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -21,21 +21,17 @@ export class EstudianteService {
   ) {}
 
   async create(createEstudianteDto: CreateEstudianteDto) {
-    // Crear el estudiante
     const estudiante = this.estudianteRepository.create(createEstudianteDto);
     const estudianteGuardado = await this.estudianteRepository.save(estudiante);
 
-    // Crear registro de Familia usando el servicio
     await this.familiaService.create({
       id_estudiante: estudianteGuardado.id_estudiante,
     });
 
-    // Crear registro de Información Académica usando el servicio
     await this.informacionAcademicaService.create({
       id_estudiante: estudianteGuardado.id_estudiante,
     });
 
-    // Crear registro de Historial Académico usando el servicio
     await this.historialAcademicoService.create({
       id_estudiante: estudianteGuardado.id_estudiante,
     });
@@ -57,7 +53,7 @@ export class EstudianteService {
       .addSelect('COUNT(estudiante.id_estudiante)', 'total')
       .addSelect(
         "SUM(CASE WHEN estudiante.status = 'activo' THEN 1 ELSE 0 END)",
-        'activos'
+        'activos',
       )
       .groupBy('estudiante.generacion')
       .getRawMany(); // retorna array de objs { generacion: string, total: string, activos: string }
@@ -81,12 +77,31 @@ export class EstudianteService {
   }
 
   findByGeneration(generation: string) {
-    return this.estudianteRepository.find({ where: { generacion: generation }, order: { nombre: 'ASC' } });
+    return this.estudianteRepository.find({
+      where: { generacion: generation },
+      order: { nombre: 'ASC' },
+    });
   }
 
-  findOne(id: string) {
-    return this.estudianteRepository.findOne({ where: { id_estudiante: id } });
+async findOne(id: string) {
+  const estudiante = await this.estudianteRepository.findOne({
+    where: { id_estudiante: id },
+    relations: [
+      'institucion',             
+      'informacionAcademica',     
+      'familia',                 
+      'historialesAcademicos',    
+      'ramosCursados',         
+      'entrevistas',              
+    ],
+  });
+  
+  if (!estudiante) {
+    throw new NotFoundException(`Estudiante con ID ${id} no encontrado`);
   }
+  
+  return estudiante;
+}
 
   update(id: number, updateEstudianteDto: UpdateEstudianteDto) {
     return 'this action updates a #' + id + ' estudiante';
