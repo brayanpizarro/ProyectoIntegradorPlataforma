@@ -46,7 +46,9 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
               {estudiante.nombres} {estudiante.apellidos}
             </td>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Nº de carrera cursada</td>
-            <td className="p-2 border border-gray-300 bg-white">1</td>
+            <td className="p-2 border border-gray-300 bg-white">
+              {modoEdicion ? <input type="number" defaultValue={1} className="w-full px-2 py-1 border border-gray-300 rounded" /> : '1'}
+            </td>
           </tr>
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Nº semestres finalizados</td>
@@ -64,8 +66,6 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Nº semestres de carrera</td>
             <td className="p-2 border border-gray-300 bg-white">
               {modoEdicion ? <input type="number" defaultValue={10} className="w-full px-2 py-1 border border-gray-300 rounded" /> : '10'}
-            </td>
-          </tr>modoEdicion ? <input type="number" defaultValue={1} className="w-full px-2 py-1 border border-gray-300 rounded" /> : '1'}
             </td>
           </tr>
           <tr>
