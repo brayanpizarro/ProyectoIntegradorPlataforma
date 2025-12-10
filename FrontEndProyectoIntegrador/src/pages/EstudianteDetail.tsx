@@ -52,6 +52,31 @@ const EstudianteDetail: React.FC = () => {
     fetchEstudiante();
   }, [navigate, id]);
 
+  // Cargar historial académico al montar el componente
+  useEffect(() => {
+    const cargarHistorialAcademico = async () => {
+      try {
+        // TODO Backend: Cuando el backend esté listo, usar:
+        // const historiales = await apiService.getHistorialAcademicoPorEstudiante(id);
+        // setInformesGuardados(historiales);
+        
+        // Por ahora, cargar desde localStorage (mock)
+        const historialGuardadoStr = localStorage.getItem(`historial_academico_${id}`);
+        if (historialGuardadoStr) {
+          const historiales = JSON.parse(historialGuardadoStr);
+          setInformesGuardados(historiales);
+          logger.log('📂 Historial académico cargado:', historiales.length, 'registros');
+        }
+      } catch (error) {
+        logger.error('❌ Error al cargar historial académico:', error);
+      }
+    };
+
+    if (id) {
+      cargarHistorialAcademico();
+    }
+  }, [id]);
+
   if (loading) {
     return <LoadingSpinner fullScreen message="Cargando datos del estudiante..." />;
   }
@@ -119,31 +144,6 @@ const EstudianteDetail: React.FC = () => {
       alert('❌ Error al generar el informe académico');
     }
   };
-
-  // Cargar historial académico al montar el componente
-  useEffect(() => {
-    const cargarHistorialAcademico = async () => {
-      try {
-        // TODO Backend: Cuando el backend esté listo, usar:
-        // const historiales = await apiService.getHistorialAcademicoPorEstudiante(id);
-        // setInformesGuardados(historiales);
-        
-        // Por ahora, cargar desde localStorage (mock)
-        const historialGuardadoStr = localStorage.getItem(`historial_academico_${id}`);
-        if (historialGuardadoStr) {
-          const historiales = JSON.parse(historialGuardadoStr);
-          setInformesGuardados(historiales);
-          logger.log('📂 Historial académico cargado:', historiales.length, 'registros');
-        }
-      } catch (error) {
-        logger.error('❌ Error al cargar historial académico:', error);
-      }
-    };
-
-    if (id) {
-      cargarHistorialAcademico();
-    }
-  }, [id]);
 
   return (
     <div className="min-h-screen bg-slate-50">
