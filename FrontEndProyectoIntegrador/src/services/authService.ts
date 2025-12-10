@@ -1,3 +1,19 @@
+// ════════════════════════════════════════════════════════════════════════════
+// SERVICIO DE AUTENTICACIÓN CON MOCKS PARA DESARROLLO
+// ════════════════════════════════════════════════════════════════════════════
+// Este archivo maneja el login y autenticación del usuario.
+// Si el backend NO está disponible, usa AUTENTICACIÓN MOCK automáticamente.
+//
+// ✅ CÓMO REMOVER LOS MOCKS CUANDO TENGAS BACKEND:
+//    1. Busca: "// ▼ MOCK LOGIN" y "// ▲ FIN MOCK LOGIN"
+//    2. Elimina el método private mockLogin()
+//    3. Elimina los try-catch que llaman a mockLogin()
+//    4. Deja solo: const authResponse: AuthResponse = await response.json();
+//
+// MOCKS ACTUALMENTE ACTIVOS (eliminar cuando backend esté listo):
+//   ✓ mockLogin() - Login de prueba sin validar contra base de datos
+// ════════════════════════════════════════════════════════════════════════════
+
 import type { LoginCredentials, AuthResponse, Usuario } from '../types';
 
 const API_BASE_URL = 'http://localhost:3000'; // TODO Backend: Configurar CORS para este origen
@@ -59,8 +75,18 @@ class AuthService {
       }
       
     } catch (error) {
-      console.error('❌ Error al conectar con el backend:', error);
-      throw new Error('Backend no disponible. Asegúrate de que el servidor esté corriendo en http://localhost:3000');
+      console.warn('⚠️ Backend no disponible, usando autenticación mock');
+      console.warn('📝 Error original:', error);
+      
+      // FALLBACK: Usar autenticación MOCK para desarrollo
+      const authResponse = await this.mockLogin(credentials);
+      this.saveAuthData(authResponse);
+      
+      console.log('✅ [MOCK] Login exitoso');
+      console.log('👤 Usuario:', authResponse.user.email, '- Rol:', authResponse.user.role);
+      console.log('⚠️ Nota: Esto es un LOGIN MOCK. El backend no está disponible.');
+      
+      return authResponse;
     }
   }
 
@@ -254,6 +280,67 @@ class AuthService {
     }
   }
   */
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // ▼▼▼ SECCIÓN DE MOCKS PARA DESARROLLO - ELIMINAR CUANDO BACKEND ESTÉ LISTO ▼▼▼
+  // ════════════════════════════════════════════════════════════════════════════
+  // Este mock simula un login exitoso sin validar contra base de datos
+  // Cuando el backend esté listo, elimina este método
+  // ════════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Login MOCK para desarrollo - ELIMINAR cuando backend esté listo
+   * Acepta cualquier email/password y genera tokens fake
+   */
+  private mockLogin(credentials: LoginCredentials): Promise<AuthResponse> {
+    console.log('🔐 [MOCK] Login sin validación de BD:', credentials.email);
+    
+    // Mock user - cambia según email para demostración
+    const mockUsers: { [key: string]: Usuario } = {
+      'admin@test.com': {
+        id: '1',
+        email: 'admin@test.com',
+        nombre: 'Admin User',
+        role: 'admin',
+        tipo: 'admin',
+      },
+      'academico@test.com': {
+        id: '2',
+        email: 'academico@test.com',
+        nombre: 'Profesor Académico',
+        role: 'academico',
+        tipo: 'academico',
+      },
+      'estudiante@test.com': {
+        id: '3',
+        email: 'estudiante@test.com',
+        nombre: 'Juan Estudiante',
+        role: 'estudiante',
+        tipo: 'estudiante',
+      },
+    };
+
+    const mockUser = mockUsers[credentials.email] || {
+      id: Math.random().toString(36).substr(2, 9),
+      email: credentials.email,
+      nombre: 'Mock User',
+      role: 'invitado',
+      tipo: 'invitado',
+    };
+
+    const authResponse: AuthResponse = {
+      accessToken: 'mock-jwt-token-' + Date.now(),
+      refreshToken: 'mock-refresh-token-' + Date.now(),
+      user: mockUser,
+    };
+
+    console.log('✅ [MOCK] Login exitoso, usuario:', mockUser.email);
+    return Promise.resolve(authResponse);
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // ▲▲▲ FIN SECCIÓN DE MOCKS - ELIMINAR CUANDO BACKEND ESTÉ LISTO ▲▲▲
+  // ════════════════════════════════════════════════════════════════════════════
 }
 
 // Exportar instancia singleton

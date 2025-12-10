@@ -26,6 +26,10 @@ const EstudianteDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [mostrarModalNuevaEntrevista, setMostrarModalNuevaEntrevista] = useState(false);
   const [mostrarModalSemestresAnteriores, setMostrarModalSemestresAnteriores] = useState(false);
+  const [informesGuardados, setInformesGuardados] = useState<any[]>([]);
+  // Estado para almacenar cambios en modo edición (se usará cuando se implementen refs o controlled inputs)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [datosEditados, setDatosEditados] = useState<any>({});
 
   useEffect(() => {
     if (!authService.isAuthenticated()) {
@@ -51,6 +55,31 @@ const EstudianteDetail: React.FC = () => {
     fetchEstudiante();
   }, [navigate, id]);
 
+  // Cargar historial académico al montar el componente
+  useEffect(() => {
+    const cargarHistorialAcademico = async () => {
+      try {
+        // TODO Backend: Cuando el backend esté listo, usar:
+        // const historiales = await apiService.getHistorialAcademicoPorEstudiante(id);
+        // setInformesGuardados(historiales);
+        
+        // Por ahora, cargar desde localStorage (mock)
+        const historialGuardadoStr = localStorage.getItem(`historial_academico_${id}`);
+        if (historialGuardadoStr) {
+          const historiales = JSON.parse(historialGuardadoStr);
+          setInformesGuardados(historiales);
+          logger.log('📂 Historial académico cargado:', historiales.length, 'registros');
+        }
+      } catch (error) {
+        logger.error('❌ Error al cargar historial académico:', error);
+      }
+    };
+
+    if (id) {
+      cargarHistorialAcademico();
+    }
+  }, [id]);
+
   if (loading) {
     return <LoadingSpinner fullScreen message="Cargando datos del estudiante..." />;
   }
@@ -66,12 +95,223 @@ const EstudianteDetail: React.FC = () => {
     );
   }
 
-  const handleGuardar = () => {
-    alert('Funcionalidad de guardado - Por implementar');
+  const handleGuardar = async () => {
+    if (!estudiante) return;
+
+    try {
+      logger.log('💾 Iniciando guardado de datos del estudiante...', datosEditados);
+
+      // TODO Backend: Cuando el backend esté listo, descomentar estas secciones
+      
+      // ==========================================
+      // 1. ACTUALIZAR DATOS PERSONALES
+      // ==========================================
+      // Endpoint: PATCH /estudiante/:id
+      // Campos editables en PersonalDataSection:
+      // - nombre, rut, telefono, fecha_de_nacimiento, email, tipo_de_estudiante
+      // - dirección, región, comuna
+      // - universidad, carrera, año_ingreso, estado_académico
+      // - tipo_beca, monto_beca, duracion_beca
+      
+      /* TODO Backend: Descomentar cuando esté listo
+      if (datosEditados.datosPersonales) {
+        const updateData = {
+          nombre: datosEditados.datosPersonales.nombre,
+          rut: datosEditados.datosPersonales.rut,
+          telefono: datosEditados.datosPersonales.telefono,
+          fecha_de_nacimiento: datosEditados.datosPersonales.fecha_nacimiento,
+          email: datosEditados.datosPersonales.email,
+          tipo_de_estudiante: datosEditados.datosPersonales.tipo_estudiante,
+          // ... más campos
+        };
+        
+        await apiService.actualizarEstudiante(id, updateData);
+        logger.log('✅ Datos personales actualizados');
+      }
+      */
+
+      // ==========================================
+      // 2. ACTUALIZAR INFORMACIÓN FAMILIAR
+      // ==========================================
+      // Endpoint: PATCH /estudiante/:id/familia (o crear endpoint específico)
+      // Campos editables en FamilyInfoSection:
+      // - Familiar (tipo: mamá, papá, hermanos, etc.) con nombres y edades
+      // - Observaciones de cada familiar
+      // - Observaciones generales
+      
+      /* TODO Backend: Descomentar cuando esté listo
+      if (datosEditados.informacionFamiliar) {
+        const familiaData = {
+          mama: datosEditados.informacionFamiliar.mama,
+          papa: datosEditados.informacionFamiliar.papa,
+          hermanos: datosEditados.informacionFamiliar.hermanos,
+          otros_familiares: datosEditados.informacionFamiliar.otros,
+          observaciones_generales: datosEditados.informacionFamiliar.observaciones
+        };
+        
+        await apiService.actualizarInformacionFamiliar(id, familiaData);
+        logger.log('✅ Información familiar actualizada');
+      }
+      */
+
+      // ==========================================
+      // 3. ACTUALIZAR INFORME ACADÉMICO GENERAL
+      // ==========================================
+      // Endpoint: PATCH /historial-academico/:id
+      // Campos editables en AcademicReportSection:
+      // - Nº de carrera cursada, semestres finalizados, suspendidos
+      // - Total ramos aprobados, reprobados, eliminados
+      // - Porcentajes de aprobación
+      // - Tabla de semestres (año, semestre, ramos, observaciones)
+      
+      /* TODO Backend: Descomentar cuando esté listo
+      if (datosEditados.informeAcademico) {
+        const informeData = {
+          numero_carreras: datosEditados.informeAcademico.numero_carreras,
+          semestres_finalizados: datosEditados.informeAcademico.semestres_finalizados,
+          semestres_suspendidos: datosEditados.informeAcademico.semestres_suspendidos,
+          semestres_carrera: datosEditados.informeAcademico.semestres_carrera,
+          total_ramos_aprobados: datosEditados.informeAcademico.total_aprobados,
+          total_ramos_reprobados: datosEditados.informeAcademico.total_reprobados,
+          total_eliminados: datosEditados.informeAcademico.total_eliminados,
+          porcentaje_aprobados: datosEditados.informeAcademico.porcentaje_aprobados,
+          porcentaje_reprobados: datosEditados.informeAcademico.porcentaje_reprobados,
+          porcentaje_cursados: datosEditados.informeAcademico.porcentaje_cursados,
+          // Tabla de semestres
+          semestres: datosEditados.informeAcademico.semestres
+        };
+        
+        // Puede ser actualización de historial existente o creación de uno nuevo
+        if (datosEditados.informeAcademico.id_historial) {
+          await apiService.actualizarHistorialAcademico(
+            datosEditados.informeAcademico.id_historial, 
+            informeData
+          );
+        } else {
+          await apiService.crearHistorialAcademico({
+            id_estudiante: id,
+            ...informeData
+          });
+        }
+        logger.log('✅ Informe académico actualizado');
+      }
+      */
+
+      // ==========================================
+      // 4. ACTUALIZAR DESEMPEÑO POR SEMESTRE
+      // ==========================================
+      // Endpoint: POST/PATCH /asignatura (o endpoint específico para desempeño)
+      // Campos editables en SemesterPerformanceSection:
+      // - Asignaturas del semestre actual
+      // - Notas, estado (aprobado/reprobado/cursando)
+      // - Observaciones por asignatura
+      
+      /* TODO Backend: Descomentar cuando esté listo
+      if (datosEditados.desempenoSemestre) {
+        // Guardar cada asignatura del semestre
+        for (const asignatura of datosEditados.desempenoSemestre.asignaturas) {
+          if (asignatura.id) {
+            // Actualizar asignatura existente
+            await apiService.actualizarAsignatura(asignatura.id, {
+              nombre: asignatura.nombre,
+              nota: asignatura.nota,
+              estado: asignatura.estado,
+              observaciones: asignatura.observaciones
+            });
+          } else {
+            // Crear nueva asignatura
+            await apiService.crearAsignatura({
+              id_estudiante: id,
+              nombre: asignatura.nombre,
+              nota: asignatura.nota,
+              estado: asignatura.estado,
+              observaciones: asignatura.observaciones,
+              semestre: datosEditados.desempenoSemestre.semestre,
+              año: datosEditados.desempenoSemestre.año
+            });
+          }
+        }
+        logger.log('✅ Desempeño por semestre actualizado');
+      }
+      */
+
+      // ==========================================
+      // SIMULACIÓN TEMPORAL (hasta tener backend)
+      // ==========================================
+      // Por ahora, simular guardado exitoso
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      alert('✅ Cambios guardados correctamente\n\n' +
+            '📝 Datos actualizados:\n' +
+            '- Datos personales\n' +
+            '- Información familiar\n' +
+            '- Informe académico\n' +
+            '- Desempeño semestre\n\n' +
+            '⚠️ NOTA: Actualmente los cambios no persisten (mock).\n' +
+            'Descomentar las secciones TODO Backend en handleGuardar() para conectar con el backend real.');
+
+      // Desactivar modo edición después de guardar
+      setModoEdicion(false);
+      
+      // Recargar datos del estudiante
+      const dataActualizada = await apiService.getEstudiantePorId(id || '');
+      setEstudiante(dataActualizada);
+      
+      logger.log('✅ Guardado completado');
+
+    } catch (error) {
+      logger.error('❌ Error al guardar cambios:', error);
+      alert('❌ Error al guardar los cambios\n\nPor favor, intenta nuevamente.');
+    }
   };
 
-  const handleGenerarInforme = () => {
-    alert('Funcionalidad de generación de informe - Por implementar');
+  const handleGenerarInforme = async () => {
+    try {
+      const añoActual = new Date().getFullYear();
+      const semestreActual = new Date().getMonth() < 6 ? 1 : 2;
+
+      // Estructura que coincide con CreateHistorialAcademicoDto del backend
+      const historialData = {
+        id_estudiante: id,
+        año: añoActual,
+        semestre: semestreActual,
+        nivel_educativo: estudiante?.institucion?.nivel_educativo || 'Superior',
+        ramos_aprobados: 0, // Estos valores vendrían del formulario en modo edición
+        ramos_reprobados: 0,
+        promedio_semestre: 0,
+        trayectoria_academica: [], // Array de observaciones/notas del semestre
+      };
+
+      // TODO Backend: Cuando el backend esté listo, usar:
+      // const response = await apiService.crearHistorialAcademico(historialData);
+      
+      // Por ahora, guardar en localStorage (mock)
+      const nuevoInforme = {
+        id: Date.now(),
+        id_historial_academico: Date.now(), // Simula el ID que devolvería el backend
+        ...historialData,
+        fecha: new Date().toISOString(),
+        fechaFormateada: new Date().toLocaleDateString('es-CL', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        }),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      const informesActualizados = [...informesGuardados, nuevoInforme];
+      setInformesGuardados(informesActualizados);
+      
+      // Guardar en localStorage para persistencia (temporal hasta tener backend)
+      localStorage.setItem(`historial_academico_${id}`, JSON.stringify(informesActualizados));
+      
+      alert(`✅ Informe académico generado correctamente\nAño: ${añoActual}\nSemestre: ${semestreActual}\nFecha: ${nuevoInforme.fechaFormateada}`);
+      logger.log('✅ Historial académico guardado:', nuevoInforme);
+    } catch (error) {
+      logger.error('❌ Error al generar informe:', error);
+      alert('❌ Error al generar el informe académico');
+    }
   };
 
   return (
@@ -105,11 +345,35 @@ const EstudianteDetail: React.FC = () => {
         )}
 
         {seccionActiva === 'informe' && (
-          <AcademicReportSection estudiante={estudiante} />
+          <div>
+            {informesGuardados.length > 0 && (
+              <div className="mb-4">
+                <button
+                  onClick={() => setMostrarModalSemestresAnteriores(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+                >
+                  📋 Ver Semestres Anteriores ({informesGuardados.length})
+                </button>
+              </div>
+            )}
+            <AcademicReportSection estudiante={estudiante} modoEdicion={modoEdicion} />
+          </div>
         )}
 
         {seccionActiva === 'desempeno' && (
-          <SemesterPerformanceSection modoEdicion={modoEdicion} />
+          <div>
+            {informesGuardados.length > 0 && (
+              <div className="mb-4">
+                <button
+                  onClick={() => setMostrarModalSemestresAnteriores(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+                >
+                  📋 Ver Semestres Anteriores ({informesGuardados.length})
+                </button>
+              </div>
+            )}
+            <SemesterPerformanceSection modoEdicion={modoEdicion} />
+          </div>
         )}
 
         {seccionActiva === 'entrevistas' && (
@@ -208,68 +472,67 @@ const EstudianteDetail: React.FC = () => {
 
             {/* Lista de Semestres Guardados */}
             <div className="flex flex-col gap-4">
-              {/* Semestre 2024/2S */}
-              <div className="border-2 border-gray-200 rounded-lg p-6 cursor-pointer transition-all hover:border-[var(--color-turquoise)]">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h4 className="m-0 mb-2 text-lg font-semibold text-gray-800">
-                      Semestre 2024/2S
-                    </h4>
-                    <div className="text-sm text-gray-500">
-                      <span>📅 Guardado: 20/12/2024</span>
-                      <span className="mx-2">•</span>
-                      <span>📊 Promedio: 5.2</span>
-                      <span className="mx-2">•</span>
-                      <span>📚 5 ramos (4 aprobados, 1 reprobado)</span>
-                    </div>
-                  </div>
-                  <button className="px-4 py-2 bg-[var(--color-turquoise)] text-white border-none rounded-md cursor-pointer text-sm font-medium">
-                    Ver Detalle →
-                  </button>
+              {informesGuardados.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  <p className="text-lg mb-2">📭 No hay semestres guardados aún</p>
+                  <p className="text-sm">Usa el botón "Generar Informe" para guardar el estado actual</p>
                 </div>
-              </div>
+              ) : (
+                informesGuardados.map((historial) => (
+                  <div 
+                    key={historial.id || historial.id_historial_academico}
+                    className="border-2 border-gray-200 rounded-lg p-6 cursor-pointer transition-all hover:border-[var(--color-turquoise)]"
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h4 className="m-0 mb-2 text-lg font-semibold text-gray-800">
+                          {historial.año}/{historial.semestre}S - {historial.nivel_educativo || 'Superior'}
+                        </h4>
+                        <div className="text-sm text-gray-500 flex flex-col gap-1">
+                          <div>
+                            <span>📅 Guardado: {historial.fechaFormateada || new Date(historial.created_at || historial.fecha).toLocaleDateString('es-CL')}</span>
+                            <span className="mx-2">•</span>
+                            <span>🕐 {new Date(historial.created_at || historial.fecha).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}</span>
+                          </div>
+                          <div>
+                            <span>📊 Promedio: {historial.promedio_semestre?.toFixed(1) || 'N/A'}</span>
+                            <span className="mx-2">•</span>
+                            <span className="text-green-600">✅ {historial.ramos_aprobados || 0} aprobados</span>
+                            {historial.ramos_reprobados > 0 && (
+                              <>
+                                <span className="mx-2">•</span>
+                                <span className="text-red-600">❌ {historial.ramos_reprobados} reprobados</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          // TODO Backend: Implementar vista detallada del historial
+                          const detalles = `
+Ver detalles del historial académico
 
-              {/* Semestre 2024/1S */}
-              <div className="border-2 border-gray-200 rounded-lg p-6 cursor-pointer transition-all hover:border-[var(--color-turquoise)]">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h4 className="m-0 mb-2 text-lg font-semibold text-gray-800">
-                      Semestre 2024/1S
-                    </h4>
-                    <div className="text-sm text-gray-500">
-                      <span>📅 Guardado: 30/06/2024</span>
-                      <span className="mx-2">•</span>
-                      <span>📊 Promedio: 5.5</span>
-                      <span className="mx-2">•</span>
-                      <span>📚 6 ramos (6 aprobados)</span>
-                    </div>
-                  </div>
-                  <button className="px-4 py-2 bg-[var(--color-turquoise)] text-white border-none rounded-md cursor-pointer text-sm font-medium">
-                    Ver Detalle →
-                  </button>
-                </div>
-              </div>
+Año: ${historial.año}
+Semestre: ${historial.semestre}
+Nivel: ${historial.nivel_educativo || 'N/A'}
+Ramos aprobados: ${historial.ramos_aprobados || 0}
+Ramos reprobados: ${historial.ramos_reprobados || 0}
+Promedio: ${historial.promedio_semestre?.toFixed(2) || 'N/A'}
+Trayectoria: ${historial.trayectoria_academica?.length || 0} registros
 
-              {/* Semestre 2023/2S */}
-              <div className="border-2 border-gray-200 rounded-lg p-6 cursor-pointer transition-all hover:border-[var(--color-turquoise)]">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h4 className="m-0 mb-2 text-lg font-semibold text-gray-800">
-                      Semestre 2023/2S
-                    </h4>
-                    <div className="text-sm text-gray-500">
-                      <span>📅 Guardado: 15/12/2023</span>
-                      <span className="mx-2">•</span>
-                      <span>📊 Promedio: 5.8</span>
-                      <span className="mx-2">•</span>
-                      <span>📚 6 ramos (6 aprobados)</span>
+Esta funcionalidad mostrará el snapshot completo del semestre guardado.
+                          `.trim();
+                          alert(detalles);
+                        }}
+                        className="px-4 py-2 bg-[var(--color-turquoise)] text-white border-none rounded-md cursor-pointer text-sm font-medium hover:bg-[var(--color-turquoise)]/90 transition-colors"
+                      >
+                        Ver Detalle →
+                      </button>
                     </div>
                   </div>
-                  <button className="px-4 py-2 bg-[var(--color-turquoise)] text-white border-none rounded-md cursor-pointer text-sm font-medium">
-                    Ver Detalle →
-                  </button>
-                </div>
-              </div>
+                ))
+              )}
             </div>
 
             <div className="mt-8 p-4 bg-gray-100 rounded-lg">
