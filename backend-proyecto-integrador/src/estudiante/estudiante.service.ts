@@ -103,11 +103,11 @@ async findOne(id: string) {
   return estudiante;
 }
 
-  update(id: number, updateEstudianteDto: UpdateEstudianteDto) {
-    return 'this action updates a #' + id + ' estudiante';
+  update(id: string, updateEstudianteDto: UpdateEstudianteDto) {
+    return this.estudianteRepository.update(id, updateEstudianteDto);
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return this.estudianteRepository.delete(id);
   }
 }
