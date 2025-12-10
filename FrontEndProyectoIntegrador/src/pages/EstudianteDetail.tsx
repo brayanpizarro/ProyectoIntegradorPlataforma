@@ -71,42 +71,77 @@ const EstudianteDetail: React.FC = () => {
     alert('Funcionalidad de guardado - Por implementar');
   };
 
-  const handleGenerarInforme = () => {
-    // Capturar los datos actuales del informe académico y desempeño
-    const nuevoInforme = {
-      id: Date.now(),
-      fecha: new Date().toISOString(),
-      fechaFormateada: new Date().toLocaleDateString('es-CL', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      }),
-      semestre: `${new Date().getFullYear()}-${new Date().getMonth() < 6 ? '1S' : '2S'}`,
-      // Aquí se guardarían los datos del formulario
-      // Por ahora guardamos estructura básica
-    };
+  const handleGenerarInforme = async () => {
+    try {
+      const añoActual = new Date().getFullYear();
+      const semestreActual = new Date().getMonth() < 6 ? 1 : 2;
 
-    const informesActualizados = [...informesGuardados, nuevoInforme];
-    setInformesGuardados(informesActualizados);
-    
-    // Guardar en localStorage para persistencia
-    localStorage.setItem(`informes_estudiante_${id}`, JSON.stringify(informesActualizados));
-    
-    alert(`✅ Informe generado correctamente\nSemestre: ${nuevoInforme.semestre}\nFecha: ${nuevoInforme.fechaFormateada}`);
-    logger.log('✅ Informe guardado:', nuevoInforme);
+      // Estructura que coincide con CreateHistorialAcademicoDto del backend
+      const historialData = {
+        id_estudiante: id,
+        año: añoActual,
+        semestre: semestreActual,
+        nivel_educativo: estudiante?.institucion?.nivel_educativo || 'Superior',
+        ramos_aprobados: 0, // Estos valores vendrían del formulario en modo edición
+        ramos_reprobados: 0,
+        promedio_semestre: 0,
+        trayectoria_academica: [], // Array de observaciones/notas del semestre
+      };
+
+      // TODO Backend: Cuando el backend esté listo, usar:
+      // const response = await apiService.crearHistorialAcademico(historialData);
+      
+      // Por ahora, guardar en localStorage (mock)
+      const nuevoInforme = {
+        id: Date.now(),
+        id_historial_academico: Date.now(), // Simula el ID que devolvería el backend
+        ...historialData,
+        fecha: new Date().toISOString(),
+        fechaFormateada: new Date().toLocaleDateString('es-CL', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        }),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      const informesActualizados = [...informesGuardados, nuevoInforme];
+      setInformesGuardados(informesActualizados);
+      
+      // Guardar en localStorage para persistencia (temporal hasta tener backend)
+      localStorage.setItem(`historial_academico_${id}`, JSON.stringify(informesActualizados));
+      
+      alert(`✅ Informe académico generado correctamente\nAño: ${añoActual}\nSemestre: ${semestreActual}\nFecha: ${nuevoInforme.fechaFormateada}`);
+      logger.log('✅ Historial académico guardado:', nuevoInforme);
+    } catch (error) {
+      logger.error('❌ Error al generar informe:', error);
+      alert('❌ Error al generar el informe académico');
+    }
   };
 
-  // Cargar informes guardados al montar el componente
+  // Cargar historial académico al montar el componente
   useEffect(() => {
-    const informesGuardadosStr = localStorage.getItem(`informes_estudiante_${id}`);
-    if (informesGuardadosStr) {
+    const cargarHistorialAcademico = async () => {
       try {
-        const informes = JSON.parse(informesGuardadosStr);
-        setInformesGuardados(informes);
-        logger.log('📂 Informes cargados:', informes.length);
+        // TODO Backend: Cuando el backend esté listo, usar:
+        // const historiales = await apiService.getHistorialAcademicoPorEstudiante(id);
+        // setInformesGuardados(historiales);
+        
+        // Por ahora, cargar desde localStorage (mock)
+        const historialGuardadoStr = localStorage.getItem(`historial_academico_${id}`);
+        if (historialGuardadoStr) {
+          const historiales = JSON.parse(historialGuardadoStr);
+          setInformesGuardados(historiales);
+          logger.log('📂 Historial académico cargado:', historiales.length, 'registros');
+        }
       } catch (error) {
-        logger.error('❌ Error al cargar informes:', error);
+        logger.error('❌ Error al cargar historial académico:', error);
       }
+    };
+
+    if (id) {
+      cargarHistorialAcademico();
     }
   }, [id]);
 
@@ -274,24 +309,53 @@ const EstudianteDetail: React.FC = () => {
                   <p className="text-sm">Usa el botón "Generar Informe" para guardar el estado actual</p>
                 </div>
               ) : (
-                informesGuardados.map((informe) => (
+                informesGuardados.map((historial) => (
                   <div 
-                    key={informe.id}
+                    key={historial.id || historial.id_historial_academico}
                     className="border-2 border-gray-200 rounded-lg p-6 cursor-pointer transition-all hover:border-[var(--color-turquoise)]"
                   >
                     <div className="flex justify-between items-center">
                       <div>
                         <h4 className="m-0 mb-2 text-lg font-semibold text-gray-800">
-                          Semestre {informe.semestre}
+                          {historial.año}/{historial.semestre}S - {historial.nivel_educativo || 'Superior'}
                         </h4>
-                        <div className="text-sm text-gray-500">
-                          <span>📅 Guardado: {informe.fechaFormateada}</span>
-                          <span className="mx-2">•</span>
-                          <span>🕐 {new Date(informe.fecha).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}</span>
+                        <div className="text-sm text-gray-500 flex flex-col gap-1">
+                          <div>
+                            <span>📅 Guardado: {historial.fechaFormateada || new Date(historial.created_at || historial.fecha).toLocaleDateString('es-CL')}</span>
+                            <span className="mx-2">•</span>
+                            <span>🕐 {new Date(historial.created_at || historial.fecha).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}</span>
+                          </div>
+                          <div>
+                            <span>📊 Promedio: {historial.promedio_semestre?.toFixed(1) || 'N/A'}</span>
+                            <span className="mx-2">•</span>
+                            <span className="text-green-600">✅ {historial.ramos_aprobados || 0} aprobados</span>
+                            {historial.ramos_reprobados > 0 && (
+                              <>
+                                <span className="mx-2">•</span>
+                                <span className="text-red-600">❌ {historial.ramos_reprobados} reprobados</span>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
                       <button 
-                        onClick={() => alert(`Ver detalles del semestre ${informe.semestre}\n\nEsta funcionalidad mostrará:\n- Informe Académico General\n- Desempeño por Semestre\n- Datos guardados en ese momento`)}
+                        onClick={() => {
+                          // TODO Backend: Implementar vista detallada del historial
+                          const detalles = `
+Ver detalles del historial académico
+
+Año: ${historial.año}
+Semestre: ${historial.semestre}
+Nivel: ${historial.nivel_educativo || 'N/A'}
+Ramos aprobados: ${historial.ramos_aprobados || 0}
+Ramos reprobados: ${historial.ramos_reprobados || 0}
+Promedio: ${historial.promedio_semestre?.toFixed(2) || 'N/A'}
+Trayectoria: ${historial.trayectoria_academica?.length || 0} registros
+
+Esta funcionalidad mostrará el snapshot completo del semestre guardado.
+                          `.trim();
+                          alert(detalles);
+                        }}
                         className="px-4 py-2 bg-[var(--color-turquoise)] text-white border-none rounded-md cursor-pointer text-sm font-medium hover:bg-[var(--color-turquoise)]/90 transition-colors"
                       >
                         Ver Detalle →

@@ -264,6 +264,117 @@ class ApiService {
     }
   }
 
+  // ================================
+  // HISTORIAL ACADÉMICO
+  // ================================
+  // Estos métodos coinciden con las rutas del backend en:
+  // backend-proyecto-integrador/src/historial_academico/historial_academico.controller.ts
+
+  /**
+   * Crear un nuevo registro de historial académico
+   * POST /historial-academico
+   * TODO Backend: Implementar cuando el backend esté disponible
+   */
+  async crearHistorialAcademico(data: {
+    id_estudiante: string;
+    año: number;
+    semestre: number;
+    nivel_educativo?: string;
+    ramos_aprobados?: number;
+    ramos_reprobados?: number;
+    promedio_semestre?: number;
+    trayectoria_academica?: string[];
+  }) {
+    return await this.request('/historial-academico', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Obtener todos los historiales académicos de un estudiante
+   * GET /historial-academico/estudiante/:idEstudiante
+   * TODO Backend: Implementar cuando el backend esté disponible
+   */
+  async getHistorialAcademicoPorEstudiante(idEstudiante: string) {
+    return await this.request(`/historial-academico/estudiante/${idEstudiante}`);
+  }
+
+  /**
+   * Obtener un historial académico específico por ID
+   * GET /historial-academico/:id
+   * TODO Backend: Implementar cuando el backend esté disponible
+   */
+  async getHistorialAcademicoById(id: number) {
+    return await this.request(`/historial-academico/${id}`);
+  }
+
+  /**
+   * Actualizar un historial académico existente
+   * PATCH /historial-academico/:id
+   * TODO Backend: Implementar cuando el backend esté disponible
+   */
+  async actualizarHistorialAcademico(id: number, data: Partial<{
+    año: number;
+    semestre: number;
+    nivel_educativo: string;
+    ramos_aprobados: number;
+    ramos_reprobados: number;
+    promedio_semestre: number;
+    trayectoria_academica: string[];
+  }>) {
+    return await this.request(`/historial-academico/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Agregar una nueva entrada a la trayectoria académica
+   * POST /historial-academico/:id/trayectoria
+   * TODO Backend: Implementar cuando el backend esté disponible
+   */
+  async agregarTrayectoriaAcademica(id: number, trayectoria: string) {
+    return await this.request(`/historial-academico/${id}/trayectoria`, {
+      method: 'POST',
+      body: JSON.stringify({ trayectoria }),
+    });
+  }
+
+  /**
+   * Actualizar una entrada específica de la trayectoria académica
+   * PATCH /historial-academico/:id/trayectoria/:index
+   * TODO Backend: Implementar cuando el backend esté disponible
+   */
+  async actualizarTrayectoriaAcademica(id: number, index: number, trayectoria: string) {
+    return await this.request(`/historial-academico/${id}/trayectoria/${index}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ trayectoria }),
+    });
+  }
+
+  /**
+   * Eliminar una entrada de la trayectoria académica
+   * DELETE /historial-academico/:id/trayectoria/:index
+   * TODO Backend: Implementar cuando el backend esté disponible
+   */
+  async eliminarTrayectoriaAcademica(id: number, index: number) {
+    return await this.request(`/historial-academico/${id}/trayectoria/${index}`, {
+      method: 'DELETE',
+    });
+  }
+
+  /**
+   * Eliminar un historial académico completo
+   * DELETE /historial-academico/:id
+   * TODO Backend: Implementar cuando el backend esté disponible
+   */
+  async eliminarHistorialAcademico(id: number) {
+    return await this.request(`/historial-academico/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
   // ════════════════════════════════════════════════════════════════════════════
   // ▼▼▼ SECCIÓN DE MOCKS PARA DESARROLLO - ELIMINAR CUANDO BACKEND ESTÉ LISTO ▼▼▼
   // ════════════════════════════════════════════════════════════════════════════
