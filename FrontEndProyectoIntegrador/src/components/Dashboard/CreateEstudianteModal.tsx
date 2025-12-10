@@ -15,7 +15,9 @@ import {
   Step,
   StepLabel
 } from '@mui/material';
-import { apiService } from '../../services/apiService';
+import { estudianteService } from '../../services/estudiante.service';
+import { institucionService } from '../../services/institucion.service';
+import type { TipoEstudiante } from '../../types';
 
 interface CreateEstudianteModalProps {
   open: boolean;
@@ -31,7 +33,7 @@ interface FormData {
   email: string;
   telefono: string;
   fecha_de_nacimiento: string;
-  tipo_de_estudiante: 'media' | 'universitario';
+  tipo_de_estudiante: TipoEstudiante;
   generacion: string;
   
   // Datos institución
@@ -62,7 +64,7 @@ export const CreateEstudianteModal: React.FC<CreateEstudianteModalProps> = ({
     email: '',
     telefono: '',
     fecha_de_nacimiento: '',
-    tipo_de_estudiante: 'universitario',
+    tipo_de_estudiante: 'universitario' as TipoEstudiante,
     generacion: generacion.toString(),
     nombre_institucion: '',
     tipo_institucion: 'Universidad',
@@ -169,10 +171,7 @@ export const CreateEstudianteModal: React.FC<CreateEstudianteModalProps> = ({
         anio_de_egreso: formData.anio_de_egreso
       };
 
-      const institucion = await apiService.request('/institucion', {
-        method: 'POST',
-        body: JSON.stringify(institucionData)
-      });
+      const institucion = await institucionService.create(institucionData);
 
       // Crear el estudiante con la institución
       const estudianteData = {
@@ -181,15 +180,12 @@ export const CreateEstudianteModal: React.FC<CreateEstudianteModalProps> = ({
         email: formData.email,
         telefono: formData.telefono,
         fecha_de_nacimiento: formData.fecha_de_nacimiento,
-        tipo: formData.tipo_de_estudiante,
+        tipo_de_estudiante: formData.tipo_de_estudiante,
         generacion: formData.generacion,
-        institucionId: institucion.id_institucion
+        id_institucion: institucion.id_institucion
       };
 
-      await apiService.request('/estudiante', {
-        method: 'POST',
-        body: JSON.stringify(estudianteData)
-      });
+      await estudianteService.create(estudianteData);
 
       onSuccess();
       handleClose();
@@ -209,7 +205,7 @@ export const CreateEstudianteModal: React.FC<CreateEstudianteModalProps> = ({
       email: '',
       telefono: '',
       fecha_de_nacimiento: '',
-      tipo_de_estudiante: 'universitario',
+      tipo_de_estudiante: 'universitario' as TipoEstudiante,
       generacion: generacion.toString(),
       nombre_institucion: '',
       tipo_institucion: 'Universidad',

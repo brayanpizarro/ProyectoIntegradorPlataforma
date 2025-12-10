@@ -1,50 +1,39 @@
 import {
   IsString,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsArray,
 } from 'class-validator';
-import { Exclude, Expose } from 'class-transformer';
 
-@Exclude()
 export class CreateFamiliaDto {
-  @Expose()
   @IsString()
   @IsNotEmpty()
   id_estudiante: string;
 
-  @Expose()
-  @IsString()
   @IsOptional()
+  @IsString()
   nombre_madre?: string;
 
-  @Expose()
-  @IsArray()
   @IsOptional()
+  @IsArray()
   descripcion_madre?: string[];
 
-  @Expose()
-  @IsString()
   @IsOptional()
+  @IsString()
   nombre_padre?: string;
 
-  @Expose()
-  @IsArray()
   @IsOptional()
+  @IsArray()
   descripcion_padre?: string[];
 
-  @Expose()
-  @IsArray()
   @IsOptional()
+  @IsArray()
   hermanos?: any[];
 
-  @Expose()
-  @IsArray()
   @IsOptional()
+  @IsArray()
   otros_familiares?: any[];
 
-  @Expose()
   @IsOptional()
   observaciones?: any;
 }

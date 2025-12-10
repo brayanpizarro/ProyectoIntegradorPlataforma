@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { apiService } from '../services/apiService';
+import { estudianteService } from '../services';
 import { logger } from '../config';
 import { GenerationHeader, StudentFilterPanel, StudentsTable } from '../components/GenerationView';
 import { CreateEstudianteModal } from '../components/Dashboard';
@@ -98,7 +98,7 @@ const GeneracionViewSimple: React.FC = () => {
     logger.log('🔍 Cargando estudiantes de generación:', id);
     const fetchStudents = async () => {
       try {
-        const dataStudents = await apiService.EstudiantesPorGeneracion(id || '')
+        const dataStudents = await estudianteService.getByGeneracion(id || '')
         setStudents(dataStudents);
         logger.log('✅ Estudiantes cargados:', dataStudents.length);
         
@@ -125,7 +125,7 @@ const GeneracionViewSimple: React.FC = () => {
   const handleEstudianteCreated = async () => {
     // Recargar estudiantes después de crear uno nuevo
     try {
-      const dataStudents = await apiService.EstudiantesPorGeneracion(id || '')
+      const dataStudents = await estudianteService.getByGeneracion(id || '')
       setStudents(dataStudents);
       logger.log('✅ Estudiantes actualizados:', dataStudents.length);
     } catch (error) {

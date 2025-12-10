@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authService } from '../services/authService';
-import { apiService } from '../services/apiService';
-import { PermissionService } from '../services/permissionService';
+import { authService, userService, PermissionService } from '../services';
 import type { Usuario } from '../types';
 import {
   Box,
@@ -103,7 +101,7 @@ export const UserManagement: React.FC = () => {
 
   const loadUsers = async () => {
     try {
-      const usersData = await apiService.getUsers();
+      const usersData = await userService.getAll();
       setUsers(usersData);
     } catch (error) {
       console.error('Error al cargar usuarios:', error);
@@ -177,14 +175,14 @@ export const UserManagement: React.FC = () => {
     try {
       if (editingUser) {
         // Actualizar usuario existente
-        await apiService.updateUser(editingUser.id!, {
+        await userService.update(editingUser.id!, {
           ...formData,
           role: formData.rol
         });
         setSnackbar({ open: true, message: 'Usuario actualizado exitosamente', severity: 'success' });
       } else {
         // Crear nuevo usuario
-        await apiService.createUser({
+        await userService.create({
           ...formData,
           role: formData.rol
         });
@@ -205,7 +203,7 @@ export const UserManagement: React.FC = () => {
     }
 
     try {
-      await apiService.deleteUser(userId);
+      await userService.delete(userId);
       setSnackbar({ open: true, message: 'Usuario eliminado exitosamente', severity: 'success' });
       await loadUsers(); // Recargar lista
     } catch (err) {

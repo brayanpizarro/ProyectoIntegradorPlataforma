@@ -1,44 +1,34 @@
 import { IsString, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
-import { Exclude, Expose } from 'class-transformer';
 
-@Exclude()
 export class CreateHistorialAcademicoDto {
-  @Expose()
   @IsString()
   @IsNotEmpty()
   id_estudiante: string;
 
-  @Expose()
-  @IsNumber()
-  @IsNotEmpty()
-  año: number;
-
-  @Expose()
-  @IsNumber()
-  @IsNotEmpty()
-  semestre: number;
-
-  @Expose()
-  @IsString()
   @IsOptional()
+  @IsNumber()
+  año?: number;
+
+  @IsOptional()
+  @IsNumber()
+  semestre?: number;
+
+  @IsOptional()
+  @IsString()
   nivel_educativo?: string;
 
-  @Expose()
-  @IsNumber()
   @IsOptional()
+  @IsNumber()
   ramos_aprobados?: number;
 
-  @Expose()
-  @IsNumber()
   @IsOptional()
+  @IsNumber()
   ramos_reprobados?: number;
 
-  @Expose()
-  @IsNumber()
   @IsOptional()
+  @IsNumber()
   promedio_semestre?: number;
 
-  @Expose()
   @IsOptional()
-  trayectoria_academica?: string[]; // Array de textos incrementales
+  trayectoria_academica?: string[];
 }

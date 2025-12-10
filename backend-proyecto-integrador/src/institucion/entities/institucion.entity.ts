@@ -6,25 +6,25 @@ export class Institucion {
   @PrimaryGeneratedColumn('uuid')
   id_institucion: string;
 
-  @Column()
+  @Column({ nullable: true, default: null })
   nombre: string;
 
-  @Column()
+  @Column({ nullable: true, default: null })
   tipo_institucion: string;
 
-  @Column()
+  @Column({ nullable: true, default: null })
   nivel_educativo: string;
   
-  @Column()
+  @Column({ nullable: true, default: null })
   carrera_especialidad: string;
 
-  @Column()
-  duracion: string; // Establecer un tipo, y ver si es mejor number o string
+  @Column({ nullable: true, default: null })
+  duracion: string;
 
-  @Column()
+  @Column({ nullable: true, default: null })
   anio_de_ingreso: string;
 
-  @Column()
+  @Column({ nullable: true, default: null })
   anio_de_egreso: string;
 
   @OneToMany(() => Estudiante, (estudiante) => estudiante.institucion)

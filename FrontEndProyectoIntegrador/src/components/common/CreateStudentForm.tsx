@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { estudianteService } from '../../services';
 import type { Estudiante, TipoEstudiante, StatusEstudiante } from '../../types';
-import LoadingSpinner from '../LoadingSpinner';
+import { LoadingSpinner } from '../LoadingSpinner';
 
 interface CreateStudentFormProps {
   onSuccess?: (estudiante: Estudiante) => void;
@@ -52,7 +52,7 @@ const CreateStudentForm: React.FC<CreateStudentFormProps> = ({
         throw new Error('El email es requerido');
       }
 
-      const estudiante = await estudianteService.createEstudiante({
+      const estudiante = await estudianteService.create({
         ...formData,
         fecha_de_nacimiento: formData.fecha_de_nacimiento || undefined,
         telefono: formData.telefono || undefined,

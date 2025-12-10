@@ -18,7 +18,7 @@ export enum UserRole {
  * Servicio de permisos
  * Proporciona métodos para verificar permisos de usuario
  */
-export class PermissionService {
+export default class PermissionService {
   /**
    * Verifica si un usuario es administrador
    */

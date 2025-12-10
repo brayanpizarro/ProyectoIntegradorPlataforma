@@ -51,20 +51,20 @@ export class Estudiante {
   @Column({
     type: 'enum',
     enum: TipoEstudiante,
-    default: TipoEstudiante.MEDIA,
   })
   tipo_de_estudiante: TipoEstudiante;
-  // Ver si la generacion es algo que se pone al crear al estudiante o despues
-  @Column()
+
+  @Column({ nullable: true, default: null })
   generacion: string;
 
-  @Column({ type: 'int', default: 1 })
+  @Column({ type: 'int', nullable: true, default: null })
   numero_carrera: number;
 
   @Column({
     type: 'enum',
     enum: StatusEstudiante,
-    default: StatusEstudiante.ACTIVO,
+    nullable: true,
+    default: null,
   })
   status: StatusEstudiante;
 

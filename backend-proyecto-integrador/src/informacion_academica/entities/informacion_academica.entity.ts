@@ -26,19 +26,19 @@ export class InformacionAcademica {
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   promedio_4: number;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, default: null })
   via_acceso: string;
 
-  @Column()
+  @Column({ nullable: true, default: null })
   año_ingreso_beca: number;
 
-  @Column()
-  colegio: string; //liceo
+  @Column({ nullable: true, default: null })
+  colegio: string;
 
-  @Column({ nullable: true })
-  especialidad_colegio: string; // Si es que aplica
+  @Column({ nullable: true, default: null })
+  especialidad_colegio: string;
 
-  @Column()
+  @Column({ nullable: true, default: null })
   comuna_colegio: string;
 
   @Column({ type: 'jsonb', nullable: true, default: () => "'{}'" })

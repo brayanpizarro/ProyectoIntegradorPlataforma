@@ -10,6 +10,7 @@ import { InstitucionModule } from './institucion/institucion.module';
 import { UsersModule } from './users/users.module';
 import { EntrevistasModule } from './entrevistas/entrevistas.module';
 import { AuthModule } from './auth/auth.module';
+import { SeederModule } from './seeder/seeder.module';
 import { appConfig, databaseConfig, jwtConfig } from './config';
 
 @Module({
@@ -47,6 +48,7 @@ import { appConfig, databaseConfig, jwtConfig } from './config';
     UsersModule,
     EntrevistasModule,
     AuthModule,
+    SeederModule,
   ],
 })
 export class AppModule {}

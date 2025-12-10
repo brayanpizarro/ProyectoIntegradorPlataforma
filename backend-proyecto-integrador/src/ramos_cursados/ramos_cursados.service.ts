@@ -1,11 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { CreateRamosCursadosDto } from './dto/create-ramos_cursado.dto';
 import { UpdateRamosCursadosDto } from './dto/update-ramos_cursado.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { RamosCursados } from './entities/ramos_cursado.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class RamosCursadosService {
+
+  constructor(@InjectRepository(RamosCursados) private ramosCursadosRepository: Repository<RamosCursados>) {}
+
   create(createRamosCursadosDto: CreateRamosCursadosDto) {
-    return 'This action adds a new ramosCursado';
+    return this.ramosCursadosRepository.create(createRamosCursadosDto);
   }
 
   findAll() {

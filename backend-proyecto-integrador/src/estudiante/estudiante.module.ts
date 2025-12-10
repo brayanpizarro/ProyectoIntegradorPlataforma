@@ -3,17 +3,21 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { EstudianteService } from './estudiante.service';
 import { EstudianteController } from './estudiante.controller';
 import { Estudiante } from './entities/estudiante.entity';
-import { Familia } from '../familia/entities/familia.entity';
-import { InformacionAcademica } from '../informacion_academica/entities/informacion_academica.entity';
-import { HistorialAcademico } from '../historial_academico/entities/historial_academico.entity';
-import { RamosCursados } from '../ramos_cursados/entities/ramos_cursado.entity';
-import { Institucion } from '../institucion/entities/institucion.entity';
-import { Entrevista } from '../entrevistas/entities/entrevista.entity';
+import { FamiliaModule } from '../familia/familia.module';
+import { InformacionAcademicaModule } from '../informacion_academica/informacion_academica.module';
+import { HistorialAcademicoModule } from '../historial_academico/historial_academico.module';
+import { InstitucionModule } from '../institucion/institucion.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Estudiante, Familia, InformacionAcademica, HistorialAcademico, RamosCursados, Institucion, Entrevista])],
+  imports: [
+    TypeOrmModule.forFeature([Estudiante]),
+    FamiliaModule,
+    InformacionAcademicaModule,
+    HistorialAcademicoModule,
+    InstitucionModule,
+  ],
   controllers: [EstudianteController],
   providers: [EstudianteService],
-  exports: [EstudianteService]
+  exports: [EstudianteService],
 })
 export class EstudianteModule {}

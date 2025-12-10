@@ -1,40 +1,30 @@
 import { IsString, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
-import { Exclude, Expose } from 'class-transformer';
 
-@Exclude()
 export class CreateRamosCursadosDto {
-  @Expose()
   @IsNumber()
   @IsNotEmpty()
   id_estudiante: number;
 
-  @Expose()
-  @IsNumber()
-  @IsNotEmpty()
-  semestre: number;
-
-  @Expose()
-  @IsString()
   @IsOptional()
+  @IsNumber()
+  semestre?: number;
+
+  @IsOptional()
+  @IsString()
   nivel_educativo?: string;
 
-  @Expose()
-  @IsString()
-  @IsNotEmpty()
-  nombre_ramo: string;
-
-  @Expose()
-  @IsString()
   @IsOptional()
-  notas_parciales?: string; // JSON string
+  @IsString()
+  nombre_ramo?: string;
 
-  @Expose()
+  @IsOptional()
+  notas_parciales?: any;
+
+  @IsOptional()
   @IsNumber()
-  @IsOptional()
   promedio_final?: number;
 
-  @Expose()
-  @IsString()
   @IsOptional()
+  @IsString()
   estado?: string;
 }

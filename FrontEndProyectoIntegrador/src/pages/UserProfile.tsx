@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authService } from '../services/authService';
-import { apiService } from '../services/apiService';
+import { authService, userService } from '../services';
 import type { Usuario } from '../types';
 import {
   Box,
@@ -57,7 +56,7 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
 
     console.log('✅ UserProfile - Usuario autenticado, cargando perfil...');
     try {
-      const profileData = await apiService.getCurrentUserProfile();
+      const profileData = await userService.getCurrentProfile();
       console.log('✅ UserProfile - Perfil cargado desde API:', profileData);
       setUser(profileData);
       setEditedUser({ ...profileData });
@@ -89,7 +88,7 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
     if (!editedUser) return;
 
     try {
-      const updatedProfile = await apiService.updateCurrentUserProfile({
+      const updatedProfile = await userService.updateCurrentProfile({
         nombres: editedUser.nombres,
         apellidos: editedUser.apellidos,
         email: editedUser.email,

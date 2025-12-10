@@ -14,19 +14,19 @@ export class HistorialAcademico {
   @PrimaryGeneratedColumn()
   id_historial_academico: number;
 
-  @Column()
+  @Column({ nullable: true, default: null })
   año: number;
 
-  @Column()
+  @Column({ nullable: true, default: null })
   semestre: number;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, default: null })
   nivel_educativo: string;
 
-  @Column({ default: 0 })
+  @Column({ nullable: true, default: null })
   ramos_aprobados: number;
 
-  @Column({ default: 0 })
+  @Column({ nullable: true, default: null })
   ramos_reprobados: number;
 
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })

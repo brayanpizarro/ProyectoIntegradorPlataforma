@@ -1,41 +1,31 @@
-import { IsString, IsNotEmpty, MinLength } from 'class-validator';
-import { Exclude, Expose } from 'class-transformer';
+import { IsString, IsOptional } from 'class-validator';
 
-@Exclude()
 export class CreateInstitucionDto {
-  @Expose()
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  @MinLength(2)
-  nombre: string;
+  nombre?: string;
 
-  @Expose()
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  tipo_institucion: string;
+  tipo_institucion?: string;
 
-  @Expose()
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  nivel_educativo: string;
+  nivel_educativo?: string;
 
-  @Expose()
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  carrera_especialidad: string;
+  carrera_especialidad?: string;
 
-  @Expose()
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  duracion: string;
+  duracion?: string;
 
-  @Expose()
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  anio_de_ingreso: string;
+  anio_de_ingreso?: string;
 
-  @Expose()
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  anio_de_egreso: string;
+  anio_de_egreso?: string;
 }

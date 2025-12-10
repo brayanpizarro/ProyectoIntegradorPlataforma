@@ -1,68 +1,53 @@
 import { IsString, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
-import { Exclude, Expose } from 'class-transformer';
 
-@Exclude()
 export class CreateInformacionAcademicaDto {
-  @Expose()
   @IsString()
   @IsNotEmpty()
   id_estudiante: string;
 
-  @Expose()
-  @IsNumber()
   @IsOptional()
+  @IsNumber()
   promedio_1?: number;
 
-  @Expose()
-  @IsNumber()
   @IsOptional()
+  @IsNumber()
   promedio_2?: number;
 
-  @Expose()
-  @IsNumber()
   @IsOptional()
+  @IsNumber()
   promedio_3?: number;
 
-  @Expose()
-  @IsNumber()
   @IsOptional()
+  @IsNumber()
   promedio_4?: number;
 
-  @Expose()
-  @IsString()
   @IsOptional()
+  @IsString()
   via_acceso?: string;
 
-  @Expose()
-  @IsNumber()
   @IsOptional()
+  @IsNumber()
   año_ingreso_beca?: number;
 
-  @Expose()
-  @IsString()
   @IsOptional()
+  @IsString()
   colegio?: string;
 
-  @Expose()
-  @IsString()
   @IsOptional()
+  @IsString()
   especialidad_colegio?: string;
 
-  @Expose()
-  @IsString()
   @IsOptional()
+  @IsString()
   comuna_colegio?: string;
 
-  @Expose()
   @IsOptional()
-  puntajes_admision?: any; // JSONB flexible
+  puntajes_admision?: any;
 
-  @Expose()
   @IsOptional()
-  ensayos_paes?: any[]; // Array JSONB flexible
+  ensayos_paes?: any[];
 
-  @Expose()
+  @IsOptional()
   @IsString()
-  @IsOptional()
-  beneficios?: string; // Descripción de beneficios
+  beneficios?: string;
 }

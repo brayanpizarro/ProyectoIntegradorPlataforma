@@ -1,7 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authService } from '../services/authService';
-import { apiService } from '../services/apiService';
+import { authService, estudianteService, estadisticasService } from '../services';
 import { logger } from '../config';
 import { LoadingSpinner, ErrorMessage, StatCard } from '../components/common';
 import { 
@@ -56,8 +55,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
           logger.log('📊 Cargando datos del backend...');
 
           const [estudiantesData, estadisticasData] = await Promise.all([
-            apiService.getEstudiantes(),
-            apiService.getEstadisticas()
+            estudianteService.getAll(),
+            estadisticasService.getDashboard()
           ]);
           setEstadisticas(estadisticasData);
           const generacionesCalculadas = calcularGeneracionesDesdeEstudiantes(estudiantesData);
@@ -106,9 +105,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
         const currentYear = new Date().getFullYear();
 
         const activos = estudiantesAño.filter(e =>
-          e.informacionAcademica?.status_actual === 'Activo' ||
           e.estado === 'Activo' ||
-          e.tipo_de_estudiante === 'universitario'
+          !e.estado
         ).length;
 
         return {
@@ -151,8 +149,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
     setLoading(true);
     try {
       const [estudiantesData, estadisticasData] = await Promise.all([
-        apiService.getEstudiantes(),
-        apiService.getEstadisticas()
+        estudianteService.getAll(),
+        estadisticasService.getDashboard()
       ]);
       setEstadisticas(estadisticasData);
       const generacionesCalculadas = calcularGeneracionesDesdeEstudiantes(estudiantesData);

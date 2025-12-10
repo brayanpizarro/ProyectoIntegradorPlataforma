@@ -14,13 +14,13 @@ export class RamosCursados {
   @PrimaryGeneratedColumn()
   id_ramo: number;
 
-  @Column()
+  @Column({ nullable: true, default: null })
   semestre: number;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, default: null })
   nivel_educativo: string;
 
-  @Column()
+  @Column({ nullable: true, default: null })
   nombre_ramo: string;
 
   @Column({ type: 'json', nullable: true })
