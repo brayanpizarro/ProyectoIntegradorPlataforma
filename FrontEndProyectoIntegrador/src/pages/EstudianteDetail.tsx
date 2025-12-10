@@ -105,7 +105,7 @@ const EstudianteDetail: React.FC = () => {
         )}
 
         {seccionActiva === 'informe' && (
-          <AcademicReportSection estudiante={estudiante} />
+          <AcademicReportSection estudiante={estudiante} modoEdicion={modoEdicion} />
         )}
 
         {seccionActiva === 'desempeno' && (
