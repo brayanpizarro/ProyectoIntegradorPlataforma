@@ -18,6 +18,8 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
     rut: estudiante.rut || '',
     telefono: estudiante.telefono || '',
     email: estudiante.email || '',
+    genero: estudiante.genero || '',
+    direccion: estudiante.direccion || '',
     fecha_de_nacimiento: estudiante.fecha_de_nacimiento 
       ? (typeof estudiante.fecha_de_nacimiento === 'string' 
           ? estudiante.fecha_de_nacimiento.split('T')[0]
@@ -33,6 +35,8 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
       rut: estudiante.rut || '',
       telefono: estudiante.telefono || '',
       email: estudiante.email || '',
+      genero: estudiante.genero || '',
+      direccion: estudiante.direccion || '',
       fecha_de_nacimiento: estudiante.fecha_de_nacimiento 
         ? (typeof estudiante.fecha_de_nacimiento === 'string' 
             ? estudiante.fecha_de_nacimiento.split('T')[0]
@@ -145,14 +149,6 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
             </td>
           </tr>
 
-          {/* Apellidos - Sin campo en backend aún */}
-          <tr>
-            <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Apellidos</td>
-            <td className="p-2 border border-gray-300 bg-white">
-              <span className="text-gray-400 italic">Campo no disponible en backend</span>
-            </td>
-          </tr>
-
           {/* ✅ INPUT CONTROLADO - RUT */}
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">RUT</td>
@@ -236,11 +232,25 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
             </td>
           </tr>
 
-          {/* Género - Campo no disponible aún */}
+          {/* ✅ INPUT CONTROLADO - Género */}
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Género</td>
             <td className="p-2 border border-gray-300 bg-white">
-              <span className="text-gray-400 italic">Campo no disponible en backend</span>
+              {modoEdicion ? (
+                <select 
+                  value={formData.genero}
+                  onChange={(e) => handleInputChange('genero', e.target.value)}
+                  className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Seleccionar género</option>
+                  <option value="masculino">Masculino</option>
+                  <option value="femenino">Femenino</option>
+                  <option value="otro">Otro</option>
+                  <option value="prefiero_no_decir">Prefiero no decir</option>
+                </select>
+              ) : (
+                <span>{estudiante.genero || 'Sin definir'}</span>
+              )}
             </td>
           </tr>
 
@@ -262,11 +272,21 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
             </td>
           </tr>
 
-          {/* Dirección - Campo no disponible */}
+          {/* ✅ INPUT CONTROLADO - Dirección */}
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Dirección</td>
             <td className="p-2 border border-gray-300 bg-white">
-              <span className="text-gray-400 italic">Campo no disponible en backend</span>
+              {modoEdicion ? (
+                <input 
+                  type="text" 
+                  value={formData.direccion}
+                  onChange={(e) => handleInputChange('direccion', e.target.value)}
+                  className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Dirección completa"
+                />
+              ) : (
+                <span>{estudiante.direccion || 'Sin definir'}</span>
+              )}
             </td>
           </tr>
 
