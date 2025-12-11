@@ -33,7 +33,7 @@ export class UserSeeder {
           continue;
         }
 
-        this.logger.log(`➕ Creando usuario: ${userData.username}`);
+        this.logger.log(`Creando usuario: ${userData.username}`);
 
         // Si NO existe, crear nuevo usuario
         const hashedPassword = await bcrypt.hash(userData.password, 10);
