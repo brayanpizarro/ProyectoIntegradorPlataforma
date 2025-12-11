@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
-import { PermissionService } from '../services/permissionService';
+import PermissionService  from '../services/permissionService';
 import type { Usuario } from '../types';
 import {
   Box,

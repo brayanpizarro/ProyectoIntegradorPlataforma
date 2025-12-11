@@ -1,3 +1,5 @@
+import { UserRole } from "src/users";
+
 export const usersData = [
   {
     username: 'admin',
@@ -5,7 +7,7 @@ export const usersData = [
     password: 'admin123',
     nombre: 'Administrador',
     apellido: 'Sistema',
-    rol: 'admin' as const,
+    rol: UserRole.ADMIN,
     activo: true,
   },
 ];
