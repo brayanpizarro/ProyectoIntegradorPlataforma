@@ -3,7 +3,8 @@
 import type { Estudiante, Entrevista, EstadisticasAdmin, Usuario } from '../types';
 
 // CONFIGURACIÓN
-const API_BASE_URL = 'http://localhost:3000';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 interface ApiRequestOptions extends RequestInit {
   requireAuth?: boolean;
