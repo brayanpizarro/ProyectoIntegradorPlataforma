@@ -14,7 +14,6 @@ async function bootstrap() {
       // Obtener DataSource correctamente
       const dataSource = appContext.get(DataSource);
       console.log('📊 BD:', dataSource.options.database);
-      console.log('🔗 Host:', dataSource.options.host);
       
       // Ejecutar seeder
       const userSeeder = appContext.get(UserSeeder);
