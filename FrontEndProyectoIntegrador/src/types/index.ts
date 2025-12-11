@@ -79,6 +79,7 @@ export interface Estudiante {
   edad?: number;
   genero?: string;
   observaciones?: string;
+  status_detalle?: string;
   semestres_suspendidos?: number;
   semestres_total_carrera?: number;
   activo?: boolean;

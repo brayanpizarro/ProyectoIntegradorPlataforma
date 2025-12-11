@@ -57,6 +57,9 @@ export class Estudiante {
   @Column({ type: 'text', nullable: true })
   observaciones: string;
 
+  @Column({ type: 'text', nullable: true })
+  status_detalle: string;
+
   @Column({ type: 'int', nullable: true, default: 0 })
   semestres_suspendidos: number;
 

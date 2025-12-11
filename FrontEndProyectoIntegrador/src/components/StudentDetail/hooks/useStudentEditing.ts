@@ -38,8 +38,65 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
     try {
       logger.log('💾 Guardando cambios:', datosEditados);
 
-      // Enviar solo los campos modificados
-      await estudianteService.update(id, datosEditados);
+      // Separar campos de estudiante vs información académica
+      const camposEstudiante = ['nombre', 'rut', 'telefono', 'email', 'genero', 'direccion', 
+        'fecha_de_nacimiento', 'tipo_de_estudiante', 'status', 'generacion', 'numero_carrera', 
+        'observaciones', 'status_detalle', 'semestres_suspendidos', 'semestres_total_carrera'];
+      
+      const camposInfoAcademica = ['año_ingreso_beca', 'colegio', 'especialidad_colegio', 
+        'comuna_colegio', 'via_acceso', 'beneficios', 'promedio_1', 'promedio_2', 
+        'promedio_3', 'promedio_4', 'puntajes_paes'];
+
+      const datosEstudiante: any = {};
+      const datosInfoAcademica: any = {};
+
+      // Clasificar los cambios
+      Object.keys(datosEditados).forEach(campo => {
+        if (camposEstudiante.includes(campo)) {
+          datosEstudiante[campo] = datosEditados[campo];
+        } else if (camposInfoAcademica.includes(campo)) {
+          datosInfoAcademica[campo] = datosEditados[campo];
+        }
+      });
+
+      // Actualizar estudiante si hay cambios
+      if (Object.keys(datosEstudiante).length > 0) {
+        await estudianteService.update(id, datosEstudiante);
+        logger.log('✅ Datos del estudiante actualizados');
+      }
+
+      // Actualizar información académica si hay cambios
+      if (Object.keys(datosInfoAcademica).length > 0 && estudiante.informacionAcademica?.id_info_academico) {
+        // Convertir año_ingreso_beca a número si existe
+        if (datosInfoAcademica.año_ingreso_beca !== undefined) {
+          const valor = parseInt(datosInfoAcademica.año_ingreso_beca);
+          datosInfoAcademica.año_ingreso_beca = isNaN(valor) ? null : valor;
+        }
+        
+        // Convertir promedios a número
+        ['promedio_1', 'promedio_2', 'promedio_3', 'promedio_4'].forEach(campo => {
+          if (datosInfoAcademica[campo] !== undefined) {
+            const valor = parseFloat(datosInfoAcademica[campo]);
+            datosInfoAcademica[campo] = isNaN(valor) ? null : valor;
+          }
+        });
+
+        // Convertir puntajes_paes a puntajes_admision
+        if (datosInfoAcademica.puntajes_paes !== undefined) {
+          datosInfoAcademica.puntajes_admision = { descripcion: datosInfoAcademica.puntajes_paes };
+          delete datosInfoAcademica.puntajes_paes;
+        }
+
+        const infoAcademicaId = estudiante.informacionAcademica.id_info_academico;
+        const response = await fetch(`http://localhost:3000/informacion-academica/${infoAcademicaId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(datosInfoAcademica)
+        });
+        
+        if (!response.ok) throw new Error('Error al actualizar información académica');
+        logger.log('✅ Información académica actualizada');
+      }
       
       logger.log('✅ Cambios guardados exitosamente');
       

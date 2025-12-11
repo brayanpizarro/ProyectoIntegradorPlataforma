@@ -212,17 +212,48 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
             </td>
           </tr>
 
+          {/* Generación */}
+          <tr>
+            <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Generación</td>
+            <td className="p-2 border border-gray-300 bg-white">
+              {modoEdicion ? (
+                <input 
+                  type="text" 
+                  defaultValue={estudiante.generacion || ''}
+                  onBlur={(e) => handleInputChange('generacion', e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleInputChange('generacion', e.currentTarget.value);
+                    }
+                  }}
+                  className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="2023"
+                  maxLength={4}
+                />
+              ) : (
+                <span>{estudiante.generacion || 'Sin definir'}</span>
+              )}
+            </td>
+          </tr>
+
           {/* Año Ingreso Beca */}
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Año Ingreso Beca</td>
             <td className="p-2 border border-gray-300 bg-white">
               {modoEdicion ? (
                 <input 
-                  type="number" 
-                  value={formData.año_ingreso_beca ?? ''}
-                  onChange={(e) => handleInputChange('año_ingreso_beca', e.target.value)}
+                  type="text" 
+                  inputMode="numeric"
+                  defaultValue={estudiante.informacionAcademica?.año_ingreso_beca || ''}
+                  onBlur={(e) => handleInputChange('año_ingreso_beca', e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleInputChange('año_ingreso_beca', e.currentTarget.value);
+                    }
+                  }}
                   className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Ej: 2023"
+                  placeholder="2023"
+                  maxLength={4}
                 />
               ) : (
                 <span>{estudiante.informacionAcademica?.año_ingreso_beca || 'Sin definir'}</span>
@@ -373,10 +404,27 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
               <span>{formatearPromedios()}</span>
             </td>
           </tr>
+          
+          {/* PAES */}
           <tr>
-            <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Puntajes PAES 2021/1|2</td>
+            <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">PAES</td>
             <td className="p-2 border border-gray-300 bg-white">
-              <span>{formatearPuntajesPAES()}</span>
+              {modoEdicion ? (
+                <input 
+                  type="text" 
+                  defaultValue={estudiante.informacionAcademica?.puntajes_admision?.descripcion || ''}
+                  onBlur={(e) => handleInputChange('puntajes_paes', e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleInputChange('puntajes_paes', e.currentTarget.value);
+                    }
+                  }}
+                  className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Matemáticas: 720, Lenguaje: 650"
+                />
+              ) : (
+                <span>{formatearPuntajesPAES()}</span>
+              )}
             </td>
           </tr>
 
@@ -474,16 +522,59 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
             </td>
           </tr>
 
+          {/* Status Detalle */}
+          <tr>
+            <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Status Detalle</td>
+            <td className="p-2 border border-gray-300 bg-white">
+              {modoEdicion ? (
+                <textarea 
+                  defaultValue={estudiante.status_detalle || ''}
+                  onBlur={(e) => handleInputChange('status_detalle', e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && e.ctrlKey) {
+                      handleInputChange('status_detalle', e.currentTarget.value);
+                    }
+                  }}
+                  className="w-full min-h-[100px] px-2 py-1 border border-gray-300 rounded resize-y focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Detalles del status académico..."
+                />
+              ) : (
+                <span>{estudiante.status_detalle || 'Sin definir'}</span>
+              )}
+            </td>
+          </tr>
+
+          {/* Status Detalle */}
+          <tr>
+            <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Status Detalle</td>
+            <td className="p-2 border border-gray-300 bg-white">
+              {modoEdicion ? (
+                <textarea 
+                  defaultValue={estudiante.status_detalle || ''}
+                  onBlur={(e) => handleInputChange('status_detalle', e.target.value)}
+                  className="w-full min-h-[100px] px-2 py-1 border border-gray-300 rounded resize-y focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Detalles del status académico..."
+                />
+              ) : (
+                <span>{estudiante.status_detalle || 'Sin definir'}</span>
+              )}
+            </td>
+          </tr>
+
           {/* Observaciones */}
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Observaciones</td>
             <td className="p-2 border border-gray-300 bg-white">
-              <textarea 
-                className="w-full min-h-[100px] px-2 py-1 border border-gray-300 rounded resize-y"
-                placeholder="Agregar observaciones..."
-                disabled={!modoEdicion}
-                defaultValue={estudiante.observaciones || ''}
-              />
+              {modoEdicion ? (
+                <textarea 
+                  defaultValue={estudiante.observaciones || ''}
+                  onBlur={(e) => handleInputChange('observaciones', e.target.value)}
+                  className="w-full min-h-[100px] px-2 py-1 border border-gray-300 rounded resize-y focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Agregar observaciones..."
+                />
+              ) : (
+                <span>{estudiante.observaciones || 'Sin observaciones'}</span>
+              )}
             </td>
           </tr>
         </tbody>

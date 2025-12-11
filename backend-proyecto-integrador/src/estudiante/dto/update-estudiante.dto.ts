@@ -83,6 +83,11 @@ export class UpdateEstudianteDto extends PartialType(CreateEstudianteDto) {
 
   @Expose()
   @IsOptional()
+  @IsString()
+  status_detalle?: string;
+
+  @Expose()
+  @IsOptional()
   @IsNumber()
   semestres_suspendidos?: number;
 
