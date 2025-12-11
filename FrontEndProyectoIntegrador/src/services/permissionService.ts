@@ -65,10 +65,10 @@ export default class PermissionService {
 
   /**
    * Verifica si un usuario puede editar estudiantes
-   * Administradores y tutores pueden editar estudiantes
+   * Solo administradores pueden editar estudiantes (tutores solo lectura)
    */
   static canEditStudent(user: Usuario | null): boolean {
-    return this.isAdmin(user) || this.isTutor(user);
+    return this.isAdmin(user);
   }
 
   /**
@@ -81,18 +81,18 @@ export default class PermissionService {
 
   /**
    * Verifica si un usuario puede ver entrevistas
-   * Todos los usuarios autenticados pueden ver entrevistas
+   * Solo administradores pueden ver entrevistas (tutores no)
    */
   static canViewInterviews(user: Usuario | null): boolean {
-    return user !== null;
+    return this.isAdmin(user);
   }
 
   /**
    * Verifica si un usuario puede crear entrevistas
-   * Administradores y tutores pueden crear entrevistas
+   * Solo administradores pueden crear entrevistas
    */
   static canCreateInterview(user: Usuario | null): boolean {
-    return this.isAdmin(user) || this.isTutor(user);
+    return this.isAdmin(user);
   }
 
   /**
@@ -163,6 +163,22 @@ export default class PermissionService {
       { value: UserRole.TUTOR, label: 'Tutor' },
       { value: UserRole.INVITADO, label: 'Invitado' }
     ];
+  }
+
+  /**
+   * Verifica si un usuario puede ver datos del estudiante
+   * Administradores y tutores pueden ver datos
+   */
+  static canViewStudent(user: Usuario | null): boolean {
+    return this.isAdmin(user) || this.isTutor(user);
+  }
+
+  /**
+   * Verifica si un usuario tiene acceso de solo lectura
+   * Los tutores tienen acceso de solo lectura
+   */
+  static isReadOnly(user: Usuario | null): boolean {
+    return this.isTutor(user);
   }
 
   /**

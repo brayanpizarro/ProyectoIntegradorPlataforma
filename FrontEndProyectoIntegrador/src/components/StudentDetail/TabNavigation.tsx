@@ -8,6 +8,7 @@ export type SeccionActiva = 'perfil' | 'personal' | 'familiar' | 'informe' | 'de
 interface TabNavigationProps {
   seccionActiva: SeccionActiva;
   onSeccionChange: (seccion: SeccionActiva) => void;
+  canViewInterviews?: boolean;
 }
 
 const tabs = [
@@ -22,12 +23,21 @@ const tabs = [
 
 export const TabNavigation: React.FC<TabNavigationProps> = ({ 
   seccionActiva, 
-  onSeccionChange 
+  onSeccionChange,
+  canViewInterviews = true
 }) => {
+  // Filtrar tabs basado en permisos
+  const visibleTabs = tabs.filter(tab => {
+    if (tab.id === 'entrevistas') {
+      return canViewInterviews;
+    }
+    return true;
+  });
+
   return (
     <div className="bg-white border-b border-gray-200 px-8">
       <div className="flex gap-2 overflow-x-auto">
-        {tabs.map((tab) => (
+        {visibleTabs.map((tab) => (
           <button 
             key={tab.id} 
             onClick={() => onSeccionChange(tab.id)} 

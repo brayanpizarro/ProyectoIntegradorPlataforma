@@ -13,6 +13,7 @@ interface StudentHeaderProps {
   onToggleEdicion: () => void;
   onGuardar?: () => void;
   onGenerarInforme?: () => void;
+  canEdit?: boolean;
 }
 
 export const StudentHeader: React.FC<StudentHeaderProps> = ({
@@ -22,6 +23,7 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
   onToggleEdicion,
   onGuardar,
   onGenerarInforme,
+  canEdit = true,
 }) => {
   const navigate = useNavigate();
 
@@ -47,19 +49,23 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
         </div>
         
         <div className="flex gap-3 items-center">
-          <button 
-            onClick={onToggleEdicion}
-            className="px-5 py-2.5 bg-[var(--color-turquoise)] text-white rounded-lg hover:bg-[var(--color-turquoise-light)] transition-colors text-sm font-medium"
-          >
-            {modoEdicion ? '👁️ Modo Vista' : '✏️ Modo Edición'}
-          </button>
-          {modoEdicion && (
-            <button 
-              onClick={onGuardar}
-              className="px-5 py-2.5 bg-[var(--color-turquoise)] text-white rounded-lg hover:bg-[var(--color-turquoise-light)] transition-colors text-sm font-medium"
-            >
-              💾 Guardar
-            </button>
+          {canEdit && (
+            <>
+              <button 
+                onClick={onToggleEdicion}
+                className="px-5 py-2.5 bg-[var(--color-turquoise)] text-white rounded-lg hover:bg-[var(--color-turquoise-light)] transition-colors text-sm font-medium"
+              >
+                {modoEdicion ? '👁️ Modo Vista' : '✏️ Modo Edición'}
+              </button>
+              {modoEdicion && (
+                <button 
+                  onClick={onGuardar}
+                  className="px-5 py-2.5 bg-[var(--color-turquoise)] text-white rounded-lg hover:bg-[var(--color-turquoise-light)] transition-colors text-sm font-medium"
+                >
+                  💾 Guardar
+                </button>
+              )}
+            </>
           )}
           <button 
             onClick={onGenerarInforme}

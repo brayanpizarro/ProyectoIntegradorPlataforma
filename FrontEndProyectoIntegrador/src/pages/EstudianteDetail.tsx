@@ -1,8 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { authService, estudianteService, historialAcademicoService } from '../services';
-import type { Estudiante } from '../types';
-import { logger } from '../config';
+﻿import React from 'react';
 import { LoadingSpinner, ErrorMessage } from '../components/common';
 import { 
   StudentHeader, 
@@ -14,320 +10,62 @@ import {
   SemesterPerformanceSection,
   InterviewsSection,
   AvanceCurricularSection,
-  type SeccionActiva 
+  useStudentDetail
 } from '../components/StudentDetail';
 
 const EstudianteDetail: React.FC = () => {
-  const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
-  
-  const [estudiante, setEstudiante] = useState<Estudiante | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  
-  const [seccionActiva, setSeccionActiva] = useState<SeccionActiva>('perfil');
-  const [modoEdicion, setModoEdicion] = useState(false);
-  const [mostrarModalNuevaEntrevista, setMostrarModalNuevaEntrevista] = useState(false);
-
-  const [mostrarModalNuevoSemestre, setMostrarModalNuevoSemestre] = useState(false);
-  
-  const [informesGuardados, setInformesGuardados] = useState<any[]>([]);
-
-  // ✅ NUEVO: Estado para almacenar cambios temporales
-  const [datosEditados, setDatosEditados] = useState<Partial<Estudiante>>({});
-
-  // Estado para nuevo semestre
-  const [nuevoSemestreData, setNuevoSemestreData] = useState({
-    año: new Date().getFullYear(),
-    semestre: new Date().getMonth() < 6 ? 1 : 2,
-    nivel_educativo: '',
-    ramos_aprobados: 0,
-    ramos_reprobados: 0,
-    ramos_eliminados: 0,
-    promedio_semestre: 0,
-    trayectoria_academica: []
-  });
-
-  // Estados para vista detallada y edición de semestres
-  const [semestreSeleccionado, setSemestreSeleccionado] = useState<any>(null);
-  const [mostrarModalDetalleSemestre, setMostrarModalDetalleSemestre] = useState(false);
-  const [editandoSemestre, setEditandoSemestre] = useState(false);
-  const [datosEditadosSemestre, setDatosEditadosSemestre] = useState<any>({});
-
-  // Verificar autenticación y cargar estudiante
-  useEffect(() => {
-    if (!authService.isAuthenticated()) {
-      navigate('/');
-      return;
-    }
+  // ✅ REFACTORIZADO: Toda la lógica ahora está en hooks personalizados
+  const {
+    // Datos del estudiante
+    loading,
+    error,
+    estudiante,
+    informesGuardados,
     
-    const fetchEstudiante = async () => {
-      if (!id) {
-        setError('ID de estudiante no proporcionado');
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        setError(null);
-        logger.log('🔍 Cargando estudiante:', id);
-        
-        const data = await estudianteService.getById(id);
-        setEstudiante(data);
-        
-        logger.log('✅ Estudiante cargado:', data.nombre);
-      } catch (err: any) {
-        logger.error('❌ Error al cargar estudiante:', err);
-        setError(err.message || 'Error al cargar el estudiante');
-        setEstudiante(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+    // Permisos y navegación
+    canEdit,
+    canViewInterviews,
+    seccionActiva,
+    handleSeccionChange,
     
-    fetchEstudiante();
-  }, [navigate, id]);
-
-  useEffect(() => {
-    if (!id) return;
-
-    const cargarHistorialAcademico = async () => {
-      try {
-        const historiales = await historialAcademicoService.getByEstudiante(id);
-        setInformesGuardados(Array.isArray(historiales) ? historiales : []);
-        logger.log('📂 Historial académico cargado:', Array.isArray(historiales) ? historiales.length : 0, 'registros');
-      } catch (err) {
-        logger.error('❌ Error al cargar historial académico:', err);
-      }
-    };
-
-    cargarHistorialAcademico();
-  }, [id]);
-
-  // ✅ NUEVO: Handler para capturar cambios en campos editables
-  const handleCampoChange = (campo: string, valor: any) => {
-    setDatosEditados(prev => ({
-      ...prev,
-      [campo]: valor
-    }));
+    // Edición
+    modoEdicion,
+    handleCampoChange,
+    handleGuardar,
+    handleToggleEdicion,
+    handleGenerarInforme,
+    estudianteConEdiciones,
     
-    logger.log(`📝 Campo editado: ${campo} =`, valor);
-  };
+    // Semestres
+    mostrarModalNuevoSemestre,
+    setMostrarModalNuevoSemestre,
+    semestreSeleccionado,
+    mostrarModalDetalleSemestre,
+    setMostrarModalDetalleSemestre,
+    editandoSemestre,
+    datosEditadosSemestre,
+    setDatosEditadosSemestre,
+    nuevoSemestreData,
+    setNuevoSemestreData,
+    handleCrearNuevoSemestre,
+    handleVerDetalleSemestre,
+    handleEditarSemestre,
+    handleCancelarEdicionSemestre,
+    
+    // Entrevistas
+    mostrarModalNuevaEntrevista,
+    setMostrarModalNuevaEntrevista,
+    
+    // Handlers adicionales de semestres
+    handleSeleccionarSemestre,
+    handleGuardarSemestre,
+    handleAgregarComentario,
+    handleEliminarComentario
+  } = useStudentDetail();
 
-  // ✅ ACTUALIZADO: Handler de guardado con datos editados
-  const handleGuardar = async () => {
-    if (!estudiante || !id) return;
 
-    // Validar que haya cambios
-    if (Object.keys(datosEditados).length === 0) {
-      alert('⚠️ No hay cambios para guardar');
-      setModoEdicion(false);
-      return;
-    }
 
-    try {
-      logger.log('💾 Guardando cambios:', datosEditados);
 
-      // Enviar solo los campos modificados
-      await estudianteService.update(id, datosEditados);
-      
-      logger.log('✅ Cambios guardados exitosamente');
-      
-      // Recargar datos actualizados
-      const dataActualizada = await estudianteService.getById(id);
-      setEstudiante(dataActualizada);
-      
-      // Limpiar estado temporal y salir del modo edición
-      setDatosEditados({});
-      setModoEdicion(false);
-      
-      alert('✅ Cambios guardados correctamente');
-      
-    } catch (err: any) {
-      logger.error('❌ Error al guardar cambios:', err);
-      
-      // Mensaje de error más específico
-      const errorMsg = err.response?.data?.message || err.message || 'Error desconocido';
-      alert(`❌ Error al guardar cambios:\n\n${errorMsg}`);
-    }
-  };
-
-  // ✅ ACTUALIZADO: Manejar activación/cancelación de modo edición
-  const handleToggleEdicion = () => {
-    if (!modoEdicion) {
-      // Activar modo edición → Limpiar cambios previos
-      setDatosEditados({});
-      logger.log('✏️ Modo edición ACTIVADO');
-    } else {
-      // Cancelar edición → Limpiar cambios temporales
-      setDatosEditados({});
-      logger.log('❌ Modo edición CANCELADO (cambios descartados)');
-    }
-    setModoEdicion(!modoEdicion);
-  };
-
-  const handleGenerarInforme = async () => {
-    if (!id || !estudiante) return;
-
-    try {
-      const añoActual = new Date().getFullYear();
-      const semestreActual = new Date().getMonth() < 6 ? 1 : 2;
-
-      const historialData = {
-        id_estudiante: id,
-        año: añoActual,
-        semestre: semestreActual,
-        nivel_educativo: estudiante.institucion?.nivel_educativo || 'Superior',
-        ramos_aprobados: 0,
-        ramos_reprobados: 0,
-        promedio_semestre: 0,
-        trayectoria_academica: [],
-      };
-
-      const response = await historialAcademicoService.create(historialData);
-      
-      const nuevoInforme = {
-        ...(response || {}),
-        fechaFormateada: new Date().toLocaleDateString('es-CL', { 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
-        }),
-      };
-
-      setInformesGuardados(prev => [...prev, nuevoInforme]);
-      
-      logger.log('✅ Informe generado:', nuevoInforme);
-      alert(`✅ Informe generado\nAño: ${añoActual} | Semestre: ${semestreActual}`);
-    } catch (err: any) {
-      logger.error('❌ Error al generar informe:', err);
-      alert(`❌ Error al generar informe: ${err.message}`);
-    }
-  };
-
-  const handleCrearNuevoSemestre = async () => {
-    if (!id || !estudiante) return;
-
-    try {
-      const historialData = {
-        id_estudiante: id,
-        año: nuevoSemestreData.año,
-        semestre: nuevoSemestreData.semestre,
-        nivel_educativo: nuevoSemestreData.nivel_educativo || estudiante.institucion?.nivel_educativo || 'Superior',
-        ramos_aprobados: nuevoSemestreData.ramos_aprobados,
-        ramos_reprobados: nuevoSemestreData.ramos_reprobados,
-        promedio_semestre: nuevoSemestreData.promedio_semestre,
-        trayectoria_academica: [],
-      };
-
-      const response = await historialAcademicoService.create(historialData);
-      
-      const nuevoInforme = {
-        ...(response || {}),
-        fechaFormateada: new Date().toLocaleDateString('es-CL', { 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
-        }),
-      };
-
-      setInformesGuardados(prev => [...prev, nuevoInforme]);
-      
-      // Resetear formulario y cerrar modal
-      setNuevoSemestreData({
-        año: new Date().getFullYear(),
-        semestre: new Date().getMonth() < 6 ? 1 : 2,
-        nivel_educativo: '',
-        ramos_aprobados: 0,
-        ramos_reprobados: 0,
-        ramos_eliminados: 0,
-        promedio_semestre: 0,
-        trayectoria_academica: []
-      });
-      setMostrarModalNuevoSemestre(false);
-      
-      logger.log('✅ Nuevo semestre creado:', nuevoInforme);
-      alert(`✅ Semestre creado exitosamente\nAño: ${historialData.año} | Semestre: ${historialData.semestre}`);
-    } catch (err: any) {
-      logger.error('❌ Error al crear semestre:', err);
-      alert(`❌ Error al crear semestre: ${err.message}`);
-    }
-  };
-
-  const handleSeleccionarSemestre = (historial: any) => {
-    setSemestreSeleccionado(historial);
-    setDatosEditadosSemestre({ ...historial });
-    setMostrarModalDetalleSemestre(true);
-    setEditandoSemestre(false);
-  };
-
-  const handleEditarSemestre = () => {
-    setEditandoSemestre(true);
-  };
-
-  const handleCancelarEdicionSemestre = () => {
-    setDatosEditadosSemestre({ ...semestreSeleccionado });
-    setEditandoSemestre(false);
-  };
-
-  const handleGuardarSemestre = async () => {
-    if (!semestreSeleccionado) return;
-
-    try {
-      const datosActualizados = {
-        año: datosEditadosSemestre.año,
-        semestre: datosEditadosSemestre.semestre,
-        nivel_educativo: datosEditadosSemestre.nivel_educativo,
-        ramos_aprobados: datosEditadosSemestre.ramos_aprobados,
-        ramos_reprobados: datosEditadosSemestre.ramos_reprobados,
-        ramos_eliminados: datosEditadosSemestre.ramos_eliminados,
-        promedio_semestre: datosEditadosSemestre.promedio_semestre,
-        trayectoria_academica: datosEditadosSemestre.trayectoria_academica || []
-      };
-
-      await historialAcademicoService.update(semestreSeleccionado.id_historial_academico, datosActualizados);
-      
-      // Actualizar la lista de semestres
-      setInformesGuardados(prev => 
-        prev.map(semestre => 
-          semestre.id_historial_academico === semestreSeleccionado.id_historial_academico 
-            ? { ...semestre, ...datosActualizados }
-            : semestre
-        )
-      );
-      
-      // Actualizar semestre seleccionado
-      setSemestreSeleccionado({ ...semestreSeleccionado, ...datosActualizados });
-      setEditandoSemestre(false);
-      
-      logger.log('✅ Semestre actualizado:', datosActualizados);
-      alert('✅ Semestre actualizado correctamente');
-    } catch (err: any) {
-      logger.error('❌ Error al actualizar semestre:', err);
-      alert(`❌ Error al actualizar semestre: ${err.message}`);
-    }
-  };
-
-  const handleAgregarComentario = () => {
-    const nuevoComentario = prompt('Ingrese un comentario:');
-    if (nuevoComentario && nuevoComentario.trim()) {
-      const comentarioConFecha = `${new Date().toLocaleDateString('es-CL')}: ${nuevoComentario.trim()}`;
-      setDatosEditadosSemestre(prev => ({
-        ...prev,
-        trayectoria_academica: [...(prev.trayectoria_academica || []), comentarioConFecha]
-      }));
-    }
-  };
-
-  const handleEliminarComentario = (index: number) => {
-    if (confirm('¿Está seguro de eliminar este comentario?')) {
-      setDatosEditadosSemestre(prev => ({
-        ...prev,
-        trayectoria_academica: prev.trayectoria_academica.filter((_: any, i: number) => i !== index)
-      }));
-    }
-  };
 
   // ============================================
   // RENDERIZADO
@@ -348,11 +86,7 @@ const EstudianteDetail: React.FC = () => {
     );
   }
 
-  // ✅ Combinar datos originales con ediciones temporales
-  const estudianteConEdiciones = {
-    ...estudiante,
-    ...datosEditados
-  };
+
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -364,26 +98,32 @@ const EstudianteDetail: React.FC = () => {
         onToggleEdicion={handleToggleEdicion}
         onGuardar={handleGuardar}
         onGenerarInforme={handleGenerarInforme}
+        canEdit={canEdit}
       />
 
       {/* Navegación por tabs */}
       <TabNavigation
         seccionActiva={seccionActiva}
-        onSeccionChange={setSeccionActiva}
+        onSeccionChange={handleSeccionChange}
+        canViewInterviews={canViewInterviews}
       />
 
       {/* Contenido principal */}
       <div className="p-8 max-w-[1400px] mx-auto">
         {/* Perfil General */}
         {seccionActiva === 'perfil' && (
-          <ProfileSection estudiante={estudianteConEdiciones} />
+          <ProfileSection 
+            estudiante={estudianteConEdiciones}
+            modoEdicion={modoEdicion && canEdit}
+            onCampoChange={handleCampoChange} 
+          />
         )}
 
         {/* ✅ Datos Personales - Con callback para cambios */}
         {seccionActiva === 'personal' && (
           <PersonalDataSection 
             estudiante={estudianteConEdiciones}
-            modoEdicion={modoEdicion} 
+            modoEdicion={modoEdicion && canEdit} 
             onCampoChange={handleCampoChange}
           />
         )}
@@ -392,7 +132,7 @@ const EstudianteDetail: React.FC = () => {
         {seccionActiva === 'familiar' && (
           <FamilyInfoSection 
             estudiante={estudiante} 
-            modoEdicion={modoEdicion} 
+            modoEdicion={modoEdicion && canEdit} 
           />
         )}
 
@@ -400,7 +140,7 @@ const EstudianteDetail: React.FC = () => {
         {seccionActiva === 'informe' && (
           <AcademicReportSection 
             estudiante={estudianteConEdiciones}
-            modoEdicion={modoEdicion} 
+            modoEdicion={modoEdicion && canEdit} 
           />
         )}
 
@@ -408,7 +148,7 @@ const EstudianteDetail: React.FC = () => {
         {seccionActiva === 'desempeno' && (
           <SemesterPerformanceSection 
             estudiante={estudiante} 
-            modoEdicion={modoEdicion} 
+            modoEdicion={modoEdicion && canEdit} 
           />
         )}
 
@@ -417,8 +157,8 @@ const EstudianteDetail: React.FC = () => {
           <AvanceCurricularSection estudiante={estudianteConEdiciones} />
         )}
 
-        {/* Entrevistas */}
-        {seccionActiva === 'entrevistas' && (
+        {/* Entrevistas - Solo para administradores */}
+        {seccionActiva === 'entrevistas' && canViewInterviews && (
           <InterviewsSection 
             onNuevaEntrevista={() => setMostrarModalNuevaEntrevista(true)} 
           />
