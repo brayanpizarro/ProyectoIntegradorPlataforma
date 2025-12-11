@@ -40,6 +40,7 @@ interface MallaCurricular {
     prerequisitos: string[];
     estado: 'pendiente' | 'cursando' | 'aprobado' | 'reprobado';
     nota?: number;
+    oportunidad?: number;
     backendId?: number | string;
   }[];
 }
@@ -113,6 +114,7 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
             prerequisitos: [],
             estado: ramo.estado || 'pendiente',
             nota: ramo.promedio_final || undefined,
+            oportunidad: ramo.oportunidad || 1,
             // Guardar referencia al ID original del backend
             backendId: ramo.id_ramo
           };
@@ -250,8 +252,99 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
   }, [mallaCurricular]);
 
   // Funciones de manejo de datos
-  const handleDragEnd = (result: DropResult) => {
-    // Implementar lógica de drag and drop
+  const handleDragEnd = async (result: DropResult) => {
+    const { destination, source, draggableId } = result;
+
+    // Si no hay destino, no hacer nada
+    if (!destination) {
+      return;
+    }
+
+    // Si se soltó en la misma posición, no hacer nada
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) {
+      return;
+    }
+
+    try {
+      // Encontrar el ramo que se está moviendo
+      const sourceSeemestre = parseInt(source.droppableId.replace('semestre-', ''));
+      const destSemestre = parseInt(destination.droppableId.replace('semestre-', ''));
+      
+      let ramoMovido: any = null;
+      
+      // Buscar el ramo en el semestre origen
+      const semestreOrigen = mallaCurricular.find(s => s.semestre === sourceSeemestre);
+      if (semestreOrigen) {
+        ramoMovido = semestreOrigen.ramos.find(r => String(r.backendId) === draggableId || r.codigo === draggableId);
+      }
+
+      if (!ramoMovido) {
+        console.error('Ramo no encontrado:', draggableId);
+        return;
+      }
+
+      console.log('🔄 Moviendo ramo:', {
+        ramo: ramoMovido.nombre,
+        desde: sourceSeemestre,
+        hacia: destSemestre,
+        backendId: ramoMovido.backendId
+      });
+
+      // Actualizar localmente primero para UX inmediato
+      setMallaCurricular(prev => {
+        const newMalla = [...prev];
+        
+        // Remover del semestre origen
+        const sourceIndex = newMalla.findIndex(s => s.semestre === sourceSeemestre);
+        if (sourceIndex !== -1) {
+          newMalla[sourceIndex].ramos = newMalla[sourceIndex].ramos.filter(
+            r => String(r.backendId) !== draggableId && r.codigo !== draggableId
+          );
+        }
+        
+        // Agregar al semestre destino
+        const destIndex = newMalla.findIndex(s => s.semestre === destSemestre);
+        if (destIndex !== -1) {
+          const ramoActualizado = { ...ramoMovido };
+          newMalla[destIndex].ramos.splice(destination.index, 0, ramoActualizado);
+        }
+        
+        return newMalla;
+      });
+
+      // Actualizar en el backend si tiene backendId
+      if (ramoMovido.backendId) {
+        const ramoData = {
+          semestre: destSemestre,
+          estado: ramoMovido.estado,
+          promedio_final: ramoMovido.nota || null,
+          oportunidad: ramoMovido.oportunidad || 1
+        };
+
+        console.log('📤 Actualizando ramo en backend:', {
+          id: ramoMovido.backendId,
+          data: ramoData
+        });
+
+        await apiService.updateRamoCursado(String(ramoMovido.backendId), ramoData);
+        
+        // Recargar datos para mantener sincronización
+        await cargarDatosReales();
+        showSnackbar(`${ramoMovido.nombre} movido al semestre ${destSemestre}`);
+      } else {
+        console.log('⚠️ Ramo sin backendId, solo actualización local');
+        showSnackbar(`${ramoMovido.nombre} movido al semestre ${destSemestre} (local)`);
+      }
+
+    } catch (error) {
+      console.error('Error moviendo ramo:', error);
+      showSnackbar('Error al mover el ramo');
+      // Recargar datos en caso de error para restaurar estado
+      await cargarDatosReales();
+    }
   };
 
   const handleAddSubject = (semestreId: number) => {
@@ -292,7 +385,6 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
   };
 
   const handleSaveNewSubject = async (nuevoRamo: {
-    codigo: string;
     nombre: string;
     creditos: number;
     prerequisitos: string[];
@@ -322,12 +414,13 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
               ...semestre,
               ramos: [...semestre.ramos, {
                 id: ramoCreado.id_ramo || Date.now(),
-                codigo: nuevoRamo.codigo,
+                codigo: ramoCreado.codigo_ramo || `RAMO-${Date.now()}`,
                 nombre: nuevoRamo.nombre,
                 creditos: nuevoRamo.creditos,
                 prerequisitos: nuevoRamo.prerequisitos || [],
                 estado: nuevoRamo.estado,
-                nota: nuevoRamo.nota
+                nota: nuevoRamo.nota,
+                backendId: ramoCreado.id_ramo
               }]
             };
           }
@@ -341,7 +434,7 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
               ...semestre,
               ramos: [...semestre.ramos, {
                 id: Date.now(),
-                codigo: nuevoRamo.codigo,
+                codigo: `LOCAL-${Date.now()}`,
                 nombre: nuevoRamo.nombre,
                 creditos: nuevoRamo.creditos,
                 prerequisitos: nuevoRamo.prerequisitos || [],
@@ -374,7 +467,7 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
     }
 
     return (
-      <Draggable key={ramo.codigo} draggableId={ramo.codigo} index={index}>
+      <Draggable key={ramo.backendId || ramo.codigo} draggableId={String(ramo.backendId || ramo.codigo)} index={index}>
         {(provided, snapshot) => (
           <div
             ref={provided.innerRef}
@@ -401,6 +494,13 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
                 <span>NF: {ramo.nota || '-'}</span>
                 <span>{ramo.creditos} SCT</span>
               </div>
+              
+              {/* Indicador de oportunidad */}
+              {ramo.oportunidad && ramo.oportunidad > 1 && (
+                <div className="opportunity-indicator">
+                  {ramo.oportunidad}
+                </div>
+              )}
               
               {isEditMode && (
                 <IconButton
@@ -648,7 +748,8 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
               if (idToUse) {
                 const ramoData = {
                   estado: updatedSubject.estado,
-                  promedio_final: updatedSubject.nota || null
+                  promedio_final: updatedSubject.nota || null,
+                  oportunidad: updatedSubject.oportunidad || 1
                 };
                 
                 console.log('📤 Enviando actualización al backend:', {

@@ -16,6 +16,68 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
   const [semestreActual, setSemestreActual] = useState({ año: 2025, semestre: 1 });
   const [historialSemestre, setHistorialSemestre] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [semestresDisponibles, setSemestresDisponibles] = useState<{año: number, semestre: number}[]>([]);
+
+  // Cargar todos los semestres disponibles del estudiante
+  useEffect(() => {
+    const cargarSemestresDisponibles = async () => {
+      if (!estudiante.id_estudiante) return;
+      
+      try {
+        // Obtener todos los ramos cursados sin filtrar por semestre
+        const todosLosRamos = await apiService.getRamosCursadosByEstudiante(
+          estudiante.id_estudiante.toString()
+        );
+        
+        console.log('📥 Todos los ramos recibidos:', todosLosRamos);
+        
+        // Extraer semestres únicos
+        const semestresUnicos = new Set<string>();
+        todosLosRamos.forEach((ramo: any) => {
+          console.log('🔍 Procesando ramo:', { 
+            nombre: ramo.nombre_ramo, 
+            año: ramo.año, 
+            semestre: ramo.semestre 
+          });
+          
+          // Ser más permisivo con los datos
+          const año = ramo.año || new Date().getFullYear();
+          const semestre = ramo.semestre || 1;
+          
+          semestresUnicos.add(`${año}-${semestre}`);
+        });
+        
+        // Si no hay ramos, crear semestre por defecto
+        if (semestresUnicos.size === 0) {
+          console.log('⚠️ No se encontraron ramos, usando semestre por defecto');
+          semestresUnicos.add(`${new Date().getFullYear()}-1`);
+        }
+        
+        // Convertir a array y ordenar
+        const semestres = Array.from(semestresUnicos)
+          .map(str => {
+            const [año, semestre] = str.split('-').map(Number);
+            return { año, semestre };
+          })
+          .sort((a, b) => {
+            if (a.año !== b.año) return b.año - a.año; // Años más recientes primero
+            return b.semestre - a.semestre; // Semestres más recientes primero
+          });
+        
+        setSemestresDisponibles(semestres);
+        console.log('📊 Semestres disponibles encontrados:', semestres);
+        
+        // Establecer el semestre más reciente como actual si hay semestres disponibles
+        if (semestres.length > 0) {
+          setSemestreActual(semestres[0]);
+        }
+      } catch (error) {
+        console.error('Error cargando semestres disponibles:', error);
+      }
+    };
+    
+    cargarSemestresDisponibles();
+  }, [estudiante.id_estudiante]);
 
   // Cargar ramos y historial del semestre actual
   useEffect(() => {
@@ -190,16 +252,22 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
             value={`${semestreActual.año}-${semestreActual.semestre}`}
             onChange={(e) => {
               const [año, semestre] = e.target.value.split('-').map(Number);
+              console.log('🔄 Cambiando a semestre:', { año, semestre });
               setSemestreActual({ año, semestre });
             }}
             className="text-sm px-2 py-1 border border-gray-300 rounded bg-white"
           >
-            <option value="2025-1">2025/1S</option>
-            <option value="2025-2">2025/2S</option>
-            <option value="2024-1">2024/1S</option>
-            <option value="2024-2">2024/2S</option>
-            <option value="2023-1">2023/1S</option>
-            <option value="2023-2">2023/2S</option>
+            {semestresDisponibles.length > 0 ? (
+              semestresDisponibles.map(({ año, semestre }) => (
+                <option key={`${año}-${semestre}`} value={`${año}-${semestre}`}>
+                  {año}/{semestre}S
+                </option>
+              ))
+            ) : (
+              <option value={`${semestreActual.año}-${semestreActual.semestre}`}>
+                {semestreActual.año}/{semestreActual.semestre}S
+              </option>
+            )}
           </select>
         </div>
       </div>

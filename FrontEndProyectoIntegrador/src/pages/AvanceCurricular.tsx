@@ -46,6 +46,7 @@ interface MallaCurricular {
     prerequisitos: string[];
     estado: 'pendiente' | 'cursando' | 'aprobado' | 'reprobado';
     nota?: number;
+    oportunidad?: number;
   }[];
 }
 
@@ -294,6 +295,13 @@ export const AvanceCurricular: React.FC = () => {
                 <span>NF: {ramo.nota || '-'}</span>
                 <span>{ramo.creditos} SCT</span>
               </div>
+              
+              {/* Indicador de oportunidad */}
+              {ramo.oportunidad && ramo.oportunidad > 1 && (
+                <div className="opportunity-indicator">
+                  {ramo.oportunidad}
+                </div>
+              )}
               
               <IconButton
                 className="edit-button"

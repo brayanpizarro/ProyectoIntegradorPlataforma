@@ -46,4 +46,9 @@ export class UpdateRamosCursadosDto {
   @IsString()
   @IsOptional()
   comentarios?: string;
+
+  @Expose()
+  @IsNumber()
+  @IsOptional()
+  oportunidad?: number;
 }

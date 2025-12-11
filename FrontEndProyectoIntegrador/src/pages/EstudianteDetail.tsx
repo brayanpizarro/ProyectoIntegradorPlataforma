@@ -28,7 +28,7 @@ const EstudianteDetail: React.FC = () => {
   const [seccionActiva, setSeccionActiva] = useState<SeccionActiva>('perfil');
   const [modoEdicion, setModoEdicion] = useState(false);
   const [mostrarModalNuevaEntrevista, setMostrarModalNuevaEntrevista] = useState(false);
-  const [mostrarModalSemestresAnteriores, setMostrarModalSemestresAnteriores] = useState(false);
+
   const [mostrarModalNuevoSemestre, setMostrarModalNuevoSemestre] = useState(false);
   
   const [informesGuardados, setInformesGuardados] = useState<any[]>([]);
@@ -398,42 +398,18 @@ const EstudianteDetail: React.FC = () => {
 
         {/* Informe Académico */}
         {seccionActiva === 'informe' && (
-          <div>
-            {informesGuardados.length > 0 && (
-              <div className="mb-4">
-                <button
-                  onClick={() => setMostrarModalSemestresAnteriores(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
-                >
-                  📋 Ver Semestres Anteriores ({informesGuardados.length})
-                </button>
-              </div>
-            )}
-            <AcademicReportSection 
-              estudiante={estudianteConEdiciones}
-              modoEdicion={modoEdicion} 
-            />
-          </div>
+          <AcademicReportSection 
+            estudiante={estudianteConEdiciones}
+            modoEdicion={modoEdicion} 
+          />
         )}
 
         {/* Desempeño por Semestre */}
         {seccionActiva === 'desempeno' && (
-          <div>
-            {informesGuardados.length > 0 && (
-              <div className="mb-4">
-                <button
-                  onClick={() => setMostrarModalSemestresAnteriores(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
-                >
-                  📋 Ver Semestres Anteriores ({informesGuardados.length})
-                </button>
-              </div>
-            )}
-            <SemesterPerformanceSection 
-              estudiante={estudiante} 
-              modoEdicion={modoEdicion} 
-            />
-          </div>
+          <SemesterPerformanceSection 
+            estudiante={estudiante} 
+            modoEdicion={modoEdicion} 
+          />
         )}
 
         {/* Avance Curricular */}
@@ -481,86 +457,7 @@ const EstudianteDetail: React.FC = () => {
         </div>
       )}
 
-      {mostrarModalSemestresAnteriores && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000] p-8">
-          <div className="bg-white rounded-xl p-8 max-w-[900px] w-full max-h-[90vh] overflow-auto shadow-2xl">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="m-0 text-2xl font-bold text-gray-800">
-                📚 Semestres Guardados
-              </h3>
-              <div className="flex gap-2">
-                <button 
-                  onClick={() => setMostrarModalNuevoSemestre(true)}
-                  className="px-4 py-2 bg-blue-600 text-white border-none rounded-md cursor-pointer hover:bg-blue-700 transition-colors font-medium"
-                >
-                  ➕ Nuevo Semestre
-                </button>
-                <button 
-                  onClick={() => setMostrarModalSemestresAnteriores(false)}
-                  className="p-2 bg-gray-100 border-none rounded-md cursor-pointer text-xl text-gray-500 hover:bg-gray-200"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
 
-            <p className="text-sm text-gray-500 mb-6">
-              Snapshots de semestres anteriores. Selecciona uno para ver su información.
-            </p>
-
-            <div className="flex flex-col gap-4">
-              {informesGuardados.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <p className="text-lg">📭 No hay semestres guardados</p>
-                  <p className="text-sm mt-2">
-                    Genera un nuevo informe para crear un snapshot del semestre actual.
-                  </p>
-                </div>
-              ) : (
-                informesGuardados.map((historial, index) => (
-                  <div 
-                    key={historial.id_historial_academico || index}
-                    onClick={() => handleSeleccionarSemestre(historial)}
-                    className="border border-gray-200 rounded-lg p-4 hover:border-blue-400 hover:bg-blue-50 transition-all cursor-pointer"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h4 className="font-bold text-lg text-gray-800 mb-2">
-                          Semestre {historial.semestre} - {historial.año}
-                        </h4>
-                        <div className="text-sm text-gray-600 space-y-1">
-                          <p>
-                            <strong>Nivel:</strong> {historial.nivel_educativo || 'No especificado'}
-                          </p>
-                          <p>
-                            <strong>Ramos aprobados:</strong> {historial.ramos_aprobados || 0}
-                          </p>
-                          <p>
-                            <strong>Ramos reprobados:</strong> {historial.ramos_reprobados || 0}
-                          </p>
-                          <p>
-                            <strong>Promedio:</strong> {historial.promedio_semestre || 'N/A'}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right text-sm text-gray-500">
-                        <p>{historial.fechaFormateada || 'Fecha no disponible'}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="m-0 text-sm text-gray-700">
-                💡 <strong>Nota:</strong> Los semestres guardados son snapshots de solo lectura. 
-                No se pueden editar una vez generados.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Modal para crear nuevo semestre */}
       {mostrarModalNuevoSemestre && (

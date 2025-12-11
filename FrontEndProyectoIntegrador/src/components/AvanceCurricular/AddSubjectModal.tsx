@@ -16,7 +16,6 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 
 interface Ramo {
-  codigo: string;
   nombre: string;
   creditos: number;
   prerequisitos: string[];
@@ -38,7 +37,6 @@ export const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
   semestre
 }) => {
   const [formData, setFormData] = useState<Ramo>({
-    codigo: '',
     nombre: '',
     creditos: 5,
     prerequisitos: [],
@@ -46,15 +44,15 @@ export const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
   });
 
   const handleSave = () => {
-    if (formData.codigo && formData.nombre) {
+    if (formData.nombre) {
       onSave(formData);
-      setFormData({ codigo: '', nombre: '', creditos: 5, prerequisitos: [], estado: 'pendiente' });
+      setFormData({ nombre: '', creditos: 5, prerequisitos: [], estado: 'pendiente' });
       onClose();
     }
   };
 
   const handleClose = () => {
-    setFormData({ codigo: '', nombre: '', creditos: 5, prerequisitos: [], estado: 'pendiente' });
+    setFormData({ nombre: '', creditos: 5, prerequisitos: [], estado: 'pendiente' });
     onClose();
   };
 
@@ -65,14 +63,6 @@ export const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
       </DialogTitle>
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-          <TextField
-            fullWidth
-            label="Código del Ramo *"
-            placeholder="Ej: DCCB-00106"
-            value={formData.codigo}
-            onChange={(e) => setFormData({ ...formData, codigo: e.target.value.toUpperCase() })}
-          />
-
           <TextField
             fullWidth
             label="Nombre del Ramo *"
@@ -116,14 +106,14 @@ export const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
           )}
 
           <Box sx={{ p: 2, backgroundColor: '#f5f5f5', borderRadius: 1 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>{formData.codigo || 'CÓDIGO-XXXX'}</Typography>
-            <Typography variant="body2">{formData.nombre || 'Nombre del ramo'}</Typography>
+            <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>{formData.nombre || 'Nombre del ramo'}</Typography>
+            <Typography variant="body2">{formData.creditos} créditos SCT - {formData.estado}</Typography>
           </Box>
         </Box>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose}>Cancelar</Button>
-        <Button variant="contained" onClick={handleSave} disabled={!formData.codigo || !formData.nombre}>Agregar Materia</Button>
+        <Button variant="contained" onClick={handleSave} disabled={!formData.nombre}>Agregar Materia</Button>
       </DialogActions>
     </Dialog>
   );

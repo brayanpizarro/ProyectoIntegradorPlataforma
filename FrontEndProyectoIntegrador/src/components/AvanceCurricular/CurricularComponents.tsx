@@ -208,6 +208,24 @@ export const SubjectCard = styled(Paper, {
         transform: 'scale(1.1)',
       },
     },
+    '& .opportunity-indicator': {
+      position: 'absolute',
+      top: '-8px',
+      right: '-8px',
+      width: '20px',
+      height: '20px',
+      borderRadius: '50%',
+      backgroundColor: '#ff6b35',
+      color: 'white',
+      fontSize: '10px',
+      fontWeight: 'bold',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      border: '2px solid white',
+      boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+      zIndex: 10,
+    },
   };
 });
 
