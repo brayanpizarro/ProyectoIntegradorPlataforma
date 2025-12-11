@@ -210,6 +210,11 @@ class ApiService {
     localStorage.setItem('user', JSON.stringify(updatedUser));
     return updated;
   }
+
+  // Métodos para Historial Académico
+  async getHistorialAcademico(idEstudiante: string, año: number, semestre: number): Promise<any> {
+    return await this.request<any>(`/historial-academico/estudiante/${idEstudiante}/semestre/${año}/${semestre}`);
+  }
 }
 
 // Exportar instancia singleton

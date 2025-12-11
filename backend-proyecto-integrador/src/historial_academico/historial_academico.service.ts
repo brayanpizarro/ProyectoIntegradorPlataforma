@@ -55,6 +55,17 @@ export class HistorialAcademicoService {
     });
   }
 
+  async findByEstudianteAndSemestre(idEstudiante: string, año: number, semestre: number): Promise<HistorialAcademico | null> {
+    return await this.historialRepository.findOne({
+      where: { 
+        estudiante: { id_estudiante: idEstudiante },
+        año,
+        semestre
+      },
+      relations: ['estudiante'],
+    });
+  }
+
   async findOne(id: number): Promise<HistorialAcademico> {
     const historial = await this.historialRepository.findOne({
       where: { id_historial_academico: id },

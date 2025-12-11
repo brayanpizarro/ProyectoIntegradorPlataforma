@@ -14,44 +14,146 @@ interface SemesterPerformanceSectionProps {
 export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProps> = ({ estudiante, modoEdicion }) => {
   const [ramosSemestre, setRamosSemestre] = useState<any[]>([]);
   const [semestreActual, setSemestreActual] = useState({ año: 2025, semestre: 1 });
+  const [historialSemestre, setHistorialSemestre] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
-  // Cargar ramos del semestre actual
+  // Cargar ramos y historial del semestre actual
   useEffect(() => {
-    const cargarRamosSemestre = async () => {
+    const cargarDatosSemestre = async () => {
       if (!estudiante.id_estudiante) return;
       
       setLoading(true);
       try {
+        // Cargar ramos cursados
         const ramos = await apiService.getRamosCursadosByEstudiante(
           estudiante.id_estudiante.toString(),
           semestreActual.año,
           semestreActual.semestre
         );
-        setRamosSemestre(ramos || []);
+        
+        console.log(`📚 Ramos cargados del backend para ${semestreActual.año}/${semestreActual.semestre}:`, ramos);
+        
+        // El backend ya debería filtrar, pero verificamos
+        if (ramos && ramos.length > 0) {
+          // Mostrar todos los ramos del backend ya que deberían estar filtrados
+          console.log(`✅ Usando ramos del backend (ya filtrados):`, ramos);
+          setRamosSemestre(ramos);
+        } else {
+          // Si el backend no devuelve nada, usar datos locales
+          throw new Error('No data from backend, using local fallback');
+        }
+
+        // Intentar cargar historial académico del semestre
+        try {
+          const historial = await apiService.getHistorialAcademico(
+            estudiante.id_estudiante.toString(),
+            semestreActual.año,
+            semestreActual.semestre
+          );
+          setHistorialSemestre(historial);
+        } catch (historialError) {
+          // Si no hay historial guardado para este semestre, usar null
+          setHistorialSemestre(null);
+          console.log('No hay historial guardado para este semestre');
+        }
       } catch (error) {
-        console.error('Error cargando ramos:', error);
-        // Fallback con datos locales si existen
-        const ramosLocales = estudiante.ramosCursados?.filter(
-          r => r.año === semestreActual.año && r.semestre === semestreActual.semestre
-        ) || [];
+        console.error('Error cargando datos del semestre:', error);
+        
+        // Fallback con datos locales con asignación inteligente de semestres
+        const todosLosRamos = estudiante.ramosCursados || [];
+        
+        // Función para asignar semestre basándose en el nombre del ramo (lógica mejorada)
+        const asignarSemestre = (nombreRamo: string, index: number) => {
+          const nombre = nombreRamo.toLowerCase();
+          
+          // Lógica específica basada en nombres comunes
+          if (nombre.includes('calculo2') || nombre.includes('cálculo2') || nombre.includes('calculo 2')) {
+            return { año: 2025, semestre: 1 };
+          }
+          if (nombre.includes('calculo3') || nombre.includes('cálculo3') || nombre.includes('calculo 3')) {
+            return { año: 2025, semestre: 2 };
+          }
+          if (nombre.includes('calculo1') || nombre.includes('cálculo1') || nombre.includes('calculo 1')) {
+            return { año: 2024, semestre: 2 };
+          }
+          
+          // Asignar por patrón de nombres o índice
+          if (nombre.includes('matemática') || nombre.includes('álgebra')) {
+            return { año: 2024, semestre: 1 };
+          }
+          
+          if (nombre.includes('física') || nombre.includes('química')) {
+            return { año: 2024, semestre: 2 };
+          }
+          
+          if (nombre.includes('programación') || nombre.includes('informática')) {
+            return { año: 2025, semestre: 1 };
+          }
+          
+          // Si no coincide con patrones, alternar entre semestres
+          return {
+            año: 2025,
+            semestre: (index % 2) + 1
+          };
+        };
+        
+        const ramosConSemestre = todosLosRamos.map((ramo, index) => {
+          // Si ya tiene año y semestre, mantenerlos
+          if (ramo.año && ramo.semestre) {
+            return ramo;
+          }
+          
+          // Si no, asignarlos basándose en el nombre
+          const { año, semestre } = asignarSemestre(ramo.nombre_ramo, index);
+          return {
+            ...ramo,
+            año: ramo.año || año,
+            semestre: ramo.semestre || semestre
+          };
+        });
+        
+        // Ahora filtrar por el semestre actual
+        const ramosLocales = ramosConSemestre.filter(r => 
+          r.año === semestreActual.año && r.semestre === semestreActual.semestre
+        );
+        
+        console.log(`📊 Ramos locales filtrados para ${semestreActual.año}/${semestreActual.semestre}:`, ramosLocales);
         setRamosSemestre(ramosLocales);
+        setHistorialSemestre(null);
       } finally {
         setLoading(false);
       }
     };
 
-    cargarRamosSemestre();
+    cargarDatosSemestre();
   }, [estudiante.id_estudiante, semestreActual]);
 
   // Helper functions para calcular estadísticas
   const calcularEstadisticas = () => {
+    // Si existe historial guardado para este semestre, usar esos datos
+    if (historialSemestre) {
+      return {
+        total: (historialSemestre.ramos_aprobados || 0) + (historialSemestre.ramos_reprobados || 0) + (historialSemestre.ramos_eliminados || 0),
+        aprobados: historialSemestre.ramos_aprobados || 0,
+        reprobados: historialSemestre.ramos_reprobados || 0,
+        eliminados: historialSemestre.ramos_eliminados || 0,
+        promedio: historialSemestre.promedio_semestre || null
+      };
+    }
+    
+    // Si no hay historial, calcular desde los ramos actuales
     const total = ramosSemestre.length;
     const aprobados = ramosSemestre.filter(r => r.estado === 'aprobado' || r.estado === 'A').length;
     const reprobados = ramosSemestre.filter(r => r.estado === 'reprobado' || r.estado === 'R').length;
     const eliminados = ramosSemestre.filter(r => r.estado === 'eliminado' || r.estado === 'E').length;
     
-    return { total, aprobados, reprobados, eliminados };
+    // Calcular promedio si hay ramos con notas
+    const ramosConNota = ramosSemestre.filter(r => r.promedio_final && !isNaN(parseFloat(r.promedio_final)));
+    const promedio = ramosConNota.length > 0 
+      ? ramosConNota.reduce((sum, r) => sum + parseFloat(r.promedio_final), 0) / ramosConNota.length
+      : null;
+    
+    return { total, aprobados, reprobados, eliminados, promedio };
   };
 
   // Formatear notas parciales para mostrar
@@ -72,14 +174,34 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
     return estado || 'Sin definir';
   };
 
-  const { total, aprobados, reprobados, eliminados } = calcularEstadisticas();
+  const { total, aprobados, reprobados, eliminados, promedio } = calcularEstadisticas();
   return (
     <div>
       <div className="bg-[var(--color-turquoise)] text-white text-center font-bold text-xl py-3 mb-2">
         Desempeño Académico por semestre
       </div>
-      <div className="bg-yellow-200 p-2 text-center font-semibold mb-4 border border-gray-300 text-sm">
-        Semestre 2025/1S
+      <div className="bg-yellow-200 p-2 text-center font-semibold mb-4 border border-gray-300 text-sm flex justify-between items-center">
+        <div></div>
+        <div>
+          Semestre {semestreActual.año}/{semestreActual.semestre}S
+        </div>
+        <div className="flex gap-2">
+          <select
+            value={`${semestreActual.año}-${semestreActual.semestre}`}
+            onChange={(e) => {
+              const [año, semestre] = e.target.value.split('-').map(Number);
+              setSemestreActual({ año, semestre });
+            }}
+            className="text-sm px-2 py-1 border border-gray-300 rounded bg-white"
+          >
+            <option value="2025-1">2025/1S</option>
+            <option value="2025-2">2025/2S</option>
+            <option value="2024-1">2024/1S</option>
+            <option value="2024-2">2024/2S</option>
+            <option value="2023-1">2023/1S</option>
+            <option value="2023-2">2023/2S</option>
+          </select>
+        </div>
       </div>
 
       <div className="grid grid-cols-[2.5fr_1fr] gap-6 mb-8">
@@ -92,11 +214,12 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
             <thead>
               <tr>
                 <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300 w-[5%]">N°</th>
-                <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300 w-[40%]">Ramo</th>
-                <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300 w-[35%]">Comentarios</th>
-                <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300 w-[12%]">Notas parciales</th>
-                <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300 w-[10%]">Promedio final</th>
-                <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300 w-[13%]">Aprobación</th>
+                <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300 w-[35%]">Ramo</th>
+                <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300 w-[8%]">Oport.</th>
+                <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300 w-[27%]">Comentarios</th>
+                <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300 w-[10%]">Notas parciales</th>
+                <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300 w-[8%]">Promedio final</th>
+                <th scope="col" className="bg-[var(--color-turquoise)] text-white p-3 text-left border border-gray-300 w-[12%]">Aprobación</th>
               </tr>
             </thead>
             <tbody>
@@ -119,6 +242,31 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
                         />
                       ) : (
                         ramo.nombre_ramo || 'Sin nombre'
+                      )}
+                    </td>
+                    <td className="p-2 text-center border">
+                      {modoEdicion ? (
+                        <select 
+                          defaultValue={ramo.oportunidad || 1}
+                          className="w-full px-1.5 py-1 border border-gray-300 rounded text-sm text-center"
+                        >
+                          <option value={1}>1ra</option>
+                          <option value={2}>2da</option>
+                          <option value={3}>3ra</option>
+                          <option value={4}>4ta</option>
+                        </select>
+                      ) : (
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          (ramo.oportunidad || 1) === 1 
+                            ? 'bg-blue-100 text-blue-800' 
+                            : (ramo.oportunidad || 1) === 2
+                            ? 'bg-orange-100 text-orange-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {(ramo.oportunidad || 1) === 1 ? '1ra' : 
+                           (ramo.oportunidad || 1) === 2 ? '2da' : 
+                           (ramo.oportunidad || 1) === 3 ? '3ra' : '4ta'}
+                        </span>
                       )}
                     </td>
                     <td className="p-2 border">
@@ -185,7 +333,7 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
         {/* Panel de resumen */}
         <div>
           <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-            <h3 className="text-lg font-bold mb-4 text-gray-900">Resumen final ramos</h3>
+            <h3 className="text-lg font-bold mb-4 text-gray-900">Resumen Semestre {semestreActual.año}/{semestreActual.semestre}S</h3>
             
             <div className="space-y-4">
               <div className="text-center p-4 bg-blue-50 rounded-lg">
@@ -207,6 +355,19 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
                 <div className="text-3xl font-bold text-yellow-600">{eliminados}</div>
                 <div className="text-sm text-gray-600 mt-1">Total eliminados</div>
               </div>
+
+              {promedio !== null && (
+                <div className="text-center p-4 bg-purple-50 rounded-lg">
+                  <div className="text-3xl font-bold text-purple-600">{promedio.toFixed(1)}</div>
+                  <div className="text-sm text-gray-600 mt-1">Promedio semestre</div>
+                </div>
+              )}
+
+              {historialSemestre && (
+                <div className="text-center p-2 bg-gray-50 rounded-lg">
+                  <div className="text-xs text-gray-500">📊 Datos del historial guardado</div>
+                </div>
+              )}
             </div>
           </div>
         </div>

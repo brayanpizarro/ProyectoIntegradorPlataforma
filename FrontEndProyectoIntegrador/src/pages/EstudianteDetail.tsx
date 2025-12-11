@@ -43,8 +43,16 @@ const EstudianteDetail: React.FC = () => {
     nivel_educativo: '',
     ramos_aprobados: 0,
     ramos_reprobados: 0,
-    promedio_semestre: 0
+    ramos_eliminados: 0,
+    promedio_semestre: 0,
+    trayectoria_academica: []
   });
+
+  // Estados para vista detallada y edición de semestres
+  const [semestreSeleccionado, setSemestreSeleccionado] = useState<any>(null);
+  const [mostrarModalDetalleSemestre, setMostrarModalDetalleSemestre] = useState(false);
+  const [editandoSemestre, setEditandoSemestre] = useState(false);
+  const [datosEditadosSemestre, setDatosEditadosSemestre] = useState<any>({});
 
   // Verificar autenticación y cargar estudiante
   useEffect(() => {
@@ -233,7 +241,9 @@ const EstudianteDetail: React.FC = () => {
         nivel_educativo: '',
         ramos_aprobados: 0,
         ramos_reprobados: 0,
-        promedio_semestre: 0
+        ramos_eliminados: 0,
+        promedio_semestre: 0,
+        trayectoria_academica: []
       });
       setMostrarModalNuevoSemestre(false);
       
@@ -242,6 +252,80 @@ const EstudianteDetail: React.FC = () => {
     } catch (err: any) {
       logger.error('❌ Error al crear semestre:', err);
       alert(`❌ Error al crear semestre: ${err.message}`);
+    }
+  };
+
+  const handleSeleccionarSemestre = (historial: any) => {
+    setSemestreSeleccionado(historial);
+    setDatosEditadosSemestre({ ...historial });
+    setMostrarModalDetalleSemestre(true);
+    setEditandoSemestre(false);
+  };
+
+  const handleEditarSemestre = () => {
+    setEditandoSemestre(true);
+  };
+
+  const handleCancelarEdicionSemestre = () => {
+    setDatosEditadosSemestre({ ...semestreSeleccionado });
+    setEditandoSemestre(false);
+  };
+
+  const handleGuardarSemestre = async () => {
+    if (!semestreSeleccionado) return;
+
+    try {
+      const datosActualizados = {
+        año: datosEditadosSemestre.año,
+        semestre: datosEditadosSemestre.semestre,
+        nivel_educativo: datosEditadosSemestre.nivel_educativo,
+        ramos_aprobados: datosEditadosSemestre.ramos_aprobados,
+        ramos_reprobados: datosEditadosSemestre.ramos_reprobados,
+        ramos_eliminados: datosEditadosSemestre.ramos_eliminados,
+        promedio_semestre: datosEditadosSemestre.promedio_semestre,
+        trayectoria_academica: datosEditadosSemestre.trayectoria_academica || []
+      };
+
+      await historialAcademicoService.update(semestreSeleccionado.id_historial_academico, datosActualizados);
+      
+      // Actualizar la lista de semestres
+      setInformesGuardados(prev => 
+        prev.map(semestre => 
+          semestre.id_historial_academico === semestreSeleccionado.id_historial_academico 
+            ? { ...semestre, ...datosActualizados }
+            : semestre
+        )
+      );
+      
+      // Actualizar semestre seleccionado
+      setSemestreSeleccionado({ ...semestreSeleccionado, ...datosActualizados });
+      setEditandoSemestre(false);
+      
+      logger.log('✅ Semestre actualizado:', datosActualizados);
+      alert('✅ Semestre actualizado correctamente');
+    } catch (err: any) {
+      logger.error('❌ Error al actualizar semestre:', err);
+      alert(`❌ Error al actualizar semestre: ${err.message}`);
+    }
+  };
+
+  const handleAgregarComentario = () => {
+    const nuevoComentario = prompt('Ingrese un comentario:');
+    if (nuevoComentario && nuevoComentario.trim()) {
+      const comentarioConFecha = `${new Date().toLocaleDateString('es-CL')}: ${nuevoComentario.trim()}`;
+      setDatosEditadosSemestre(prev => ({
+        ...prev,
+        trayectoria_academica: [...(prev.trayectoria_academica || []), comentarioConFecha]
+      }));
+    }
+  };
+
+  const handleEliminarComentario = (index: number) => {
+    if (confirm('¿Está seguro de eliminar este comentario?')) {
+      setDatosEditadosSemestre(prev => ({
+        ...prev,
+        trayectoria_academica: prev.trayectoria_academica.filter((_: any, i: number) => i !== index)
+      }));
     }
   };
 
@@ -436,6 +520,7 @@ const EstudianteDetail: React.FC = () => {
                 informesGuardados.map((historial, index) => (
                   <div 
                     key={historial.id_historial_academico || index}
+                    onClick={() => handleSeleccionarSemestre(historial)}
                     className="border border-gray-200 rounded-lg p-4 hover:border-blue-400 hover:bg-blue-50 transition-all cursor-pointer"
                   >
                     <div className="flex justify-between items-start">
@@ -546,7 +631,7 @@ const EstudianteDetail: React.FC = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">
                     Ramos Aprobados
@@ -573,6 +658,22 @@ const EstudianteDetail: React.FC = () => {
                     onChange={(e) => setNuevoSemestreData(prev => ({
                       ...prev,
                       ramos_reprobados: parseInt(e.target.value) || 0
+                    }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    min="0"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Ramos Eliminados
+                  </label>
+                  <input
+                    type="number"
+                    value={nuevoSemestreData.ramos_eliminados}
+                    onChange={(e) => setNuevoSemestreData(prev => ({
+                      ...prev,
+                      ramos_eliminados: parseInt(e.target.value) || 0
                     }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     min="0"

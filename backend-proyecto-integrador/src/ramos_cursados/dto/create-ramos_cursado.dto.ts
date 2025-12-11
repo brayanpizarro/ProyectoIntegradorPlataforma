@@ -14,6 +14,10 @@ export class CreateRamosCursadosDto {
   año?: number;
 
   @IsOptional()
+  @IsNumber()
+  oportunidad?: number;
+
+  @IsOptional()
   @IsString()
   codigo_ramo?: string;
 

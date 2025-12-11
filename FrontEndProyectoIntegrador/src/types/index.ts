@@ -128,6 +128,7 @@ export interface RamosCursados {
   id_ramos_cursados: string;
   semestre: number;
   año?: number;
+  oportunidad?: number;
   codigo_ramo?: string;
   nombre_ramo: string;
   notas_parciales: number[];

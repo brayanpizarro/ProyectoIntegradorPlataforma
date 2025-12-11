@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { RamosCursadosService } from './ramos_cursados.service';
 import { CreateRamosCursadosDto } from './dto/create-ramos_cursado.dto';
 import { UpdateRamosCursadosDto } from './dto/update-ramos_cursado.dto';
@@ -18,8 +18,16 @@ export class RamosCursadosController {
   }
 
   @Get('estudiante/:estudianteId')
-  findByEstudiante(@Param('estudianteId') estudianteId: string) {
-    return this.ramosCursadosService.findByEstudiante(estudianteId);
+  findByEstudiante(
+    @Param('estudianteId') estudianteId: string,
+    @Query('año') año?: string,
+    @Query('semestre') semestre?: string
+  ) {
+    const filtros = {
+      año: año ? parseInt(año) : undefined,
+      semestre: semestre ? parseInt(semestre) : undefined
+    };
+    return this.ramosCursadosService.findByEstudiante(estudianteId, filtros);
   }
 
   @Get(':id')
@@ -31,6 +39,11 @@ export class RamosCursadosController {
   update(@Param('id') id: string, @Body() updateRamosCursadosDto: UpdateRamosCursadosDto) {
     return this.ramosCursadosService.update(+id, updateRamosCursadosDto);
  }
+
+  @Post('fix-semestres')
+  fixSemestres() {
+    return this.ramosCursadosService.fixSemestres();
+  }
 
   @Delete(':id')
   remove(@Param('id') id: string) {

@@ -25,6 +25,16 @@ export class HistorialAcademicoController {
     return await this.historialAcademicoService.findByEstudiante(idEstudiante);
   }
 
+  @Get('estudiante/:idEstudiante/semestre/:año/:semestre')
+  @HttpCode(HttpStatus.OK)
+  async findByEstudianteAndSemestre(
+    @Param('idEstudiante') idEstudiante: string,
+    @Param('año') año: string,
+    @Param('semestre') semestre: string
+  ) {
+    return await this.historialAcademicoService.findByEstudianteAndSemestre(idEstudiante, +año, +semestre);
+  }
+
   @Get('semestre/:año/:semestre')
   @HttpCode(HttpStatus.OK)
   async findBySemestre(@Param('año') año: string, @Param('semestre') semestre: string) {

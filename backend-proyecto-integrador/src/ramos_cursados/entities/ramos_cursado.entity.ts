@@ -20,6 +20,9 @@ export class RamosCursados {
   @Column({ nullable: true, default: null })
   año: number;
 
+  @Column({ type: 'int', nullable: true, default: 1 })
+  oportunidad: number;
+
   @Column({ nullable: true, default: null })
   codigo_ramo: string;
 
