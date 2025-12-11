@@ -4,17 +4,42 @@ import { AppModule } from './app.module';
 import { UserSeeder } from './seeder/seeds/user.seeder';
 
 async function bootstrap() {
-  // Solo ejecutar seeder si la variable RUN_SEEDER está en true
   if (process.env.RUN_SEEDER === 'true') {
     const appContext = await NestFactory.createApplicationContext(AppModule);
     
     try {
       console.log('🌱 Ejecutando seeder inicial...');
+      
+      // Obtener información de la BD
+      const dataSource = appContext.get('DataSource');
+      console.log('📊 BD:', dataSource.options.database);
+      console.log('🔗 Host:', dataSource.options.host);
+      
+      // Ejecutar seeder
       const userSeeder = appContext.get(UserSeeder);
-      await userSeeder.run();
-      console.log('✅ Seeder completado\n');
+      const created = await userSeeder.run();
+      
+      // Verificar usuarios en BD
+      const userRepo = dataSource.getRepository('User');
+      const totalUsers = await userRepo.count();
+      const adminUser = await userRepo.findOne({ 
+        where: { email: 'admin@fundacion.cl' } 
+      });
+      
+      console.log('━'.repeat(60));
+      console.log(`📊 RESUMEN:`);
+      console.log(`   Usuarios creados en este seeder: ${created}`);
+      console.log(`   Total usuarios en BD: ${totalUsers}`);
+      console.log(`   Admin existe: ${adminUser ? '✅ SÍ' : '❌ NO'}`);
+      if (adminUser) {
+        console.log(`   Admin ID: ${adminUser.id}`);
+        console.log(`   Admin Username: ${adminUser.username}`);
+      }
+      console.log('━'.repeat(60) + '\n');
+      
     } catch (error) {
-      console.warn('⚠️ Error en seeder:', error.message);
+      console.error('❌ Error en seeder:', error);
+      console.error('Stack:', error.stack);
     } finally {
       await appContext.close();
     }
