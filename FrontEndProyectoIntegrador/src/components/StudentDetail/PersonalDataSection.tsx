@@ -98,14 +98,6 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
       .join(' | ') || 'Sin definir';
   };
 
-<<<<<<< Updated upstream
-  const getHistorialStatus = (año: number, semestre: number) => {
-    const historial = estudiante.historialesAcademicos?.find(
-      h => h.año === año && h.semestre === semestre
-    );
-    return historial ? 'Registrado' : 'Sin definir';
-  };
-=======
   // Función para obtener estado del historial (pendiente de usar)
   // const getHistorialStatus = (año: number, semestre: number) => {
   //   const historial = estudiante.historialesAcademicos?.find(
@@ -113,7 +105,6 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
   //   );
   //   return historial ? 'Registrado' : 'Sin definir';
   // };
->>>>>>> Stashed changes
 
   const getTrayectoriaAcademica = () => {
     const historiales = estudiante.historialesAcademicos;
@@ -156,7 +147,6 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
 
           {/* Apellidos - Sin campo en backend aún */}
           <tr>
-<<<<<<< Updated upstream
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Apellidos</td>
             <td className="p-2 border border-gray-300 bg-white">
               <span className="text-gray-400 italic">Campo no disponible en backend</span>
@@ -165,10 +155,7 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
 
           {/* ✅ INPUT CONTROLADO - RUT */}
           <tr>
-            <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300"> RUT </td>
-=======
-            <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Rut</td>
->>>>>>> Stashed changes
+            <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">RUT</td>
             <td className="p-2 border border-gray-300 bg-white">
               {modoEdicion ? (
                 <input 
@@ -253,23 +240,7 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Género</td>
             <td className="p-2 border border-gray-300 bg-white">
-<<<<<<< Updated upstream
               <span className="text-gray-400 italic">Campo no disponible en backend</span>
-=======
-              {modoEdicion ? (
-                <select 
-                  defaultValue={estudiante.genero || 'Sin definir'}
-                  className="w-full px-2 py-1 border border-gray-300 rounded"
-                >
-                  <option value="Masculino">Masculino</option>
-                  <option value="Femenino">Femenino</option>
-                  <option value="Otro">Otro</option>
-                  <option value="Sin definir">Prefiero no decir</option>
-                </select>
-              ) : (
-                <span>{estudiante.genero || 'Sin definir'}</span>
-              )}
->>>>>>> Stashed changes
             </td>
           </tr>
 
@@ -295,20 +266,7 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Dirección</td>
             <td className="p-2 border border-gray-300 bg-white">
-<<<<<<< Updated upstream
               <span className="text-gray-400 italic">Campo no disponible en backend</span>
-=======
-              {modoEdicion ? (
-                <input 
-                  type="text" 
-                  defaultValue={estudiante.direccion || ''}
-                  className="w-full px-2 py-1 border border-gray-300 rounded"
-                  placeholder="Ingrese la dirección..."
-                />
-              ) : (
-                <span>{estudiante.direccion || 'Sin definir'}</span>
-              )}
->>>>>>> Stashed changes
             </td>
           </tr>
 
@@ -386,67 +344,6 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Status Detalle</td>
             <td className="p-2 border border-gray-300 bg-white">
-<<<<<<< Updated upstream
-              <span className="text-gray-400 italic">Campo no disponible en backend</span>
-            </td>
-          </tr>
-
-          {/* Status por Semestre - Historial Académico (solo lectura) */}
-          <tr>
-            <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Status 2022/1S</td>
-            <td className="p-2 border border-gray-300 bg-white">
-              <span>{getHistorialStatus(2022, 1)}</span>
-            </td>
-          </tr>
-          <tr>
-            <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Status 2022/2S</td>
-            <td className="p-2 border border-gray-300 bg-white">
-              <span>{getHistorialStatus(2022, 2)}</span>
-            </td>
-          </tr>
-          <tr>
-            <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Status 2023/1S</td>
-            <td className="p-2 border border-gray-300 bg-white">
-              <span>{getHistorialStatus(2023, 1)}</span>
-            </td>
-          </tr>
-          <tr>
-            <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Status 2023/2S</td>
-            <td className="p-2 border border-gray-300 bg-white">
-              <span>{getHistorialStatus(2023, 2)}</span>
-            </td>
-          </tr>
-          <tr>
-            <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Status 2024/1S</td>
-            <td className="p-2 border border-gray-300 bg-white">
-              <span>{getHistorialStatus(2024, 1)}</span>
-            </td>
-          </tr>
-          <tr>
-            <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Status 2024/2S</td>
-            <td className="p-2 border border-gray-300 bg-white">
-              <span>{getHistorialStatus(2024, 2)}</span>
-            </td>
-          </tr>
-          <tr>
-            <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Status 2025/1S</td>
-            <td className="p-2 border border-gray-300 bg-white">
-              <span>{getHistorialStatus(2025, 1)}</span>
-            </td>
-          </tr>
-          <tr>
-            <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Status 2025/2S</td>
-            <td className="p-2 border border-gray-300 bg-white">
-              <span>{getHistorialStatus(2025, 2)}</span>
-            </td>
-          </tr>
-
-          {/* Observaciones - Campo no disponible */}
-          <tr>
-            <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Observaciones</td>
-            <td className="p-2 border border-gray-300 bg-white">
-              <span className="text-gray-400 italic">Campo no disponible en backend</span>
-=======
               {modoEdicion ? (
                 <textarea 
                   className="w-full min-h-[100px] px-2 py-1 border border-gray-300 rounded resize-y"
@@ -469,7 +366,6 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
                 disabled={!modoEdicion}
                 defaultValue={estudiante.observaciones || ''}
               />
->>>>>>> Stashed changes
             </td>
           </tr>
         </tbody>
