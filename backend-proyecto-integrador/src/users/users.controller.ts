@@ -77,4 +77,25 @@ export class UsersController {
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.usersService.remove(id);
   }
+
+  @Patch(':id/password')
+  @Roles(UserRole.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  async changePassword(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() changePasswordDto: { password: string },
+  ): Promise<{ message: string }> {
+    await this.usersService.changePassword(id, changePasswordDto.password);
+    return { message: 'Contraseña actualizada exitosamente' };
+  }
+
+  @Patch('profile/password')
+  @HttpCode(HttpStatus.OK)
+  async changeOwnPassword(
+    @CurrentUser() user: any,
+    @Body() changePasswordDto: { currentPassword: string; newPassword: string },
+  ): Promise<{ message: string }> {
+    await this.usersService.changeOwnPassword(user.id, changePasswordDto.currentPassword, changePasswordDto.newPassword);
+    return { message: 'Contraseña actualizada exitosamente' };
+  }
 }

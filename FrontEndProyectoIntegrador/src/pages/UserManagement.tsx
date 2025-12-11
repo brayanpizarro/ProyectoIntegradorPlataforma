@@ -37,7 +37,8 @@ import {
   Delete as DeleteIcon,
   Person as PersonIcon,
   SupervisorAccount as TutorIcon,
-  Visibility as VisibilityIcon
+  Visibility as VisibilityIcon,
+  Lock as LockIcon
 } from '@mui/icons-material';
 
 export const UserManagement: React.FC = () => {
@@ -48,6 +49,9 @@ export const UserManagement: React.FC = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [editingUser, setEditingUser] = useState<Usuario | null>(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
+  const [openPasswordDialog, setOpenPasswordDialog] = useState(false);
+  const [passwordUser, setPasswordUser] = useState<Usuario | null>(null);
+  const [newPassword, setNewPassword] = useState('');
   
   const [formData, setFormData] = useState({
     nombres: '',
@@ -232,6 +236,39 @@ export const UserManagement: React.FC = () => {
     }
   };
 
+  const handleOpenPasswordDialog = (user: Usuario) => {
+    setPasswordUser(user);
+    setNewPassword('');
+    setOpenPasswordDialog(true);
+  };
+
+  const handleClosePasswordDialog = () => {
+    setOpenPasswordDialog(false);
+    setPasswordUser(null);
+    setNewPassword('');
+  };
+
+  const handleChangePassword = async () => {
+    if (!passwordUser || !newPassword.trim()) {
+      setSnackbar({ open: true, message: 'Por favor ingresa una nueva contraseña', severity: 'error' });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setSnackbar({ open: true, message: 'La contraseña debe tener al menos 6 caracteres', severity: 'error' });
+      return;
+    }
+
+    try {
+      await userService.changeUserPassword(passwordUser.id!, newPassword);
+      setSnackbar({ open: true, message: 'Contraseña actualizada exitosamente', severity: 'success' });
+      handleClosePasswordDialog();
+    } catch (err) {
+      console.error('Error al cambiar contraseña:', err);
+      setSnackbar({ open: true, message: 'Error al cambiar la contraseña', severity: 'error' });
+    }
+  };
+
   const getRoleColor = (role: string): 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info' => {
     const colorMap: { [key: string]: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info' } = {
       'admin': 'error',
@@ -365,6 +402,13 @@ export const UserManagement: React.FC = () => {
                       </IconButton>
                       <IconButton 
                         size="small" 
+                        color="warning"
+                        onClick={() => handleOpenPasswordDialog(user)}
+                      >
+                        <LockIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton 
+                        size="small" 
                         color="error"
                         onClick={() => handleDeleteUser(user.id)}
                       >
@@ -457,6 +501,38 @@ export const UserManagement: React.FC = () => {
               disabled={!formData.nombres || !formData.apellidos || !formData.email}
             >
               {editingUser ? 'Actualizar' : 'Crear'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Dialog para Cambiar Contraseña */}
+        <Dialog open={openPasswordDialog} onClose={handleClosePasswordDialog} maxWidth="sm" fullWidth>
+          <DialogTitle>
+            Cambiar Contraseña - {passwordUser?.nombres} {passwordUser?.apellidos}
+          </DialogTitle>
+          <DialogContent>
+            <Box sx={{ pt: 2 }}>
+              <TextField
+                fullWidth
+                type="password"
+                label="Nueva Contraseña"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Mínimo 6 caracteres"
+                helperText="La contraseña debe tener al menos 6 caracteres"
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClosePasswordDialog}>
+              Cancelar
+            </Button>
+            <Button 
+              variant="contained" 
+              onClick={handleChangePassword}
+              disabled={!newPassword.trim() || newPassword.length < 6}
+            >
+              Cambiar Contraseña
             </Button>
           </DialogActions>
         </Dialog>
