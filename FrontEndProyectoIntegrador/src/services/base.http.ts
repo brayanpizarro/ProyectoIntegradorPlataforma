@@ -29,6 +29,15 @@ export class BaseHttpClient {
 
     const response = await fetch(url, config);
     
+    // Interceptar 401 para limpiar token expirado
+    if (response.status === 401 && token) {
+      localStorage.removeItem('accesstoken');
+      localStorage.removeItem('user');
+      localStorage.removeItem('refreshtoken');
+      window.location.href = '/';
+      return;
+    }
+    
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);

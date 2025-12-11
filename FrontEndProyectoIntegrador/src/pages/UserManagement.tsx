@@ -74,6 +74,14 @@ export const UserManagement: React.FC = () => {
       return;
     }
 
+    // Verificar que el token sea válido
+    const tokenValid = await authService.verifyToken();
+    if (!tokenValid) {
+      console.log('🔑 Token inválido o expirado, redirigiendo al login');
+      navigate('/');
+      return;
+    }
+
     const user = authService.getCurrentUser();
     console.log('👤 Usuario actual completo:', JSON.stringify(user, null, 2));
     console.log('🔑 ¿Es admin?', PermissionService.isAdmin(user));
@@ -180,7 +188,7 @@ export const UserManagement: React.FC = () => {
         apellido: formData.apellidos,
         email: formData.email,
         password: formData.password,
-        rol: formData.rol.toUpperCase() as 'TUTOR' | 'VISITA', // El backend espera TUTOR o VISITA
+        rol: formData.rol, // El backend espera 'tutor' o 'visita' en minúsculas
         activo: true
       };
 
@@ -228,14 +236,14 @@ export const UserManagement: React.FC = () => {
     const colorMap: { [key: string]: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info' } = {
       'admin': 'error',
       'tutor': 'primary',
-      'invitado': 'info'
+      'visita': 'info'
     };
     return colorMap[role] || 'secondary';
   };
 
   const getRoleIcon = (role: string) => {
     if (role === 'tutor') return <TutorIcon />;
-    if (role === 'invitado') return <VisibilityIcon />;
+    if (role === 'visita') return <VisibilityIcon />;
     return <PersonIcon />;
   };
 

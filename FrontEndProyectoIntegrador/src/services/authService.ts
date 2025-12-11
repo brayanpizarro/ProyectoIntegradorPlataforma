@@ -91,6 +91,30 @@ class AuthService {
     return user?.role === 'admin';
   }
 
+  async verifyToken(): Promise<boolean> {
+    const token = this.getToken();
+    if (!token) return false;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 401) {
+        console.log('🔑 Token expirado, limpiando localStorage');
+        this.clearAuthData();
+        return false;
+      }
+
+      return response.ok;
+    } catch (error) {
+      console.error('Error verificando token:', error);
+      return false;
+    }
+  }
+
   async requestPasswordReset(email: string): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
       method: 'POST',
