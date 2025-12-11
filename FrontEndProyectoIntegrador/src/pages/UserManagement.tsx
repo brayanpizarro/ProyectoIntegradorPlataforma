@@ -44,7 +44,7 @@ export const UserManagement: React.FC = () => {
   const navigate = useNavigate();
   const [users, setUsers] = useState<Usuario[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<Usuario[]>([]);
-  const [tabValue, setTabValue] = useState<'todos' | 'tutores' | 'invitados'>('todos');
+  const [tabValue, setTabValue] = useState<'todos' | 'tutores' | 'visitas'>('todos');
   const [openDialog, setOpenDialog] = useState(false);
   const [editingUser, setEditingUser] = useState<Usuario | null>(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
@@ -56,7 +56,7 @@ export const UserManagement: React.FC = () => {
     password: '',
     rut: '',
     telefono: '',
-    rol: 'tutor' as 'tutor' | 'invitado'
+    rol: 'tutor' as 'tutor' | 'visita'
   });
 
   useEffect(() => {
@@ -115,7 +115,7 @@ export const UserManagement: React.FC = () => {
     } else if (tabValue === 'tutores') {
       setFilteredUsers(users.filter(u => u.role === 'tutor'));
     } else {
-      setFilteredUsers(users.filter(u => u.role === 'invitado'));
+      setFilteredUsers(users.filter(u => u.role === 'visita'));
     }
   };
 
@@ -129,7 +129,7 @@ export const UserManagement: React.FC = () => {
         password: '',
         rut: user.rut || '',
         telefono: user.telefono || '',
-        rol: user.role as 'tutor' | 'invitado'
+        rol: user.role as 'tutor' | 'visita'
       });
     } else {
       setEditingUser(null);
@@ -173,27 +173,39 @@ export const UserManagement: React.FC = () => {
     }
 
     try {
+      // Mapear datos del frontend al formato del backend
+      const userData = {
+        username: formData.email, // Usar email como username
+        nombre: formData.nombres,
+        apellido: formData.apellidos,
+        email: formData.email,
+        password: formData.password,
+        rol: formData.rol.toUpperCase() as 'TUTOR' | 'VISITA', // El backend espera TUTOR o VISITA
+        activo: true
+      };
+
+      console.log('📤 Enviando datos de usuario:', userData);
+
       if (editingUser) {
         // Actualizar usuario existente
-        await userService.update(editingUser.id!, {
-          ...formData,
-          role: formData.rol
-        });
+        const updateData = { ...userData };
+        if (!updateData.password) {
+          delete updateData.password; // No enviar password vacío en actualizaciones
+        }
+        await userService.update(editingUser.id!, updateData);
         setSnackbar({ open: true, message: 'Usuario actualizado exitosamente', severity: 'success' });
       } else {
         // Crear nuevo usuario
-        await userService.create({
-          ...formData,
-          role: formData.rol
-        });
-        setSnackbar({ open: true, message: `${formData.rol === 'tutor' ? 'Tutor' : 'Invitado'} creado exitosamente`, severity: 'success' });
+        await userService.create(userData);
+        setSnackbar({ open: true, message: `${formData.rol === 'tutor' ? 'Tutor' : 'Visitante'} creado exitosamente`, severity: 'success' });
       }
       
       handleCloseDialog();
       await loadUsers(); // Recargar lista
     } catch (err) {
       console.error('Error al guardar usuario:', err);
-      setSnackbar({ open: true, message: 'Error al guardar el usuario', severity: 'error' });
+      const errorMessage = err instanceof Error ? err.message : 'Error al guardar el usuario';
+      setSnackbar({ open: true, message: errorMessage, severity: 'error' });
     }
   };
 
@@ -269,8 +281,8 @@ export const UserManagement: React.FC = () => {
               iconPosition="start"
             />
             <Tab 
-              label={`Invitados (${users.filter(u => u.role === 'invitado').length})`} 
-              value="invitados"
+              label={`Visitas (${users.filter(u => u.role === 'visita').length})`} 
+              value="visitas"
               icon={<VisibilityIcon />}
               iconPosition="start"
             />
@@ -412,7 +424,7 @@ export const UserManagement: React.FC = () => {
                 <InputLabel>Rol *</InputLabel>
                 <Select
                   value={formData.rol}
-                  onChange={(e) => setFormData({ ...formData, rol: e.target.value as 'tutor' | 'invitado' })}
+                  onChange={(e) => setFormData({ ...formData, rol: e.target.value as 'tutor' | 'visita' })}
                   label="Rol *"
                 >
                   <MenuItem value="tutor">
@@ -420,9 +432,9 @@ export const UserManagement: React.FC = () => {
                       <TutorIcon /> Tutor
                     </Box>
                   </MenuItem>
-                  <MenuItem value="invitado">
+                  <MenuItem value="visita">
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <VisibilityIcon /> Invitado
+                      <VisibilityIcon /> Visita
                     </Box>
                   </MenuItem>
                 </Select>
