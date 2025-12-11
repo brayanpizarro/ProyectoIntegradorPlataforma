@@ -1,34 +1,70 @@
-import { Injectable } from '@nestjs/common';
-import { UsersService } from '../../users/users.service';
-import { CreateUserDto } from '../../users/dto/create-user.dto';
-import { Seeder } from '../interfaces/seeder.interface';
-import { usersData } from '../data/users.data';
+import { Injectable, Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User, UserRole } from '../../users/entities/user.entity';
+import { USERS_DATA } from '../data/users.data';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
-export class UserSeeder implements Seeder {
-  name = 'UserSeeder';
+export class UserSeeder {
+  private readonly logger = new Logger(UserSeeder.name);
 
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {}
 
   async run(): Promise<number> {
-    console.log(`📝 Ejecutando ${this.name}...`);
-    let created = 0;
+    this.logger.log('📝 Ejecutando UserSeeder...');
+    let createdCount = 0;
 
-    for (const userData of usersData) {
+    for (const userData of USERS_DATA) {
       try {
-        const existing = await this.usersService.findByEmail(userData.email);
-        if (existing) {
-          console.log(` Usuario ${userData.email} ya existe, saltando...`);
+        // Buscar usuario existente
+        this.logger.log(`🔍 Buscando usuario: ${userData.email}`);
+        const existingUser = await this.userRepository.findOne({
+          where: { email: userData.email },
+        });
+
+        if (existingUser) {
+          this.logger.warn(
+            `⚠️ Usuario ya existe: ${userData.username} (ID: ${existingUser.id})`,
+          );
           continue;
         }
-      } catch {
-        await this.usersService.create(userData as CreateUserDto);
-        console.log(` Usuario creado: ${userData.email} (${userData.rol})`);
-        created++;
+
+        this.logger.log(`➕ Creando usuario: ${userData.username}`);
+
+        // Si NO existe, crear nuevo usuario
+        const hashedPassword = await bcrypt.hash(userData.password, 10);
+
+        const user = this.userRepository.create({
+          username: userData.username,
+          email: userData.email,
+          password: hashedPassword,
+          nombre: userData.nombre,
+          apellido: userData.apellido,
+          rol: userData.rol as UserRole,
+          activo: userData.activo ?? true,
+        });
+
+        this.logger.log(`💾 Guardando usuario en BD...`);
+        const savedUser = await this.userRepository.save(user);
+        createdCount++;
+
+        this.logger.log(
+          `✅ Usuario creado exitosamente: ${savedUser.username} (ID: ${savedUser.id}, Email: ${savedUser.email})`,
+        );
+      } catch (error) {
+        this.logger.error(
+          `❌ Error creando usuario ${userData.username}:`,
+          error.message,
+        );
+        this.logger.error('Stack:', error.stack);
       }
     }
 
-    console.log(`${this.name} completado: ${created} registros creados\n`);
-    return created;
+    this.logger.log(`UserSeeder completado: ${createdCount} registros creados`);
+    return createdCount;
   }
 }
