@@ -27,6 +27,17 @@ async function bootstrap() {
     credentials: true,
   });
 
+  if (process.env.AUTO_SEED === 'true') {
+    try {
+      console.log('🌱 Auto-seeding habilitado...');
+      const userSeeder = app.get(UserSeeder);
+      await userSeeder.run();
+      console.log('✅ Auto-seeding completado');
+    } catch (error) {
+      console.warn('⚠️ Error en auto-seed (puede que los datos ya existan):', error.message);
+    }
+  }
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
