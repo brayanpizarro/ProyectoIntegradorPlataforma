@@ -25,12 +25,21 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
           ? estudiante.fecha_de_nacimiento.split('T')[0]
           : new Date(estudiante.fecha_de_nacimiento).toISOString().split('T')[0])
       : '',
-    // ... más campos
+    año_ingreso_beca: estudiante.informacionAcademica?.año_ingreso_beca ?? '',
+    // Campos de información académica del liceo
+    colegio: estudiante.informacionAcademica?.colegio ?? '',
+    especialidad_colegio: estudiante.informacionAcademica?.especialidad_colegio ?? '',
+    comuna_colegio: estudiante.informacionAcademica?.comuna_colegio ?? '',
+    // Campos de información universitaria
+    carrera_especialidad: estudiante.institucion?.carrera_especialidad ?? '',
+    duracion: estudiante.institucion?.duracion ?? '',
+    universidad: estudiante.institucion?.nombre ?? '',
+    via_acceso: estudiante.informacionAcademica?.via_acceso ?? ''
   });
 
   // ✅ Actualizar formData cuando cambie el estudiante
   useEffect(() => {
-    setFormData({
+    const newFormData = {
       nombre: estudiante.nombre || '',
       rut: estudiante.rut || '',
       telefono: estudiante.telefono || '',
@@ -42,15 +51,33 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
             ? estudiante.fecha_de_nacimiento.split('T')[0]
             : new Date(estudiante.fecha_de_nacimiento).toISOString().split('T')[0])
         : '',
-    });
+      año_ingreso_beca: estudiante.informacionAcademica?.año_ingreso_beca ?? '',
+      // Campos de información académica del liceo
+      colegio: estudiante.informacionAcademica?.colegio ?? '',
+      especialidad_colegio: estudiante.informacionAcademica?.especialidad_colegio ?? '',
+      comuna_colegio: estudiante.informacionAcademica?.comuna_colegio ?? '',
+      // Campos de información universitaria
+      carrera_especialidad: estudiante.institucion?.carrera_especialidad ?? '',
+      duracion: estudiante.institucion?.duracion ?? '',
+      universidad: estudiante.institucion?.nombre ?? '',
+      via_acceso: estudiante.informacionAcademica?.via_acceso ?? ''
+    };
+    console.log('🔄 Inicializando formData:', newFormData);
+    console.log('🎓 Año ingreso beca del estudiante:', estudiante.informacionAcademica?.año_ingreso_beca);
+    setFormData(newFormData);
   }, [estudiante]);
 
   // ✅ Handler para cambios en inputs
   const handleInputChange = (campo: string, valor: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [campo]: valor
-    }));
+    console.log(`📝 Cambiando campo: ${campo}, valor:`, valor);
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [campo]: valor
+      };
+      console.log(`📝 FormData actualizado:`, newData);
+      return newData;
+    });
 
     // Notificar al componente padre si existe callback
     if (onCampoChange) {
@@ -192,9 +219,10 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
               {modoEdicion ? (
                 <input 
                   type="number" 
-                  value={estudiante.informacionAcademica?.año_ingreso_beca || ''}
-                  onChange={(e) => handleInputChange('año_ingreso_beca', parseInt(e.target.value))}
+                  value={formData.año_ingreso_beca ?? ''}
+                  onChange={(e) => handleInputChange('año_ingreso_beca', e.target.value)}
                   className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Ej: 2023"
                 />
               ) : (
                 <span>{estudiante.informacionAcademica?.año_ingreso_beca || 'Sin definir'}</span>
@@ -290,23 +318,53 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
             </td>
           </tr>
 
-          {/* Información Académica Previa (Liceo) - Solo lectura por ahora */}
+          {/* Información Académica Previa (Liceo) */}
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Liceo</td>
             <td className="p-2 border border-gray-300 bg-white">
-              <span>{getInfoAcademicaData('colegio')}</span>
+              {modoEdicion ? (
+                <input 
+                  type="text" 
+                  value={formData.colegio ?? ''}
+                  onChange={(e) => handleInputChange('colegio', e.target.value)}
+                  className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Nombre del liceo"
+                />
+              ) : (
+                <span>{getInfoAcademicaData('colegio')}</span>
+              )}
             </td>
           </tr>
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Especialidad</td>
             <td className="p-2 border border-gray-300 bg-white">
-              <span>{getInfoAcademicaData('especialidad_colegio')}</span>
+              {modoEdicion ? (
+                <input 
+                  type="text" 
+                  value={formData.especialidad_colegio ?? ''}
+                  onChange={(e) => handleInputChange('especialidad_colegio', e.target.value)}
+                  className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Especialidad del liceo"
+                />
+              ) : (
+                <span>{getInfoAcademicaData('especialidad_colegio')}</span>
+              )}
             </td>
           </tr>
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Comuna Liceo</td>
             <td className="p-2 border border-gray-300 bg-white">
-              <span>{getInfoAcademicaData('comuna_colegio')}</span>
+              {modoEdicion ? (
+                <input 
+                  type="text" 
+                  value={formData.comuna_colegio ?? ''}
+                  onChange={(e) => handleInputChange('comuna_colegio', e.target.value)}
+                  className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Comuna del liceo"
+                />
+              ) : (
+                <span>{getInfoAcademicaData('comuna_colegio')}</span>
+              )}
             </td>
           </tr>
           <tr>
@@ -322,29 +380,69 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
             </td>
           </tr>
 
-          {/* Información Universidad/Carrera - Solo lectura */}
+          {/* Información Universidad/Carrera */}
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Carrera</td>
             <td className="p-2 border border-gray-300 bg-white">
-              <span>{getInstitucionData('carrera_especialidad')}</span>
+              {modoEdicion ? (
+                <input 
+                  type="text" 
+                  value={formData.carrera_especialidad ?? ''}
+                  onChange={(e) => handleInputChange('carrera_especialidad', e.target.value)}
+                  className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Nombre de la carrera"
+                />
+              ) : (
+                <span>{getInstitucionData('carrera_especialidad')}</span>
+              )}
             </td>
           </tr>
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Duración Carrera</td>
             <td className="p-2 border border-gray-300 bg-white">
-              <span>{getInstitucionData('duracion')}</span>
+              {modoEdicion ? (
+                <input 
+                  type="text" 
+                  value={formData.duracion ?? ''}
+                  onChange={(e) => handleInputChange('duracion', e.target.value)}
+                  className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Ej: 10 semestres, 5 años"
+                />
+              ) : (
+                <span>{getInstitucionData('duracion')}</span>
+              )}
             </td>
           </tr>
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Universidad</td>
             <td className="p-2 border border-gray-300 bg-white">
-              <span>{getInstitucionData('nombre')}</span>
+              {modoEdicion ? (
+                <input 
+                  type="text" 
+                  value={formData.universidad ?? ''}
+                  onChange={(e) => handleInputChange('universidad', e.target.value)}
+                  className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Nombre de la universidad"
+                />
+              ) : (
+                <span>{getInstitucionData('nombre')}</span>
+              )}
             </td>
           </tr>
           <tr>
             <td className="font-bold p-2 bg-rose-200 w-[30%] border border-gray-300">Vía de acceso</td>
             <td className="p-2 border border-gray-300 bg-white">
-              <span>{getInfoAcademicaData('via_acceso')}</span>
+              {modoEdicion ? (
+                <input 
+                  type="text" 
+                  value={formData.via_acceso ?? ''}
+                  onChange={(e) => handleInputChange('via_acceso', e.target.value)}
+                  className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Ej: PAES, Admisión especial"
+                />
+              ) : (
+                <span>{getInfoAcademicaData('via_acceso')}</span>
+              )}
             </td>
           </tr>
           <tr>
