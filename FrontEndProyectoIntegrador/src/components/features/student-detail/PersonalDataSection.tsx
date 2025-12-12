@@ -15,7 +15,6 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
   modoEdicion,
   onCampoChange 
 }) => {
-
   const getFieldValue = (field: FieldConfig): string => {
     let value: any = '';
     
@@ -25,7 +24,6 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
       value = estudiante.informacionAcademica?.[field.key as keyof typeof estudiante.informacionAcademica];
     } else if (field.source === 'institucion') {
       value = estudiante.institucion?.[field.key as keyof typeof estudiante.institucion];
-      console.log(`🏫 Leyendo campo ${field.key} de institución:`, value);
     }
     
     // Formatear fecha si es necesario
