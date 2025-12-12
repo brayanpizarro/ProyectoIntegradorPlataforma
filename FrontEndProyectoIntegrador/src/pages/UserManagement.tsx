@@ -73,7 +73,7 @@ export const UserManagement: React.FC = () => {
 
   const loadData = async () => {
     if (!authService.isAuthenticated()) {
-      console.log('❌ No autenticado, redirigiendo al login');
+      console.log('No autenticado, redirigiendo al login');
       navigate('/');
       return;
     }
@@ -81,16 +81,17 @@ export const UserManagement: React.FC = () => {
     // Verificar que el token sea válido
     const tokenValid = await authService.verifyToken();
     if (!tokenValid) {
-      console.log('🔑 Token inválido o expirado, redirigiendo al login');
+      //console.log('🔑 Token inválido o expirado, redirigiendo al login');
       navigate('/');
       return;
     }
 
     const user = authService.getCurrentUser();
+   /*
     console.log('👤 Usuario actual completo:', JSON.stringify(user, null, 2));
     console.log('🔑 ¿Es admin?', PermissionService.isAdmin(user));
     console.log('✅ ¿Puede gestionar usuarios?', PermissionService.canManageUsers(user));
-    
+   */ 
     // Dar tiempo para que el usuario vea el mensaje
     if (!PermissionService.canManageUsers(user)) {
       console.error('🚫 Usuario sin permisos de administrador');
@@ -107,7 +108,7 @@ export const UserManagement: React.FC = () => {
       return;
     }
 
-    console.log('✅ Usuario con permisos, cargando usuarios...');
+    //console.log('✅ Usuario con permisos, cargando usuarios...');
     await loadUsers();
   };
 

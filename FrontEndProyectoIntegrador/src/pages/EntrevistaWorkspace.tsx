@@ -9,19 +9,16 @@ import { useWorkspaceTabs } from '../hooks';
 import { sidebarSections } from '../config/workspaceSections';
 import { LoadingState, ErrorState } from '../components/features/entrevista-workspace';
 
-// Componentes del workspace
 import { TopNavbar, Sidebar, TabManager } from '../components/features/interview-workspace';
 
 export function EntrevistaWorkspace() {
   const navigate = useNavigate();
   const { id: estudianteId } = useParams();
   
-  // ✅ ESTADOS: Workspace y datos
   const [estudiante, setEstudiante] = useState<Estudiante | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // ✅ CUSTOM HOOK: Manejo de pestañas
   const {
     workspace,
     openTab,
@@ -32,7 +29,6 @@ export function EntrevistaWorkspace() {
     setActivePanel
   } = useWorkspaceTabs();
 
-  // ✅ CARGAR DATOS: Estudiante al iniciar
   useEffect(() => {
     const loadEstudiante = async () => {
       if (!authService.isAuthenticated()) {
@@ -43,7 +39,6 @@ export function EntrevistaWorkspace() {
       try {
         setLoading(true);
         
-        // Cargar estudiante desde el backend
         const estudianteData = await apiService.getEstudiantePorId(estudianteId || '0');
         setEstudiante(estudianteData);
         
@@ -58,9 +53,6 @@ export function EntrevistaWorkspace() {
     loadEstudiante();
   }, [estudianteId, navigate]);
 
-
-
-  // ✅ ESTADOS DE CARGA
   if (loading) {
     return <LoadingState />;
   }

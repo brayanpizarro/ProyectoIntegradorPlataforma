@@ -1,5 +1,4 @@
-﻿import React from 'react';
-import { LoadingSpinner, ErrorMessage } from '../components/ui';
+﻿import { LoadingSpinner, ErrorMessage } from '../components/ui';
 import {
   StudentHeader,
   TabNavigation,
@@ -14,8 +13,7 @@ import {
 } from '../components/features/student-detail';
 import { NuevoSemestreModal } from '../components/features/student-detail/components';
 
-const EstudianteDetail: React.FC = () => {
-  // ✅ REFACTORIZADO: Toda la lógica ahora está en hooks personalizados
+export default function EstudianteDetail() {
   const {
     // Datos del estudiante
     loading,
@@ -31,6 +29,7 @@ const EstudianteDetail: React.FC = () => {
     // Edición
     modoEdicion,
     handleCampoChange,
+    handleFamiliaChange,
     handleGuardar,
     handleToggleEdicion,
     handleGenerarInforme,
@@ -102,8 +101,9 @@ const EstudianteDetail: React.FC = () => {
         {/* Información Familiar */}
         {seccionActiva === 'familiar' && (
           <FamilyInfoSection
-            estudiante={estudiante}
+            estudiante={estudianteConEdiciones}
             modoEdicion={modoEdicion && canEdit}
+            onFamiliaChange={handleFamiliaChange}
           />
         )}
 
@@ -136,8 +136,6 @@ const EstudianteDetail: React.FC = () => {
         )}
       </div>
 
-
-
       {/* Modal para crear nuevo semestre */}
       <NuevoSemestreModal
         open={mostrarModalNuevoSemestre}
@@ -149,5 +147,3 @@ const EstudianteDetail: React.FC = () => {
     </div>
   );
 };
-
-export default EstudianteDetail;

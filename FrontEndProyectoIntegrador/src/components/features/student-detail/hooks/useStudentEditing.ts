@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { estudianteService, historialAcademicoService } from '../../../../services';
+import { estudianteService, historialAcademicoService, familiaService } from '../../../../services';
 import type { Estudiante } from '../../../../types';
 import { logger } from '../../../../config';
 
@@ -24,6 +24,19 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
     logger.log(`📝 Campo editado: ${campo} =`, valor);
   };
 
+  // Handler específico para cambios en familia
+  const handleFamiliaChange = (campo: string, valor: any) => {
+    setDatosEditados(prev => ({
+      ...prev,
+      familia: {
+        ...(prev.familia as any || estudiante?.familia || {}),
+        [campo]: valor
+      } as any
+    }));
+    
+    logger.log(`👨‍👩‍👧‍👦 Familia editada: ${campo} =`, valor);
+  };
+
   // Handler de guardado con datos editados
   const handleGuardar = async () => {
     if (!estudiante || !id) return;
@@ -38,7 +51,7 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
     try {
       logger.log('💾 Guardando cambios:', datosEditados);
 
-      // Separar campos de estudiante vs información académica
+      // Separar campos de estudiante vs información académica vs familia
       const camposEstudiante = ['nombre', 'rut', 'telefono', 'email', 'genero', 'direccion', 
         'fecha_de_nacimiento', 'tipo_de_estudiante', 'status', 'generacion', 'numero_carrera', 
         'observaciones', 'status_detalle', 'semestres_suspendidos', 'semestres_total_carrera'];
@@ -49,13 +62,16 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
 
       const datosEstudiante: any = {};
       const datosInfoAcademica: any = {};
+      const datosFamilia = datosEditados.familia;
 
       // Clasificar los cambios
       Object.keys(datosEditados).forEach(campo => {
+        if (campo === 'familia') return; // Manejar familia por separado
+        
         if (camposEstudiante.includes(campo)) {
-          datosEstudiante[campo] = datosEditados[campo];
+          datosEstudiante[campo] = (datosEditados as any)[campo];
         } else if (camposInfoAcademica.includes(campo)) {
-          datosInfoAcademica[campo] = datosEditados[campo];
+          datosInfoAcademica[campo] = (datosEditados as any)[campo];
         }
       });
 
@@ -96,6 +112,37 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
         
         if (!response.ok) throw new Error('Error al actualizar información académica');
         logger.log('✅ Información académica actualizada');
+      }
+
+      // Actualizar familia si hay cambios
+      if (datosFamilia && estudiante.familia?.id_familia) {
+        const familiaId = estudiante.familia.id_familia;
+        
+        // Preparar datos de familia para el backend
+        const familiaPayload: any = {};
+        
+        // Mapear campos simples
+        if (datosFamilia.nombre_madre !== undefined) familiaPayload.nombre_madre = datosFamilia.nombre_madre;
+        if (datosFamilia.nombre_padre !== undefined) familiaPayload.nombre_padre = datosFamilia.nombre_padre;
+        if (datosFamilia.hermanos !== undefined) familiaPayload.hermanos = datosFamilia.hermanos;
+        if (datosFamilia.otros_familiares !== undefined) familiaPayload.otros_familiares = datosFamilia.otros_familiares;
+        if (datosFamilia.observaciones !== undefined) familiaPayload.observaciones = datosFamilia.observaciones;
+        
+        // Manejar descripciones incrementales (arrays)
+        if (datosFamilia.descripcion_madre !== undefined) {
+          familiaPayload.descripcion_madre = Array.isArray(datosFamilia.descripcion_madre) 
+            ? datosFamilia.descripcion_madre 
+            : [datosFamilia.descripcion_madre];
+        }
+        
+        if (datosFamilia.descripcion_padre !== undefined) {
+          familiaPayload.descripcion_padre = Array.isArray(datosFamilia.descripcion_padre)
+            ? datosFamilia.descripcion_padre
+            : [datosFamilia.descripcion_padre];
+        }
+
+        await familiaService.update(familiaId, familiaPayload);
+        logger.log('✅ Información familiar actualizada');
       }
       
       logger.log('✅ Cambios guardados exitosamente');
@@ -186,6 +233,7 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
     modoEdicion,
     datosEditados,
     handleCampoChange,
+    handleFamiliaChange,
     handleGuardar,
     handleToggleEdicion,
     handleGenerarInforme,

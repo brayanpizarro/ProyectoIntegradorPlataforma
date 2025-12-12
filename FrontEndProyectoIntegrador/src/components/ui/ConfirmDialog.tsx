@@ -1,4 +1,4 @@
-import { useState, useCallback, createElement } from 'react';
+import { useState, useCallback } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -19,7 +19,7 @@ interface ConfirmDialogOptions {
 
 interface UseConfirmDialogReturn {
   showConfirm: (options: ConfirmDialogOptions) => void;
-  ConfirmDialog: () => JSX.Element;
+  ConfirmDialog: React.FC;
 }
 
 /**
@@ -34,7 +34,7 @@ export function useConfirmDialog(): UseConfirmDialogReturn {
     setDialogState(options);
   }, []);
 
-  const handleConfirm = async () => {
+  const handleConfirm = useCallback(async () => {
     if (!dialogState) return;
     
     setLoading(true);
@@ -46,37 +46,48 @@ export function useConfirmDialog(): UseConfirmDialogReturn {
     } finally {
       setLoading(false);
     }
-  };
+  }, [dialogState]);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     setDialogState(null);
-  };
+    setLoading(false);
+  }, []);
 
-  const ConfirmDialog = () => 
-    createElement(Dialog, {
-      open: !!dialogState,
-      onClose: handleCancel,
-      children: [
-        createElement(DialogTitle, { key: 'title' }, dialogState?.title || 'Confirmar acción'),
-        createElement(DialogContent, { key: 'content' }, 
-          createElement(DialogContentText, {}, dialogState?.message)
-        ),
-        createElement(DialogActions, { key: 'actions' }, [
-          createElement(Button, {
-            key: 'cancel',
-            onClick: handleCancel,
-            disabled: loading,
-          }, dialogState?.cancelText || 'Cancelar'),
-          createElement(Button, {
-            key: 'confirm',
-            onClick: handleConfirm,
-            color: dialogState?.confirmColor || 'primary',
-            disabled: loading,
-            autoFocus: true,
-          }, dialogState?.confirmText || 'Confirmar'),
-        ]),
-      ],
-    });
+  const ConfirmDialog: React.FC = () => (
+    <Dialog 
+      open={!!dialogState} 
+      onClose={loading ? undefined : handleCancel}
+      maxWidth="sm"
+      fullWidth
+    >
+      <DialogTitle>
+        {dialogState?.title || 'Confirmar acción'}
+      </DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          {dialogState?.message}
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button 
+          onClick={handleCancel}
+          disabled={loading}
+          color="inherit"
+        >
+          {dialogState?.cancelText || 'Cancelar'}
+        </Button>
+        <Button 
+          onClick={handleConfirm}
+          color={dialogState?.confirmColor || 'primary'}
+          disabled={loading}
+          variant="contained"
+          autoFocus
+        >
+          {dialogState?.confirmText || 'Confirmar'}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
 
   return { showConfirm, ConfirmDialog };
 }
