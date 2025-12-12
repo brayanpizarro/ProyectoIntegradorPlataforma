@@ -1,4 +1,5 @@
 ﻿import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { LoadingSpinner, ErrorMessage } from '../components/ui';
 import {
   StudentHeader,
@@ -15,6 +16,8 @@ import {
 import { NuevoSemestreModal } from '../components/features/student-detail/components';
 
 const EstudianteDetail: React.FC = () => {
+  const navigate = useNavigate();
+  
   // ✅ REFACTORIZADO: Toda la lógica ahora está en hooks personalizados
   const {
     // Datos del estudiante
