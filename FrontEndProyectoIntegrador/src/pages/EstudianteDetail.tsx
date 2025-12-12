@@ -132,6 +132,7 @@ const EstudianteDetail: React.FC = () => {
         {seccionActiva === 'entrevistas' && canViewInterviews && (
           <InterviewsSection
             estudianteId={estudiante.id_estudiante}
+            estudiante={estudiante}
           />
         )}
       </div>

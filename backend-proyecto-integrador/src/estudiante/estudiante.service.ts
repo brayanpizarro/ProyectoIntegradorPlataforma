@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { CreateEstudianteDto } from './dto/create-estudiante.dto';
 import { UpdateEstudianteDto } from './dto/update-estudiante.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,6 +8,7 @@ import { FamiliaService } from '../familia/familia.service';
 import { InformacionAcademicaService } from '../informacion_academica/informacion_academica.service';
 import { HistorialAcademicoService } from '../historial_academico/historial_academico.service';
 import { InstitucionService } from '../institucion/institucion.service';
+import { EntrevistasService } from '../entrevistas/entrevistas.service';
 
 @Injectable()
 export class EstudianteService {
@@ -18,6 +19,8 @@ export class EstudianteService {
     private readonly informacionAcademicaService: InformacionAcademicaService,
     private readonly historialAcademicoService: HistorialAcademicoService,
     private readonly institucionService: InstitucionService,
+    @Inject(forwardRef(() => EntrevistasService))
+    private readonly entrevistasService: EntrevistasService,
   ) {}
 
   async create(createEstudianteDto: CreateEstudianteDto) {
@@ -34,6 +37,22 @@ export class EstudianteService {
 
     await this.historialAcademicoService.create({
       id_estudiante: estudianteGuardado.id_estudiante,
+    });
+
+    // Crear entrevista inicial automáticamente
+    await this.entrevistasService.create({
+      id_estudiante: estudianteGuardado.id_estudiante,
+      id_usuario: 1, // Usuario admin por defecto
+      fecha: new Date().toISOString(),
+      nombre_tutor: 'Tutor Asignado',
+      año: new Date().getFullYear(),
+      numero_entrevista: 1,
+      duracion_minutos: 60,
+      tipo_entrevista: 'presencial',
+      estado: 'programada',
+      observaciones: 'Entrevista inicial creada automáticamente',
+      temas_abordados: ['Entrevista inicial', 'Evaluación general'],
+      etiquetas: []
     });
 
     // Si se proporciona id_institucion en el DTO, no se crea institución por defecto
