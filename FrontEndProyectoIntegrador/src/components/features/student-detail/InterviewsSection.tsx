@@ -2,17 +2,19 @@
  * Sección de entrevistas
  * Lista de entrevistas con botón para agregar nueva
  */
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Typography, Button, Paper, Chip, Stack } from '@mui/material';
 import { Add as AddIcon, Visibility as VisibilityIcon, Edit as EditIcon, Article as ArticleIcon } from '@mui/icons-material';
+import { NuevaEntrevistaModal } from './components';
 
 interface InterviewsSectionProps {
-  onNuevaEntrevista: () => void;
   estudianteId: string | number;
 }
 
-export function InterviewsSection({ onNuevaEntrevista, estudianteId }: InterviewsSectionProps) {
+export function InterviewsSection({ estudianteId }: InterviewsSectionProps) {
   const navigate = useNavigate();
+  const [mostrarModalNuevaEntrevista, setMostrarModalNuevaEntrevista] = useState(false);
   
   const mockEntrevistas = [
     { id: '1', fecha: '2025.05.15', tipo: 'Seguimiento Académico', observaciones: 'Buen desempeño general. Estudiante motivado.' },
@@ -33,7 +35,7 @@ export function InterviewsSection({ onNuevaEntrevista, estudianteId }: Interview
         </Typography>
         <Button 
           startIcon={<AddIcon />}
-          onClick={onNuevaEntrevista}
+          onClick={() => setMostrarModalNuevaEntrevista(true)}
           variant="contained"
           color="primary"
           size="large"
@@ -117,7 +119,7 @@ export function InterviewsSection({ onNuevaEntrevista, estudianteId }: Interview
           </Typography>
           <Button 
             startIcon={<AddIcon />}
-            onClick={onNuevaEntrevista}
+            onClick={() => setMostrarModalNuevaEntrevista(true)}
             variant="contained"
             size="large"
           >
@@ -125,6 +127,13 @@ export function InterviewsSection({ onNuevaEntrevista, estudianteId }: Interview
           </Button>
         </Paper>
       )}
+
+      {/* Modal para crear nueva entrevista */}
+      <NuevaEntrevistaModal
+        open={mostrarModalNuevaEntrevista}
+        onClose={() => setMostrarModalNuevaEntrevista(false)}
+        estudianteId={estudianteId}
+      />
     </Box>
   );
 }
