@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Box } from '@mui/material';
 import { authService } from '../services/authService';
 import { apiService } from '../services/apiService';
 import { logger } from '../config';
@@ -11,7 +12,7 @@ import { LoadingState, ErrorState } from '../components/features/entrevista-work
 // Componentes del workspace
 import { TopNavbar, Sidebar, TabManager } from '../components/features/interview-workspace';
 
-export const EntrevistaWorkspace: React.FC = () => {
+export function EntrevistaWorkspace() {
   const navigate = useNavigate();
   const { id: estudianteId } = useParams();
   
@@ -69,7 +70,7 @@ export const EntrevistaWorkspace: React.FC = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-slate-50">
+    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', bgcolor: 'grey.50' }}>
       {/* ✅ NAVBAR SUPERIOR */}
       <TopNavbar 
         estudiante={estudiante}
@@ -77,7 +78,7 @@ export const EntrevistaWorkspace: React.FC = () => {
       />
       
       {/* ✅ ÁREA PRINCIPAL: Sidebar + Workspace */}
-      <div className="flex-1 flex overflow-hidden h-[calc(100vh-64px)] max-h-[calc(100vh-64px)]">
+      <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden', height: 'calc(100vh - 64px)', maxHeight: 'calc(100vh - 64px)' }}>
         {/* SIDEBAR IZQUIERDO */}
         <Sidebar 
           sections={sidebarSections}
@@ -87,7 +88,7 @@ export const EntrevistaWorkspace: React.FC = () => {
         />
         
         {/* ÁREA DE PESTAÑAS */}
-        <div className="flex-1 flex flex-col w-[calc(100%-280px)] max-w-[calc(100%-280px)] min-w-[400px] overflow-hidden">
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', width: 'calc(100% - 280px)', maxWidth: 'calc(100% - 280px)', minWidth: 400, overflow: 'hidden' }}>
           <TabManager
             workspace={workspace}
             onCloseTab={closeTab}
@@ -97,8 +98,8 @@ export const EntrevistaWorkspace: React.FC = () => {
             onSetActivePanel={setActivePanel}
             estudiante={estudiante}
           />
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   );
-};
+}

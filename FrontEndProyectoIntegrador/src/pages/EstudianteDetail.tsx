@@ -1,4 +1,5 @@
 ﻿import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { LoadingSpinner, ErrorMessage } from '../components/ui';
 import { 
   StudentHeader, 
@@ -14,6 +15,8 @@ import {
 } from '../components/features/student-detail';
 
 const EstudianteDetail: React.FC = () => {
+  const navigate = useNavigate();
+  
   // ✅ REFACTORIZADO: Toda la lógica ahora está en hooks personalizados
   const {
     // Datos del estudiante
@@ -160,18 +163,19 @@ const EstudianteDetail: React.FC = () => {
         {/* Entrevistas - Solo para administradores */}
         {seccionActiva === 'entrevistas' && canViewInterviews && (
           <InterviewsSection 
-            onNuevaEntrevista={() => setMostrarModalNuevaEntrevista(true)} 
+            onNuevaEntrevista={() => setMostrarModalNuevaEntrevista(true)}
+            estudianteId={estudiante.id_estudiante}
           />
         )}
       </div>
 
-      {/* MODALES (sin cambios) */}
+      {/* MODALES */}
       {mostrarModalNuevaEntrevista && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000]">
           <div className="bg-white rounded-xl p-8 max-w-[500px] w-[90%] shadow-2xl">
             <div className="flex justify-between items-center mb-6">
               <h3 className="m-0 text-2xl font-bold text-gray-800">
-                📝 Nueva Entrevista
+                ➕ Nueva Entrevista
               </h3>
               <button 
                 onClick={() => setMostrarModalNuevaEntrevista(false)}
@@ -181,16 +185,65 @@ const EstudianteDetail: React.FC = () => {
               </button>
             </div>
             
-            <p className="text-gray-600 mb-4">
-              Funcionalidad en desarrollo. Próximamente podrás crear y gestionar entrevistas.
-            </p>
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Fecha <span className="text-red-500">*</span>
+              </label>
+              <input 
+                type="date" 
+                defaultValue={new Date().toISOString().split('T')[0]}
+                className="w-full p-3 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-[var(--color-turquoise)] focus:border-[var(--color-turquoise)]"
+              />
+            </div>
 
-            <div className="flex justify-end gap-2">
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Entrevistador <span className="text-red-500">*</span>
+              </label>
+              <input 
+                type="text" 
+                defaultValue="Usuario Actual"
+                readOnly
+                className="w-full p-3 border border-gray-300 rounded-md text-sm bg-gray-50"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Temas Tratados (opcional)
+              </label>
+              <input 
+                type="text" 
+                placeholder="Ej: Rendimiento académico, situación familiar..."
+                className="w-full p-3 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-[var(--color-turquoise)] focus:border-[var(--color-turquoise)]"
+              />
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Observaciones Generales (opcional)
+              </label>
+              <textarea 
+                placeholder="Observaciones iniciales de la entrevista..."
+                className="w-full min-h-[100px] p-3 border border-gray-300 rounded-md text-sm font-inherit resize-y focus:ring-2 focus:ring-[var(--color-turquoise)] focus:border-[var(--color-turquoise)]"
+              />
+            </div>
+
+            <div className="flex gap-3 justify-end">
               <button 
                 onClick={() => setMostrarModalNuevaEntrevista(false)}
-                className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+                className="px-6 py-3 bg-gray-200 text-gray-700 border-none rounded-md cursor-pointer text-sm font-semibold hover:bg-gray-300 transition-colors"
               >
-                Cerrar
+                Cancelar
+              </button>
+              <button 
+                onClick={() => {
+                  setMostrarModalNuevaEntrevista(false);
+                  navigate(`/entrevista/${estudiante.id_estudiante}`);
+                }}
+                className="px-6 py-3 bg-[var(--color-turquoise)] text-white border-none rounded-md cursor-pointer text-sm font-semibold hover:bg-[var(--color-turquoise-light)] transition-colors"
+              >
+                Crear y Abrir Entrevista
               </button>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+import { Box, CircularProgress, Typography } from '@mui/material';
 
 interface LoadingStateProps {
   message?: string;
@@ -7,14 +7,18 @@ interface LoadingStateProps {
 /**
  * Loading state component for workspace
  */
-export const LoadingState: React.FC<LoadingStateProps> = ({ message = 'Preparando entrevista' }) => {
+export function LoadingState({ message = 'Preparando entrevista' }: LoadingStateProps) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <div className="text-center">
-        <div className="text-5xl mb-4">⏳</div>
-        <h2 className="text-2xl font-bold text-gray-900">Cargando workspace...</h2>
-        <p className="text-slate-600">{message}</p>
-      </div>
-    </div>
+    <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'grey.50' }}>
+      <Box sx={{ textAlign: 'center' }}>
+        <CircularProgress size={60} sx={{ mb: 3 }} />
+        <Typography variant="h4" fontWeight={600} gutterBottom>
+          Cargando workspace...
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          {message}
+        </Typography>
+      </Box>
+    </Box>
   );
-};
+}

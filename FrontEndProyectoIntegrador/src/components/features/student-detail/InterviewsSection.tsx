@@ -2,79 +2,129 @@
  * Sección de entrevistas
  * Lista de entrevistas con botón para agregar nueva
  */
-import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Box, Typography, Button, Paper, Chip, Stack } from '@mui/material';
+import { Add as AddIcon, Visibility as VisibilityIcon, Edit as EditIcon, Article as ArticleIcon } from '@mui/icons-material';
 
 interface InterviewsSectionProps {
   onNuevaEntrevista: () => void;
+  estudianteId: string | number;
 }
 
-export const InterviewsSection: React.FC<InterviewsSectionProps> = ({ onNuevaEntrevista }) => {
+export function InterviewsSection({ onNuevaEntrevista, estudianteId }: InterviewsSectionProps) {
+  const navigate = useNavigate();
+  
   const mockEntrevistas = [
-    { fecha: '2025.05.15', tipo: 'Seguimiento Académico', observaciones: 'Buen desempeño general. Estudiante motivado.' },
-    { fecha: '2025.03.10', tipo: 'Inicio de Semestre', observaciones: 'Estudiante con expectativas altas para el semestre.' },
-    { fecha: '2024.12.05', tipo: 'Cierre de Semestre', observaciones: 'Excelente rendimiento. Aprobó todos los ramos.' },
+    { id: '1', fecha: '2025.05.15', tipo: 'Seguimiento Académico', observaciones: 'Buen desempeño general. Estudiante motivado.' },
+    { id: '2', fecha: '2025.03.10', tipo: 'Inicio de Semestre', observaciones: 'Estudiante con expectativas altas para el semestre.' },
+    { id: '3', fecha: '2024.12.05', tipo: 'Cierre de Semestre', observaciones: 'Excelente rendimiento. Aprobó todos los ramos.' },
   ];
 
+  const handleEditarEntrevista = (entrevistaId: string) => {
+    // Navegar al workspace de entrevistas con el ID del estudiante y la entrevista
+    navigate(`/entrevista/${estudianteId}?entrevistaId=${entrevistaId}`);
+  };
+
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Entrevistas</h2>
-        <button 
+    <Box>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h4" fontWeight={700}>
+          Entrevistas
+        </Typography>
+        <Button 
+          startIcon={<AddIcon />}
           onClick={onNuevaEntrevista}
-          className="px-5 py-2.5 bg-[var(--color-turquoise)] text-white rounded-lg hover:bg-[var(--color-turquoise-light)] transition-colors text-sm font-medium"
+          variant="contained"
+          color="primary"
+          size="large"
         >
-          ➕ Nueva Entrevista
-        </button>
-      </div>
+          Nueva Entrevista
+        </Button>
+      </Box>
 
-      <div className="space-y-4">
-        {mockEntrevistas.map((entrevista, idx) => (
-          <div 
-            key={idx} 
-            className="bg-white p-6 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow"
+      <Stack spacing={2}>
+        {mockEntrevistas.map((entrevista) => (
+          <Paper 
+            key={entrevista.id}
+            elevation={2}
+            sx={{ 
+              p: 3, 
+              borderRadius: 2,
+              transition: 'all 0.2s',
+              '&:hover': {
+                elevation: 4,
+                transform: 'translateY(-2px)'
+              }
+            }}
           >
-            <div className="flex justify-between items-start mb-3">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">{entrevista.tipo}</h3>
-                <p className="text-sm text-gray-500">Fecha: {entrevista.fecha}</p>
-              </div>
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                Completada
-              </span>
-            </div>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+              <Box>
+                <Typography variant="h6" fontWeight={600} gutterBottom>
+                  {entrevista.tipo}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Fecha: {entrevista.fecha}
+                </Typography>
+              </Box>
+              <Chip 
+                label="Completada" 
+                color="primary" 
+                size="small"
+                sx={{ fontWeight: 600 }}
+              />
+            </Box>
             
-            <div className="mt-4">
-              <p className="text-sm font-medium text-gray-700 mb-2">Observaciones:</p>
-              <p className="text-sm text-gray-600">{entrevista.observaciones}</p>
-            </div>
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="body2" fontWeight={600} color="text.secondary" gutterBottom>
+                Observaciones:
+              </Typography>
+              <Typography variant="body2" color="text.primary">
+                {entrevista.observaciones}
+              </Typography>
+            </Box>
 
-            <div className="mt-4 flex gap-3">
-              <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm">
-                👁️ Ver Detalle
-              </button>
-              <button className="px-4 py-2 bg-[var(--color-turquoise)]/10 text-[var(--color-turquoise)] rounded-lg hover:bg-[var(--color-turquoise)]/20 transition-colors text-sm">
-                ✏️ Editar
-              </button>
-            </div>
-          </div>
+            <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
+              <Button 
+                startIcon={<VisibilityIcon />}
+                variant="outlined"
+                size="small"
+                onClick={() => handleEditarEntrevista(entrevista.id)}
+              >
+                Ver Detalle
+              </Button>
+              <Button 
+                startIcon={<EditIcon />}
+                variant="outlined"
+                color="primary"
+                size="small"
+                onClick={() => handleEditarEntrevista(entrevista.id)}
+              >
+                Editar
+              </Button>
+            </Box>
+          </Paper>
         ))}
-      </div>
+      </Stack>
 
       {mockEntrevistas.length === 0 && (
-        <div className="bg-white p-12 rounded-lg shadow-md border border-gray-200 text-center">
-          <div className="text-6xl mb-4">📋</div>
-          <h3 className="text-xl font-bold mb-2">No hay entrevistas registradas</h3>
-          <p className="text-gray-500 mb-6">
+        <Paper elevation={2} sx={{ p: 8, borderRadius: 2, textAlign: 'center' }}>
+          <ArticleIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
+          <Typography variant="h5" fontWeight={700} gutterBottom>
+            No hay entrevistas registradas
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
             Comienza agregando la primera entrevista del estudiante.
-          </p>
-          <button 
+          </Typography>
+          <Button 
+            startIcon={<AddIcon />}
             onClick={onNuevaEntrevista}
-            className="px-6 py-3 bg-[var(--color-turquoise)] text-white rounded-lg hover:bg-[var(--color-turquoise-light)] transition-colors text-sm font-medium"
+            variant="contained"
+            size="large"
           >
-            ➕ Agregar Primera Entrevista
-          </button>
-        </div>
+            Agregar Primera Entrevista
+          </Button>
+        </Paper>
       )}
-    </div>
+    </Box>
   );
-};
+}
