@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -8,8 +8,7 @@ import {
   TextField,
   Alert,
   Box,
-  Typography,
-  Grid
+  Typography
 } from '@mui/material';
 import { apiService } from '../../../services/apiService';
 
@@ -32,12 +31,12 @@ interface FormData {
 
 
 
-export const CreateEstudianteModal: React.FC<CreateEstudianteModalProps> = ({
+export function CreateEstudianteModal({
   open,
   onClose,
   onSuccess,
   generacion
-}) => {
+}: CreateEstudianteModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -109,28 +108,28 @@ export const CreateEstudianteModal: React.FC<CreateEstudianteModalProps> = ({
       };
 
       console.log('📝 Datos a enviar al backend:', estudianteData);
-      
+
       const nuevoEstudiante = await apiService.createEstudiante(estudianteData);
-      
+
       console.log('✅ Estudiante creado exitosamente:', nuevoEstudiante);
       console.log('🔄 Llamando onSuccess para actualizar la lista...');
 
       // Cerrar modal primero
       handleClose();
-      
+
       // Luego actualizar datos
       onSuccess();
     } catch (err: any) {
       console.error('❌ Error completo al crear estudiante:', err);
       console.error('📄 Respuesta del servidor:', err.response);
-      
+
       let errorMessage = 'Error al crear el estudiante';
       if (err.response && err.response.data && err.response.data.message) {
         errorMessage = err.response.data.message;
       } else if (err.message) {
         errorMessage = err.message;
       }
-      
+
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -167,24 +166,20 @@ export const CreateEstudianteModal: React.FC<CreateEstudianteModalProps> = ({
             </Alert>
           )}
 
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Typography variant="subtitle2" sx={{ mb: 2, color: 'text.secondary' }}>
-                Información personal del estudiante
-              </Typography>
-            </Grid>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
+              Información personal del estudiante
+            </Typography>
 
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Nombre Completo *"
-                value={formData.nombre}
-                onChange={handleChange('nombre')}
-                placeholder="Ej: Juan Pérez González"
-              />
-            </Grid>
+            <TextField
+              fullWidth
+              label="Nombre Completo *"
+              value={formData.nombre}
+              onChange={handleChange('nombre')}
+              placeholder="Ej: Juan Pérez González"
+            />
 
-            <Grid item xs={12} md={6}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
               <TextField
                 fullWidth
                 label="RUT *"
@@ -192,9 +187,7 @@ export const CreateEstudianteModal: React.FC<CreateEstudianteModalProps> = ({
                 onChange={handleChange('rut')}
                 placeholder="Ej: 12.345.678-9"
               />
-            </Grid>
 
-            <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
                 label="Email *"
@@ -203,9 +196,9 @@ export const CreateEstudianteModal: React.FC<CreateEstudianteModalProps> = ({
                 onChange={handleChange('email')}
                 placeholder="ejemplo@correo.com"
               />
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} md={6}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
               <TextField
                 fullWidth
                 label="Teléfono *"
@@ -213,9 +206,7 @@ export const CreateEstudianteModal: React.FC<CreateEstudianteModalProps> = ({
                 onChange={handleChange('telefono')}
                 placeholder="+56912345678"
               />
-            </Grid>
 
-            <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
                 label="Fecha de Nacimiento *"
@@ -224,8 +215,8 @@ export const CreateEstudianteModal: React.FC<CreateEstudianteModalProps> = ({
                 onChange={handleChange('fecha_de_nacimiento')}
                 InputLabelProps={{ shrink: true }}
               />
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </Box>
       </DialogContent>
 
@@ -235,7 +226,7 @@ export const CreateEstudianteModal: React.FC<CreateEstudianteModalProps> = ({
             Cancelar
           </Button>
 
-          <Button 
+          <Button
             onClick={handleSubmit}
             variant="contained"
             disabled={loading}

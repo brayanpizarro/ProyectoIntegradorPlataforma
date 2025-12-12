@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Box, TextField, Button, Alert, Link, CircularProgress, Stack } from '@mui/material';
+import { Login as LoginIcon } from '@mui/icons-material';
 import { authService } from '../../../../services/authService';
 import { logger } from '../../../../config';
 import type { LoginCredentials } from '../../../../types';
+import { LoginFormContainer } from '../shared';
 
-export const LoginForm: React.FC = () => {
+export function LoginForm() {
   const [credentials, setCredentials] = useState<LoginCredentials>({
     email: '',
     password: ''
@@ -72,80 +75,140 @@ export const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#667eea] to-[#764ba2] p-5">
-      <div className="bg-white rounded-[20px] shadow-[0_20px_40px_rgba(0,0,0,0.1)] p-10 w-full max-w-[400px] animate-[slideIn_0.6s_ease-out]">
-        <div className="text-center mb-8">
-          <h1 className="text-[#2c3e50] text-[2rem] mb-2.5 font-bold">Iniciar Sesión</h1>
-          <p className="text-[#6c757d] text-base m-0">Plataforma de Gestión - Fundación</p>
-        </div>
-        
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-          <div className="flex flex-col gap-2">
-            <label htmlFor="email" className="text-[#495057] font-semibold text-sm">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={credentials.email}
-              onChange={handleInputChange}
-              placeholder="tu@email.com"
-              disabled={loading}
-              required
-              className="px-4 py-3 border-2 border-[#e9ecef] rounded-[10px] text-base transition-all duration-300 bg-[#f8f9fa] focus:outline-none focus:border-[#667eea] focus:bg-white focus:shadow-[0_0_0_3px_rgba(102,126,234,0.1)] disabled:opacity-60 disabled:cursor-not-allowed"
-            />
-          </div>
-          
-          <div className="flex flex-col gap-2">
-            <label htmlFor="password" className="text-[#495057] font-semibold text-sm">Contraseña</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={credentials.password}
-              onChange={handleInputChange}
-              placeholder="Tu contraseña"
-              disabled={loading}
-              required
-              className="px-4 py-3 border-2 border-[#e9ecef] rounded-[10px] text-base transition-all duration-300 bg-[#f8f9fa] focus:outline-none focus:border-[#667eea] focus:bg-white focus:shadow-[0_0_0_3px_rgba(102,126,234,0.1)] disabled:opacity-60 disabled:cursor-not-allowed"
-            />
-          </div>
-          
-          {error && (
-            <div className="bg-[#f8d7da] text-[#721c24] px-4 py-3 rounded-lg text-sm text-center border border-[#f5c6cb]">
-              {error}
-            </div>
-          )}
-          
-          <button
-            type="submit"
-            className="bg-gradient-to-br from-[#667eea] to-[#764ba2] text-white border-none px-5 py-3.5 rounded-[10px] text-base font-semibold cursor-pointer transition-all duration-300 mt-2.5 hover:enabled:-translate-y-0.5 hover:enabled:shadow-[0_8px_20px_rgba(102,126,234,0.3)] disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
-            disabled={loading}
+    <LoginFormContainer
+      title="Iniciar Sesión"
+      subtitle="Plataforma de Gestión - Fundación"
+      icon={<LoginIcon sx={{ fontSize: 64, color: '#667eea' }} />}
+    >
+      <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+        <TextField
+          fullWidth
+          type="email"
+          id="email"
+          name="email"
+          label="Email"
+          value={credentials.email}
+          onChange={handleInputChange}
+          placeholder="tu@email.com"
+          disabled={loading}
+          required
+          autoComplete="email"
+          variant="outlined"
+          error={!!error}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              backgroundColor: '#f8f9fa',
+              '&:hover': {
+                backgroundColor: '#fff'
+              },
+              '&.Mui-focused': {
+                backgroundColor: '#fff'
+              }
+            }
+          }}
+        />
+
+        <TextField
+          fullWidth
+          type="password"
+          id="password"
+          name="password"
+          label="Contraseña"
+          value={credentials.password}
+          onChange={handleInputChange}
+          placeholder="Tu contraseña"
+          disabled={loading}
+          required
+          autoComplete="current-password"
+          variant="outlined"
+          error={!!error}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              backgroundColor: '#f8f9fa',
+              '&:hover': {
+                backgroundColor: '#fff'
+              },
+              '&.Mui-focused': {
+                backgroundColor: '#fff'
+              }
+            }
+          }}
+        />
+
+        {error && (
+          <Alert severity="error" sx={{ mt: 1 }}>
+            {error}
+          </Alert>
+        )}
+
+        <Button
+          fullWidth
+          type="submit"
+          variant="contained"
+          size="large"
+          disabled={loading}
+          startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
+          sx={{
+            mt: 1,
+            py: 1.5,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            fontWeight: 600,
+            fontSize: '1rem',
+            textTransform: 'none',
+            borderRadius: 2,
+            boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 8px 20px rgba(102, 126, 234, 0.4)',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+            },
+            '&:disabled': {
+              background: 'rgba(0, 0, 0, 0.12)',
+              transform: 'none'
+            }
+          }}
+        >
+          {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+        </Button>
+
+        <Stack spacing={1} sx={{ mt: 2, textAlign: 'center' }}>
+          <Link
+            component="button"
+            type="button"
+            variant="body2"
+            onClick={() => navigate('/solicitar-recuperacion')}
+            sx={{
+              color: '#667eea',
+              textDecoration: 'underline',
+              cursor: 'pointer',
+              transition: 'color 0.3s ease',
+              '&:hover': {
+                color: '#764ba2'
+              }
+            }}
           >
-            {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-          </button>
-        </form>
-        
-        <div className="mt-6 text-center flex flex-col gap-2.5">
-          <p>
-            <button
-              type="button"
-              className="bg-transparent border-none text-[#667eea] underline cursor-pointer text-sm transition-colors duration-300 hover:text-[#764ba2]"
-              onClick={() => navigate('/solicitar-recuperacion')}
-            >
-              ¿Olvidaste tu contraseña?
-            </button>
-          </p>
-          <p>
-            <button
-              type="button"
-              className="bg-transparent border-none text-[#667eea] underline cursor-pointer text-sm transition-colors duration-300 hover:text-[#764ba2]"
-              onClick={() => navigate('/login-admin')}
-            >
-              Acceso Administrador
-            </button>
-          </p>
-        </div>
-      </div>
-    </div>
+            ¿Olvidaste tu contraseña?
+          </Link>
+          <Link
+            component="button"
+            type="button"
+            variant="body2"
+            onClick={() => navigate('/login-admin')}
+            sx={{
+              color: '#667eea',
+              textDecoration: 'underline',
+              cursor: 'pointer',
+              transition: 'color 0.3s ease',
+              '&:hover': {
+                color: '#764ba2'
+              }
+            }}
+          >
+            Acceso Administrador
+          </Link>
+        </Stack>
+      </Box>
+    </LoginFormContainer>
   );
-};
+}

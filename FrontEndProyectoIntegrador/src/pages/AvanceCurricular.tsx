@@ -3,33 +3,36 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { apiService } from '../services/apiService';
 import type { Estudiante } from '../types';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
-import Chip from '@mui/material/Chip';
-import Typography from '@mui/material/Typography';
-import LinearProgress from '@mui/material/LinearProgress';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import IconButton from '@mui/material/IconButton';
-import Button from '@mui/material/Button';
-import Fab from '@mui/material/Fab';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
-import EditIcon from '@mui/icons-material/Edit';
-import SaveIcon from '@mui/icons-material/Save';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import SettingsIcon from '@mui/icons-material/Settings';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import type { DropResult } from '@hello-pangea/dnd';
-import { 
-  SemesterCard, 
-  SubjectCard, 
+import {
+  Box,
+  Grid,
+  Chip,
+  Typography,
+  LinearProgress,
+  Tabs,
+  Tab,
+  IconButton,
+  Button,
+  Fab,
+  Snackbar,
+  Alert
+} from '@mui/material';
+import {
+  Edit as EditIcon,
+  Save as SaveIcon,
+  Delete as DeleteIcon,
+  Add as AddIcon,
+  Settings as SettingsIcon
+} from '@mui/icons-material';
+import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
+import {
+  SemesterCard,
+  SubjectCard,
   StatsCard,
   EditSubjectModal,
   AddSubjectModal,
   SemesterModal,
-  CreateSemesterModal 
+  CreateSemesterModal
 } from '../components/features/avance-curricular';
 
 //  INTERFACES PARA AVANCE CURRICULAR

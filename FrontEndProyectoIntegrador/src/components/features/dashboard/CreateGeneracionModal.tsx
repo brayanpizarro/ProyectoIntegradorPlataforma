@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -17,11 +17,11 @@ interface CreateGeneracionModalProps {
   onSuccess: (year: number) => void;
 }
 
-export const CreateGeneracionModal: React.FC<CreateGeneracionModalProps> = ({
+export function CreateGeneracionModal({
   open,
   onClose,
   onSuccess
-}) => {
+}: CreateGeneracionModalProps) {
   const [año, setAño] = useState('');
   const [error, setError] = useState('');
 
@@ -89,8 +89,8 @@ export const CreateGeneracionModal: React.FC<CreateGeneracionModalProps> = ({
         <Button onClick={handleClose} color="inherit">
           Cancelar
         </Button>
-        <Button 
-          onClick={handleSubmit} 
+        <Button
+          onClick={handleSubmit}
           variant="contained"
           sx={{
             bgcolor: 'var(--color-turquoise)',

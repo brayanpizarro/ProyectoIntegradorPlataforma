@@ -2,70 +2,150 @@
  * Barra de navegación superior del Dashboard
  * Muestra logo, navegación y acciones del usuario
  */
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AppBar, Toolbar, Box, Typography, Button, Chip } from '@mui/material';
+import {
+  Dashboard as DashboardIcon,
+  People as PeopleIcon,
+  AccountCircle as AccountCircleIcon,
+  Logout as LogoutIcon,
+  AccountBalance as AccountBalanceIcon
+} from '@mui/icons-material';
 
 interface DashboardNavbarProps {
   usuario: any;
   onLogout: () => void;
 }
 
-export const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ usuario, onLogout }) => {
+export function DashboardNavbar({ usuario, onLogout }: DashboardNavbarProps) {
   const navigate = useNavigate();
   // Verificar role de manera flexible (compatibilidad temporal)
   const userRole = usuario?.role || usuario?.tipo || usuario?.rol;
   const isAdmin = userRole === 'admin';
-  
+
   // Log para debug
   console.log('🔍 Usuario en navbar:', usuario);
   console.log('🔍 Role detectado:', userRole);
   console.log('🔍 Es admin?:', isAdmin);
 
   return (
-    <nav className="bg-[var(--color-turquoise)] text-white px-8 py-4 flex justify-between items-center shadow-md">
-      <div className="flex items-center gap-4">
-        <h1 className="text-2xl font-bold cursor-pointer" onClick={() => navigate('/dashboard')}>
-          🏛️ Fundación
-        </h1>
-        <div className="flex items-center gap-2 ml-4">
-          <button
-            className="bg-transparent border border-white/30 text-white px-4 py-2 rounded-lg hover:bg-white/10 transition-colors text-sm"
+    <AppBar
+      position="static"
+      elevation={2}
+      sx={{
+        backgroundColor: '#4db6ac',
+        color: 'white'
+      }}
+    >
+      <Toolbar sx={{ px: { xs: 2, md: 4 }, py: 1 }}>
+        {/* Logo y navegación */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexGrow: 1 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              cursor: 'pointer',
+              '&:hover': { opacity: 0.9 }
+            }}
             onClick={() => navigate('/dashboard')}
           >
-            📊 Dashboard
-          </button>
-          {isAdmin && (
-            <button
-              className="bg-transparent border border-white/30 text-white px-4 py-2 rounded-lg hover:bg-white/10 transition-colors text-sm"
-              onClick={() => navigate('/admin/usuarios')}
-            >
-              👥 Gestión de Usuarios
-            </button>
-          )}
-        </div>
-      </div>
+            <AccountBalanceIcon sx={{ fontSize: 32 }} />
+            <Typography variant="h5" fontWeight="bold">
+              Fundación
+            </Typography>
+          </Box>
 
-      <div className="flex items-center gap-3">
-        <div className="text-sm px-3 py-1 bg-white/10 rounded-lg">
-          <span className="opacity-80">{userRole || 'Usuario'}:</span>{' '}
-          <span className="font-semibold">{usuario?.email || 'Cargando...'}</span>
-        </div>
-        
-        <button
-          className="bg-white/10 text-white px-4 py-2 rounded-lg hover:bg-white/20 transition-colors text-sm flex items-center gap-2"
-          onClick={() => navigate('/perfil')}
-          title="Ver perfil"
-        >
-          👤 Perfil
-        </button>
-        
-        <button
-          onClick={onLogout}
-          className="bg-[var(--color-coral-dark)] text-white px-4 py-2 rounded-lg hover:bg-[var(--color-coral)] transition-colors text-sm font-medium"
-        >
-          🚪 Cerrar Sesión
-        </button>
-      </div>
-    </nav>
+          <Box sx={{ display: 'flex', gap: 1, ml: 2 }}>
+            <Button
+              variant="outlined"
+              startIcon={<DashboardIcon />}
+              onClick={() => navigate('/dashboard')}
+              sx={{
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+                color: 'white',
+                textTransform: 'none',
+                '&:hover': {
+                  borderColor: 'rgba(255, 255, 255, 0.5)',
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                }
+              }}
+            >
+              Dashboard
+            </Button>
+            {isAdmin && (
+              <Button
+                variant="outlined"
+                startIcon={<PeopleIcon />}
+                onClick={() => navigate('/admin/usuarios')}
+                sx={{
+                  borderColor: 'rgba(255, 255, 255, 0.3)',
+                  color: 'white',
+                  textTransform: 'none',
+                  '&:hover': {
+                    borderColor: 'rgba(255, 255, 255, 0.5)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                  }
+                }}
+              >
+                Gestión de Usuarios
+              </Button>
+            )}
+          </Box>
+        </Box>
+
+        {/* Información de usuario y acciones */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Chip
+            label={
+              <Box component="span">
+                <Box component="span" sx={{ opacity: 0.8 }}>{userRole || 'Usuario'}:</Box>
+                {' '}
+                <Box component="span" sx={{ fontWeight: 600 }}>{usuario?.email || 'Cargando...'}</Box>
+              </Box>
+            }
+            sx={{
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              color: 'white',
+              fontSize: '0.875rem'
+            }}
+          />
+
+          <Button
+            variant="text"
+            startIcon={<AccountCircleIcon />}
+            onClick={() => navigate('/perfil')}
+            title="Ver perfil"
+            sx={{
+              color: 'white',
+              textTransform: 'none',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.2)'
+              }
+            }}
+          >
+            Perfil
+          </Button>
+
+          <Button
+            variant="contained"
+            startIcon={<LogoutIcon />}
+            onClick={onLogout}
+            sx={{
+              backgroundColor: '#ff6f61',
+              color: 'white',
+              textTransform: 'none',
+              fontWeight: 500,
+              '&:hover': {
+                backgroundColor: '#e55b4e'
+              }
+            }}
+          >
+            Cerrar Sesión
+          </Button>
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
-};
+}

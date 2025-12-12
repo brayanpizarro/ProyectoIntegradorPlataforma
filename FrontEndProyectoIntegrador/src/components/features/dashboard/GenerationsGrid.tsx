@@ -2,8 +2,10 @@
  * Grid de generaciones con mensaje de resultados vacíos
  * Muestra tarjetas de generaciones o mensaje cuando no hay resultados
  */
-import React from 'react';
+
 import { useNavigate } from 'react-router-dom';
+import { Box, Paper, Typography, Button } from '@mui/material';
+import { Search as SearchIcon, Clear as ClearIcon } from '@mui/icons-material';
 import { GenerationCard } from './GenerationCard';
 
 interface Generacion {
@@ -19,37 +21,65 @@ interface GenerationsGridProps {
   onAddEstudiante?: (año: number) => void;
 }
 
-export const GenerationsGrid: React.FC<GenerationsGridProps> = ({ 
-  generaciones, 
+export function GenerationsGrid({
+  generaciones,
   onLimpiarFiltros,
   onAddEstudiante
-}) => {
+}: GenerationsGridProps) {
   const navigate = useNavigate();
 
   // Mensaje cuando no hay resultados
   if (generaciones.length === 0) {
     return (
-      <div className="bg-white p-12 rounded-lg shadow-md border border-gray-200 text-center">
-        <div className="text-6xl mb-4">🔍</div>
-        <h3 className="text-xl font-bold mb-2">
+      <Paper
+        elevation={2}
+        sx={{
+          p: 6,
+          textAlign: 'center',
+          border: '1px solid',
+          borderColor: 'grey.200'
+        }}
+      >
+        <SearchIcon sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
+        <Typography variant="h5" fontWeight="bold" gutterBottom>
           No se encontraron generaciones
-        </h3>
-        <p className="text-gray-500 mb-6">
+        </Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
           Intenta ajustar los filtros de búsqueda para encontrar lo que buscas.
-        </p>
-        <button
+        </Typography>
+        <Button
+          variant="contained"
+          startIcon={<ClearIcon />}
           onClick={onLimpiarFiltros}
-          className="bg-[var(--color-turquoise)] text-white px-6 py-3 rounded-lg hover:bg-[var(--color-turquoise-light)] transition-colors text-sm font-medium"
+          sx={{
+            backgroundColor: '#4db6ac',
+            textTransform: 'none',
+            fontWeight: 500,
+            '&:hover': {
+              backgroundColor: '#80cbc4'
+            }
+          }}
         >
           Limpiar filtros
-        </button>
-      </div>
+        </Button>
+      </Paper>
     );
   }
 
   // Grid de generaciones
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: {
+          xs: '1fr',
+          sm: 'repeat(2, 1fr)',
+          md: 'repeat(3, 1fr)',
+          lg: 'repeat(4, 1fr)'
+        },
+        gap: 3
+      }}
+    >
       {generaciones.map((generacion) => (
         <GenerationCard
           key={generacion.año}
@@ -61,6 +91,6 @@ export const GenerationsGrid: React.FC<GenerationsGridProps> = ({
           onAddEstudiante={onAddEstudiante}
         />
       ))}
-    </div>
+    </Box>
   );
-};
+}

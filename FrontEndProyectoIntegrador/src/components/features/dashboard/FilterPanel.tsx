@@ -2,7 +2,8 @@
  * Panel de filtros y búsqueda para el Dashboard
  * Permite buscar, filtrar y ordenar generaciones
  */
-import React from 'react';
+import { Paper, Box, Typography, TextField, MenuItem, Button, Alert } from '@mui/material';
+import { Search as SearchIcon, Clear as ClearIcon } from '@mui/icons-material';
 
 interface FilterPanelProps {
   busqueda: string;
@@ -15,7 +16,7 @@ interface FilterPanelProps {
   onLimpiarFiltros: () => void;
 }
 
-export const FilterPanel: React.FC<FilterPanelProps> = ({
+export function FilterPanel({
   busqueda,
   filtroEstado,
   ordenarPor,
@@ -24,72 +25,98 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   onFiltroEstadoChange,
   onOrdenarPorChange,
   onLimpiarFiltros,
-}) => {
+}: FilterPanelProps) {
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200 mb-8">
-      <h3 className="text-xl font-bold mb-4">
-        🔍 Filtros y Búsqueda
-      </h3>
+    <Paper
+      elevation={2}
+      sx={{
+        p: 3,
+        mb: 4,
+        border: '1px solid',
+        borderColor: 'grey.200'
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+        <SearchIcon sx={{ color: '#4db6ac' }} />
+        <Typography variant="h6" fontWeight="bold">
+          Filtros y Búsqueda
+        </Typography>
+      </Box>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' },
+          gap: 2,
+          alignItems: 'end'
+        }}
+      >
         {/* Búsqueda por año */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Buscar por año:
-          </label>
-          <input
-            type="text"
-            placeholder="Ej: 2024, 2023..."
-            value={busqueda}
-            onChange={(e) => onBusquedaChange(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[var(--color-turquoise)] focus:border-[var(--color-turquoise)] outline-none"
-          />
-        </div>
+        <TextField
+          fullWidth
+          label="Buscar por año"
+          placeholder="Ej: 2024, 2023..."
+          value={busqueda}
+          onChange={(e) => onBusquedaChange(e.target.value)}
+          size="small"
+          variant="outlined"
+        />
 
         {/* Filtro por estado */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Estado:
-          </label>
-          <select
-            value={filtroEstado}
-            onChange={(e) => onFiltroEstadoChange(e.target.value as any)}
-            className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[var(--color-turquoise)] focus:border-[var(--color-turquoise)] outline-none"
-          >
-            <option value="todas">Todas las generaciones</option>
-            <option value="activas">Solo activas</option>
-            <option value="finalizadas">Solo finalizadas</option>
-          </select>
-        </div>
+        <TextField
+          fullWidth
+          select
+          label="Estado"
+          value={filtroEstado}
+          onChange={(e) => onFiltroEstadoChange(e.target.value as any)}
+          size="small"
+          variant="outlined"
+        >
+          <MenuItem value="todas">Todas las generaciones</MenuItem>
+          <MenuItem value="activas">Solo activas</MenuItem>
+          <MenuItem value="finalizadas">Solo finalizadas</MenuItem>
+        </TextField>
 
         {/* Ordenar por */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Ordenar por:
-          </label>
-          <select
-            value={ordenarPor}
-            onChange={(e) => onOrdenarPorChange(e.target.value as any)}
-            className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[var(--color-turquoise)] focus:border-[var(--color-turquoise)] outline-none"
-          >
-            <option value="año">Año (más reciente)</option>
-            <option value="estudiantes">Cantidad de estudiantes</option>
-          </select>
-        </div>
+        <TextField
+          fullWidth
+          select
+          label="Ordenar por"
+          value={ordenarPor}
+          onChange={(e) => onOrdenarPorChange(e.target.value as any)}
+          size="small"
+          variant="outlined"
+        >
+          <MenuItem value="año">Año (más reciente)</MenuItem>
+          <MenuItem value="estudiantes">Cantidad de estudiantes</MenuItem>
+        </TextField>
 
         {/* Botón limpiar filtros */}
-        <div>
-          <button
-            onClick={onLimpiarFiltros}
-            className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-gray-50 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
-          >
-            🗑️ Limpiar filtros
-          </button>
-        </div>
-      </div>
+        <Button
+          fullWidth
+          variant="outlined"
+          startIcon={<ClearIcon />}
+          onClick={onLimpiarFiltros}
+          sx={{
+            textTransform: 'none',
+            borderColor: 'grey.300',
+            color: 'text.secondary',
+            '&:hover': {
+              borderColor: 'grey.400',
+              backgroundColor: 'grey.50'
+            }
+          }}
+        >
+          Limpiar filtros
+        </Button>
+      </Box>
 
       {/* Resultados de búsqueda */}
-      <div className="mt-4 px-4 py-3 bg-gray-100 rounded-lg text-sm text-gray-600">
+      <Alert
+        severity="info"
+        icon={false}
+        sx={{ mt: 2, backgroundColor: 'grey.100', color: 'text.secondary' }}
+      >
         <strong>{resultadosCount}</strong> generación(es) encontrada(s)
         {busqueda && (
           <span> • Búsqueda: "{busqueda}"</span>
@@ -97,7 +124,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
         {filtroEstado !== 'todas' && (
           <span> • Estado: {filtroEstado}</span>
         )}
-      </div>
-    </div>
+      </Alert>
+    </Paper>
   );
-};
+}

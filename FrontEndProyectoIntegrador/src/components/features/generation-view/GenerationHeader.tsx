@@ -1,4 +1,6 @@
 import React from 'react';
+import { Box, Breadcrumbs, Link, Typography, Button, Paper } from '@mui/material';
+import { NavigateNext as NavigateNextIcon, Add as AddIcon, Folder as FolderIcon, People as PeopleIcon } from '@mui/icons-material';
 
 interface GenerationHeaderProps {
   generationYear: number;
@@ -11,53 +13,94 @@ interface GenerationHeaderProps {
  * Header component for generation view
  * Shows generation year, total students, and action buttons
  */
-export const GenerationHeader: React.FC<GenerationHeaderProps> = ({
+export function GenerationHeader({
   generationYear,
   totalStudents,
   onBack,
   onAddStudent,
-}) => {
+}: GenerationHeaderProps) {
   return (
-    <div className="mb-8">
+    <Box sx={{ mb: 4 }}>
       {/* Breadcrumb / Navigation */}
-      <div className="flex items-center gap-2 mb-4 text-sm text-gray-600">
-        <button 
+      <Breadcrumbs
+        separator={<NavigateNextIcon fontSize="small" />}
+        sx={{ mb: 2 }}
+      >
+        <Link
+          component="button"
           onClick={onBack}
-          className="hover:text-[var(--color-turquoise)] transition-colors flex items-center gap-1"
+          underline="hover"
+          color="text.secondary"
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            cursor: 'pointer',
+            transition: 'color 0.3s ease',
+            '&:hover': {
+              color: '#4db6ac'
+            }
+          }}
         >
-          <span>← Dashboard</span>
-        </button>
-        <span>/</span>
-        <span className="text-gray-900 font-medium">Generación {generationYear}</span>
-      </div>
+          Dashboard
+        </Link>
+        <Typography color="text.primary" fontWeight={500}>
+          Generación {generationYear}
+        </Typography>
+      </Breadcrumbs>
 
       {/* Header con estilo de carpeta */}
-      <div className="bg-gradient-to-r from-[var(--color-turquoise)] to-[var(--color-turquoise-light)] text-white rounded-lg p-6 shadow-lg">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-4">
+      <Paper
+        elevation={3}
+        sx={{
+          background: 'linear-gradient(90deg, #4db6ac 0%, #80cbc4 100%)',
+          color: 'white',
+          p: 3,
+          borderRadius: 2
+        }}
+      >
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             {/* Icono de carpeta */}
-            <div className="text-6xl">📁</div>
-            <div>
-              <h1 className="text-3xl font-bold mb-1">
+            <FolderIcon sx={{ fontSize: 64 }} />
+            <Box>
+              <Typography variant="h3" fontWeight="bold" sx={{ mb: 0.5 }}>
                 Generación {generationYear}
-              </h1>
-              <p className="text-white/90 text-lg flex items-center gap-2">
-                <span>👥</span>
-                {totalStudents} estudiante{totalStudents !== 1 ? 's' : ''}
-              </p>
-            </div>
-          </div>
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <PeopleIcon />
+                <Typography variant="h6" sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                  {totalStudents} estudiante{totalStudents !== 1 ? 's' : ''}
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
           
           {/* Botón de acción destacado */}
-          <button
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
             onClick={onAddStudent}
-            className="px-6 py-3 bg-white text-[var(--color-turquoise)] rounded-lg hover:bg-gray-50 transition-all font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center gap-2"
+            sx={{
+              backgroundColor: 'white',
+              color: '#4db6ac',
+              px: 3,
+              py: 1.5,
+              fontWeight: 600,
+              textTransform: 'none',
+              fontSize: '1rem',
+              boxShadow: 2,
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                backgroundColor: '#f5f5f5',
+                transform: 'translateY(-2px)',
+                boxShadow: 4
+              }
+            }}
           >
-            <span className="text-xl">+</span>
             Agregar Estudiante
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </Box>
+      </Paper>
+    </Box>
   );
-};
+}

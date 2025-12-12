@@ -1,4 +1,5 @@
 import React from 'react';
+import { Box, TextField, MenuItem } from '@mui/material';
 
 interface StudentFilterPanelProps {
   searchTerm: string;
@@ -15,7 +16,7 @@ interface StudentFilterPanelProps {
  * Filter panel component for students
  * Includes search by name/RUT and filters for career and status
  */
-export const StudentFilterPanel: React.FC<StudentFilterPanelProps> = ({
+export function StudentFilterPanel({
   searchTerm,
   onSearchChange,
   selectedCarrera,
@@ -24,53 +25,91 @@ export const StudentFilterPanel: React.FC<StudentFilterPanelProps> = ({
   onEstadoChange,
   carreras,
   estados,
-}) => {
+}: StudentFilterPanelProps) {
   return (
-    <div className="bg-gray-100 p-5 rounded-lg mb-5 grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div>
-        <label className="block mb-1 font-bold text-gray-700">
-          Buscar estudiante:
-        </label>
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Nombre, apellido o RUT..."
-          className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-[var(--color-turquoise)] focus:border-[var(--color-turquoise)] outline-none"
-        />
-      </div>
+    <Box 
+      sx={{ 
+        backgroundColor: 'grey.100', 
+        p: 2.5, 
+        borderRadius: 2, 
+        mb: 2.5,
+        display: 'grid',
+        gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+        gap: 2
+      }}
+    >
+      <TextField
+        fullWidth
+        label="Buscar estudiante"
+        value={searchTerm}
+        onChange={(e) => onSearchChange(e.target.value)}
+        placeholder="Nombre, apellido o RUT..."
+        size="small"
+        variant="outlined"
+        sx={{
+          backgroundColor: 'white',
+          '& .MuiOutlinedInput-root': {
+            '&:hover fieldset': {
+              borderColor: '#4db6ac'
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: '#4db6ac'
+            }
+          }
+        }}
+      />
 
-      <div>
-        <label className="block mb-1 font-bold text-gray-700">
-          Carrera:
-        </label>
-        <select
-          value={selectedCarrera}
-          onChange={(e) => onCarreraChange(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-[var(--color-turquoise)] focus:border-[var(--color-turquoise)] outline-none"
-        >
-          <option value="">Todas las carreras</option>
-          {carreras.map(carrera => (
-            <option key={carrera} value={carrera}>{carrera}</option>
-          ))}
-        </select>
-      </div>
+      <TextField
+        fullWidth
+        select
+        label="Carrera"
+        value={selectedCarrera}
+        onChange={(e) => onCarreraChange(e.target.value)}
+        size="small"
+        variant="outlined"
+        sx={{
+          backgroundColor: 'white',
+          '& .MuiOutlinedInput-root': {
+            '&:hover fieldset': {
+              borderColor: '#4db6ac'
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: '#4db6ac'
+            }
+          }
+        }}
+      >
+        <MenuItem value="">Todas las carreras</MenuItem>
+        {carreras.map(carrera => (
+          <MenuItem key={carrera} value={carrera}>{carrera}</MenuItem>
+        ))}
+      </TextField>
 
-      <div>
-        <label className="block mb-1 font-bold text-gray-700">
-          Estado:
-        </label>
-        <select
-          value={selectedEstado}
-          onChange={(e) => onEstadoChange(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-[var(--color-turquoise)] focus:border-[var(--color-turquoise)] outline-none"
-        >
-          <option value="">Todos los estados</option>
-          {estados.map(estado => (
-            <option key={estado} value={estado}>{estado}</option>
-          ))}
-        </select>
-      </div>
-    </div>
+      <TextField
+        fullWidth
+        select
+        label="Estado"
+        value={selectedEstado}
+        onChange={(e) => onEstadoChange(e.target.value)}
+        size="small"
+        variant="outlined"
+        sx={{
+          backgroundColor: 'white',
+          '& .MuiOutlinedInput-root': {
+            '&:hover fieldset': {
+              borderColor: '#4db6ac'
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: '#4db6ac'
+            }
+          }
+        }}
+      >
+        <MenuItem value="">Todos los estados</MenuItem>
+        {estados.map(estado => (
+          <MenuItem key={estado} value={estado}>{estado}</MenuItem>
+        ))}
+      </TextField>
+    </Box>
   );
-};
+}
