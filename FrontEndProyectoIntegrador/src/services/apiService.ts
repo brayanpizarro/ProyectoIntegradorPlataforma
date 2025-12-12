@@ -54,9 +54,25 @@ class ApiService {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const data = await response.json();
-      console.log(`✅ API Success: ${endpoint}`, data);
-      return data;
+      // Verificar si hay contenido en la respuesta antes de parsear JSON
+      const contentLength = response.headers.get('content-length');
+      const contentType = response.headers.get('content-type');
+      
+      if (contentLength === '0' || !contentType?.includes('application/json')) {
+        console.log(`✅ API Success: ${endpoint} - No content or non-JSON response`);
+        return null;
+      }
+
+      try {
+        const data = await response.json();
+        console.log(`✅ API Success: ${endpoint}`, data);
+        return data;
+      } catch (parseError) {
+        console.error(`❌ JSON Parse Error [${endpoint}]:`, parseError);
+        const text = await response.text();
+        console.error(`Raw response:`, text);
+        throw new Error(`Failed to parse JSON response: ${parseError.message}`);
+      }
     } catch (error) {
       console.error(`❌ API Error [${endpoint}]:`, error);
       throw error;
@@ -134,6 +150,21 @@ class ApiService {
     return this.request<Entrevista>('/entrevistas', {
       method: 'POST',
       body: JSON.stringify(data),
+    });
+  }
+
+  async getEntrevista(entrevistaId: string): Promise<Entrevista> {
+    return await this.request<Entrevista>(`/entrevistas/${entrevistaId}`);
+  }
+
+  async getTextosByEntrevista(entrevistaId: string): Promise<any[]> {
+    return await this.request<any[]>(`/entrevistas/${entrevistaId}/textos`);
+  }
+
+  async addTexto(entrevistaId: string, textoData: { nombre_etiqueta: string; contenido: string; contexto?: string }): Promise<any> {
+    return this.request<any>(`/entrevistas/${entrevistaId}/textos`, {
+      method: 'POST',
+      body: JSON.stringify(textoData),
     });
   }
 

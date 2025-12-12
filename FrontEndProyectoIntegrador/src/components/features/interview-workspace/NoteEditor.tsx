@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Estudiante } from '../../../types';
+import { apiService } from '../../../services/apiService';
 
 // ✅ INTERFACE: Estructura de notas
 interface Note {
@@ -13,12 +14,14 @@ interface NoteEditorProps {
   tabId: string;
   sectionTitle: string;
   estudiante: Estudiante;
+  entrevistaId: string | null;
 }
 
 export function NoteEditor({
   tabId,
   sectionTitle,
-  estudiante
+  estudiante,
+  entrevistaId
 }: NoteEditorProps) {
   // ✅ ESTADOS: Gestión de notas y búsqueda
   const [notes, setNotes] = useState<Note[]>([]);
@@ -27,51 +30,67 @@ export function NoteEditor({
   const [searchDate, setSearchDate] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // ✅ CARGAR NOTAS: Simular carga desde backend
+  // ✅ CARGAR NOTAS: Cargar desde backend
   useEffect(() => {
-    // TODO Backend: Cargar notas reales de la sección específica
-    // Por ahora usaremos datos mock
-    const mockNotes: Note[] = [
-      {
-        id: '1',
-        content: `Conversación sobre ${sectionTitle.toLowerCase()}. El estudiante menciona que...`,
-        timestamp: new Date(Date.now() - 86400000), // Ayer
-      },
-      {
-        id: '2',
-        content: `Seguimiento de ${sectionTitle.toLowerCase()}. Progreso observado en...`,
-        timestamp: new Date(Date.now() - 172800000), // Hace 2 días
+    const loadNotas = async () => {
+      if (!entrevistaId) return;
+      
+      try {
+        setIsLoading(true);
+        const textos = await apiService.getTextosByEntrevista(entrevistaId);
+        
+        // Filtrar por etiqueta (sectionTitle)
+        const textosFiltrados = textos.filter(
+          (texto: any) => texto.nombre_etiqueta === sectionTitle
+        );
+        
+        // Convertir a formato Note
+        const notasFormateadas: Note[] = textosFiltrados.map((texto: any) => ({
+          id: texto.id,
+          content: texto.contenido,
+          timestamp: new Date(texto.fecha),
+        }));
+        
+        setNotes(notasFormateadas);
+      } catch (error) {
+        console.error('Error al cargar notas:', error);
+      } finally {
+        setIsLoading(false);
       }
-    ];
-    setNotes(mockNotes);
-  }, [tabId, sectionTitle]);
+    };
+
+    loadNotas();
+  }, [tabId, sectionTitle, entrevistaId]);
 
   // ✅ FUNCIONES: Gestión de notas
-  const handleSaveNote = () => {
-    if (!newNote.trim()) return;
+  const handleSaveNote = async () => {
+    if (!newNote.trim() || !entrevistaId) return;
     
     setIsLoading(true);
     
-    // Simular guardado en backend
-    setTimeout(() => {
+    try {
+      // Guardar en el backend
+      const textoGuardado = await apiService.addTexto(entrevistaId, {
+        nombre_etiqueta: sectionTitle,
+        contenido: newNote.trim(),
+        contexto: `Entrevista con ${estudiante.nombre || estudiante.nombres}`
+      });
+      
+      // Añadir a la lista local
       const note: Note = {
-        id: Date.now().toString(),
-        content: newNote.trim(),
-        timestamp: new Date(),
+        id: textoGuardado.id,
+        content: textoGuardado.contenido,
+        timestamp: new Date(textoGuardado.fecha),
       };
       
       setNotes(prev => [note, ...prev]);
       setNewNote('');
+    } catch (error) {
+      console.error('Error al guardar nota:', error);
+      alert('Error al guardar la nota. Inténtalo nuevamente.');
+    } finally {
       setIsLoading(false);
-      
-      // TODO Backend: Enviar nota al servidor
-      console.log('Guardando nota:', {
-        estudianteId: estudiante.id_estudiante || estudiante.id,
-        seccion: sectionTitle,
-        contenido: note.content,
-        fecha: note.timestamp
-      });
-    }, 500);
+    }
   };
 
   // ✅ FILTROS: Aplicar búsqueda

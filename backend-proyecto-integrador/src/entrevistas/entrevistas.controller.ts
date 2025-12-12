@@ -11,7 +11,7 @@ import { EntrevistasService } from './entrevistas.service';
 import { CreateEntrevistaDto } from './dto/create-entrevista.dto';
 
 @Controller('entrevistas')
-@UsePipes(new ValidationPipe())
+@UsePipes(new ValidationPipe({ transform: true }))
 export class EntrevistasController {
   constructor(private readonly entrevistasService: EntrevistasService) {}
 
@@ -30,5 +30,23 @@ export class EntrevistasController {
     @Param('idEstudiante') idEstudiante: string,
   ) {
     return this.entrevistasService.findByEstudiante(idEstudiante);
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    return this.entrevistasService.findOne(id);
+  }
+
+  @Get(':id/textos')
+  async getTextos(@Param('id') id: string) {
+    return this.entrevistasService.getTextosByEntrevista(id);
+  }
+
+  @Post(':id/textos')
+  async addTexto(
+    @Param('id') id: string,
+    @Body() textoData: { nombre_etiqueta: string; contenido: string; contexto?: string },
+  ) {
+    return this.entrevistasService.addTexto(id, textoData);
   }
 }

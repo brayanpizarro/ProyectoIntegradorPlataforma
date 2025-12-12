@@ -2,8 +2,11 @@
  * Modal para crear nueva entrevista
  */
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, IconButton, Box } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
+import { apiService } from '../../../../services/apiService';
+import { authService } from '../../../../services/authService';
 
 interface NuevaEntrevistaModalProps {
   open: boolean;
@@ -13,10 +16,61 @@ interface NuevaEntrevistaModalProps {
 
 export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntrevistaModalProps) {
   const navigate = useNavigate();
+  const [fecha, setFecha] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [observaciones, setObservaciones] = useState('');
+  const [temas, setTemas] = useState('');
+  const [duracionMinutos, setDuracionMinutos] = useState<number>(60);
+  const [tipoEntrevista, setTipoEntrevista] = useState<'presencial' | 'virtual' | 'mixta'>('presencial');
+  const [estadoEntrevista, setEstadoEntrevista] = useState<'programada' | 'completada' | 'cancelada' | 'reprogramada'>('completada');
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleCrearEntrevista = () => {
-    onClose();
-    navigate(`/entrevista/${estudianteId}`);
+  const handleCrearEntrevista = async () => {
+    if (submitting) return;
+
+    const user = authService.getCurrentUser();
+    if (!user) {
+      alert('Debes iniciar sesión para crear una entrevista.');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+
+      // Calcular siguiente número de entrevista del estudiante
+      const entrevistasPrevias = await apiService.getEntrevistasByEstudiante(String(estudianteId));
+      const maxNumero = entrevistasPrevias.reduce((max, ent) => {
+        const n = (ent as any).numero_entrevista ?? (ent as any).numero_Entrevista;
+        return typeof n === 'number' ? Math.max(max, n) : max;
+      }, 0);
+
+      // Valores requeridos por el DTO del backend
+      const payload = {
+        id_estudiante: String(estudianteId),
+        id_usuario: Number((user as any).id || (user as any).userId || 1),
+        fecha,
+        nombre_tutor: `${(user as any).nombres || ''} ${(user as any).apellidos || ''}`.trim() || user.email || 'Entrevistador',
+        año: new Date(fecha).getFullYear(),
+        numero_entrevista: maxNumero + 1,
+        duracion_minutos: duracionMinutos,
+        tipo_entrevista: tipoEntrevista,
+        estado: estadoEntrevista,
+        observaciones: observaciones || undefined,
+        temas_abordados: temas
+          ? temas.split(',').map((t) => t.trim()).filter(Boolean)
+          : [],
+      } as const;
+
+      const entrevistaCreada = await apiService.createEntrevista(payload);
+      const nuevoId = (entrevistaCreada as any)?.id || entrevistaCreada?._id || estudianteId;
+
+      onClose();
+      navigate(`/entrevista/${nuevoId}`);
+    } catch (err) {
+      console.error('Error creando entrevista', err);
+      alert('No se pudo crear la entrevista. Revisa los datos e inténtalo nuevamente.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -33,7 +87,8 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
           <TextField
             label="Fecha"
             type="date"
-            defaultValue={new Date().toISOString().split('T')[0]}
+            value={fecha}
+            onChange={(e) => setFecha(e.target.value)}
             required
             fullWidth
             InputLabelProps={{ shrink: true }}
@@ -51,6 +106,9 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
             label="Temas Tratados (opcional)"
             placeholder="Ej: Rendimiento académico, situación familiar..."
             fullWidth
+            value={temas}
+            onChange={(e) => setTemas(e.target.value)}
+            helperText="Separar con comas"
           />
 
           <TextField
@@ -59,7 +117,45 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
             multiline
             rows={4}
             fullWidth
+            value={observaciones}
+            onChange={(e) => setObservaciones(e.target.value)}
           />
+
+          <TextField
+            label="Duración (minutos)"
+            type="number"
+            fullWidth
+            inputProps={{ min: 15, max: 180, step: 5 }}
+            value={duracionMinutos}
+            onChange={(e) => setDuracionMinutos(Number(e.target.value) || 60)}
+          />
+
+          <TextField
+            label="Tipo de entrevista"
+            select
+            fullWidth
+            value={tipoEntrevista}
+            onChange={(e) => setTipoEntrevista(e.target.value as any)}
+            SelectProps={{ native: true }}
+          >
+            <option value="presencial">Presencial</option>
+            <option value="virtual">Virtual</option>
+            <option value="mixta">Mixta</option>
+          </TextField>
+
+          <TextField
+            label="Estado"
+            select
+            fullWidth
+            value={estadoEntrevista}
+            onChange={(e) => setEstadoEntrevista(e.target.value as any)}
+            SelectProps={{ native: true }}
+          >
+            <option value="programada">Programada</option>
+            <option value="completada">Completada</option>
+            <option value="cancelada">Cancelada</option>
+            <option value="reprogramada">Reprogramada</option>
+          </TextField>
         </Box>
       </DialogContent>
 

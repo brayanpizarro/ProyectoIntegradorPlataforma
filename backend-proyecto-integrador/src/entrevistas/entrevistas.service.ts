@@ -121,4 +121,57 @@ export class EntrevistasService {
       order: { fecha: 'DESC' },
     });
   }
+
+  async findOne(id: string): Promise<Entrevista | null> {
+    return this.entrevistaRepository.findOne({
+      where: { id },
+      relations: ['estudiante', 'usuario', 'textos', 'textos.etiqueta'],
+    });
+  }
+
+  async getTextosByEntrevista(entrevistaId: string): Promise<Texto[]> {
+    return this.textoRepository.find({
+      where: { entrevistaId },
+      relations: ['etiqueta'],
+      order: { fecha: 'DESC' },
+    });
+  }
+
+  async addTexto(
+    entrevistaId: string,
+    textoData: { nombre_etiqueta: string; contenido: string; contexto?: string },
+  ): Promise<Texto> {
+    // Verificar que la entrevista existe
+    const entrevista = await this.entrevistaRepository.findOne({
+      where: { id: entrevistaId },
+    });
+
+    if (!entrevista) {
+      throw new BadRequestException('Entrevista no encontrada');
+    }
+
+    // Asegurar que la etiqueta existe
+    let etiqueta = await this.etiquetaRepository.findOne({
+      where: { nombre_etiqueta: textoData.nombre_etiqueta },
+    });
+
+    if (!etiqueta) {
+      // Crear la etiqueta si no existe
+      etiqueta = this.etiquetaRepository.create({
+        nombre_etiqueta: textoData.nombre_etiqueta,
+      });
+      await this.etiquetaRepository.save(etiqueta);
+    }
+
+    // Crear el texto
+    const texto = this.textoRepository.create({
+      entrevistaId: entrevistaId,
+      nombre_etiqueta: textoData.nombre_etiqueta,
+      contenido: textoData.contenido,
+      fecha: new Date(),
+      contexto: textoData.contexto,
+    });
+
+    return this.textoRepository.save(texto);
+  }
 }

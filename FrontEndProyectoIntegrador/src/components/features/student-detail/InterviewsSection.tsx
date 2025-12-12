@@ -2,30 +2,122 @@
  * Sección de entrevistas
  * Lista de entrevistas con botón para agregar nueva
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Button, Paper, Chip, Stack } from '@mui/material';
+import { Box, Typography, Button, Paper, Chip, Stack, CircularProgress } from '@mui/material';
 import { Add as AddIcon, Visibility as VisibilityIcon, Edit as EditIcon, Article as ArticleIcon } from '@mui/icons-material';
 import { NuevaEntrevistaModal } from './components';
+import { EntrevistaReportGenerator } from '../../EntrevistaReportGenerator';
+import { apiService } from '../../../services/apiService';
+import type { Entrevista } from '../../../types';
 
 interface InterviewsSectionProps {
   estudianteId: string | number;
+  estudiante?: any;
 }
 
-export function InterviewsSection({ estudianteId }: InterviewsSectionProps) {
+export function InterviewsSection({ estudianteId, estudiante }: InterviewsSectionProps) {
   const navigate = useNavigate();
   const [mostrarModalNuevaEntrevista, setMostrarModalNuevaEntrevista] = useState(false);
-  
-  const mockEntrevistas = [
-    { id: '1', fecha: '2025.05.15', tipo: 'Seguimiento Académico', observaciones: 'Buen desempeño general. Estudiante motivado.' },
-    { id: '2', fecha: '2025.03.10', tipo: 'Inicio de Semestre', observaciones: 'Estudiante con expectativas altas para el semestre.' },
-    { id: '3', fecha: '2024.12.05', tipo: 'Cierre de Semestre', observaciones: 'Excelente rendimiento. Aprobó todos los ramos.' },
-  ];
+  const [entrevistas, setEntrevistas] = useState<Entrevista[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleEditarEntrevista = (entrevistaId: string) => {
-    // Navegar al workspace de entrevistas con el ID del estudiante y la entrevista
-    navigate(`/entrevista/${estudianteId}?entrevistaId=${entrevistaId}`);
+  // Cargar entrevistas del backend
+  useEffect(() => {
+    const loadEntrevistas = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await apiService.getEntrevistasByEstudiante(estudianteId.toString());
+        console.log('Entrevistas cargadas:', data);
+        if (data.length > 0) {
+          console.log('Primera entrevista IDs:', {
+            id: data[0].id, 
+            _id: data[0]._id,
+            estudianteId: data[0].estudianteId,
+            fullObject: data[0]
+          });
+        }
+        setEntrevistas(data);
+      } catch (err) {
+        console.error('Error al cargar entrevistas:', err);
+        setError('Error al cargar las entrevistas');
+        setEntrevistas([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (estudianteId) {
+      loadEntrevistas();
+    }
+  }, [estudianteId]);
+
+  const handleEditarEntrevista = (id: string) => {
+    console.log('Navegando a entrevista con ID:', id);
+    if (!id || id === 'undefined') {
+      console.error('ID de entrevista inválido:', id);
+      return;
+    }
+    navigate(`/entrevista/${id}`);
   };
+
+  // Generar entrevista consolidada con datos reales
+  const entrevistaConsolidada = {
+    id: 'consolidado',
+    fecha: new Date(),
+    estudiante: estudiante || {
+      nombre: 'Estudiante',
+      apellido_paterno: '',
+      apellido_materno: '',
+      rut: '',
+      email: '',
+      telefono: '',
+      fecha_nacimiento: '',
+      genero: '',
+      direccion: '',
+      id: '',
+      created_at: new Date(),
+      updated_at: new Date()
+    },
+    tutor: 'Reporte Consolidado',
+    temas_abordados: `Resumen de ${entrevistas.length} entrevistas realizadas`,
+    observaciones: `Este documento contiene el historial completo de entrevistas del estudiante.`,
+    // Incluir todos los textos de todas las entrevistas, preservando etiqueta y fecha
+    textos: entrevistas.flatMap((ent) => Array.isArray(ent.textos) ? ent.textos : []),
+    ...entrevistas.reduce((acc, ent, idx) => {
+      const fecha = new Date(ent.fecha).toLocaleDateString('es-CL');
+      acc[`texto_${idx}`] = `[${fecha}] ${ent.tipo_entrevista || 'Entrevista'}: ${ent.observaciones}`;
+      acc[`comentarios_${idx}`] = `Tutor: ${ent.nombre_Tutor} - ${ent.temas_abordados?.join(', ') || 'N/A'}`;
+      return acc;
+    }, {} as any),
+    created_at: new Date(),
+    updated_at: new Date()
+  };
+
+  // Mostrar loading
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  // Mostrar error
+  if (error) {
+    return (
+      <Box sx={{ textAlign: 'center', p: 4 }}>
+        <Typography variant="h6" color="error" gutterBottom>
+          {error}
+        </Typography>
+        <Button onClick={() => window.location.reload()} variant="outlined">
+          Reintentar
+        </Button>
+      </Box>
+    );
+  }
 
   return (
     <Box>
@@ -33,21 +125,26 @@ export function InterviewsSection({ estudianteId }: InterviewsSectionProps) {
         <Typography variant="h4" fontWeight={700}>
           Entrevistas
         </Typography>
-        <Button 
-          startIcon={<AddIcon />}
-          onClick={() => setMostrarModalNuevaEntrevista(true)}
-          variant="contained"
-          color="primary"
-          size="large"
-        >
-          Nueva Entrevista
-        </Button>
+        <Stack direction="row" spacing={2}>
+          {entrevistas.length > 0 && (
+            <EntrevistaReportGenerator entrevista={entrevistaConsolidada} />
+          )}
+          <Button 
+            startIcon={<AddIcon />}
+            onClick={() => setMostrarModalNuevaEntrevista(true)}
+            variant="contained"
+            color="primary"
+            size="large"
+          >
+            Nueva Entrevista
+          </Button>
+        </Stack>
       </Box>
 
       <Stack spacing={2}>
-        {mockEntrevistas.map((entrevista) => (
+        {entrevistas.map((entrevista, index) => (
           <Paper 
-            key={entrevista.id}
+            key={entrevista._id || entrevista.id || index}
             elevation={2}
             sx={{ 
               p: 3, 
@@ -62,15 +159,18 @@ export function InterviewsSection({ estudianteId }: InterviewsSectionProps) {
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
               <Box>
                 <Typography variant="h6" fontWeight={600} gutterBottom>
-                  {entrevista.tipo}
+                  {entrevista.tipo_entrevista || 'Entrevista'}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Fecha: {entrevista.fecha}
+                  Fecha: {new Date(entrevista.fecha).toLocaleDateString('es-CL')}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Tutor: {entrevista.nombre_Tutor}
                 </Typography>
               </Box>
               <Chip 
-                label="Completada" 
-                color="primary" 
+                label={entrevista.estado || 'Completada'} 
+                color={entrevista.estado === 'completada' ? 'success' : 'primary'}
                 size="small"
                 sx={{ fontWeight: 600 }}
               />
@@ -81,16 +181,27 @@ export function InterviewsSection({ estudianteId }: InterviewsSectionProps) {
                 Observaciones:
               </Typography>
               <Typography variant="body2" color="text.primary">
-                {entrevista.observaciones}
+                {entrevista.observaciones || 'Sin observaciones'}
               </Typography>
             </Box>
+
+            {entrevista.temas_abordados && entrevista.temas_abordados.length > 0 && (
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="body2" fontWeight={600} color="text.secondary" gutterBottom>
+                  Temas:
+                </Typography>
+                <Typography variant="body2" color="text.primary">
+                  {entrevista.temas_abordados.join(', ')}
+                </Typography>
+              </Box>
+            )}
 
             <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
               <Button 
                 startIcon={<VisibilityIcon />}
                 variant="outlined"
                 size="small"
-                onClick={() => handleEditarEntrevista(entrevista.id)}
+                onClick={() => handleEditarEntrevista(entrevista._id || entrevista.id)}
               >
                 Ver Detalle
               </Button>
@@ -99,7 +210,7 @@ export function InterviewsSection({ estudianteId }: InterviewsSectionProps) {
                 variant="outlined"
                 color="primary"
                 size="small"
-                onClick={() => handleEditarEntrevista(entrevista.id)}
+                onClick={() => handleEditarEntrevista(entrevista._id || entrevista.id)}
               >
                 Editar
               </Button>
@@ -108,7 +219,7 @@ export function InterviewsSection({ estudianteId }: InterviewsSectionProps) {
         ))}
       </Stack>
 
-      {mockEntrevistas.length === 0 && (
+      {entrevistas.length === 0 && (
         <Paper elevation={2} sx={{ p: 8, borderRadius: 2, textAlign: 'center' }}>
           <ArticleIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
           <Typography variant="h5" fontWeight={700} gutterBottom>

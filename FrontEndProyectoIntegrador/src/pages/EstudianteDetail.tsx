@@ -1,4 +1,5 @@
-﻿import { Snackbar, Alert } from '@mui/material';
+﻿import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { LoadingSpinner, ErrorMessage } from '../components/ui';
 import {
   StudentHeader,
@@ -14,7 +15,10 @@ import {
 } from '../components/features/student-detail';
 import { NuevoSemestreModal } from '../components/features/student-detail/components';
 
-export default function EstudianteDetail() {
+const EstudianteDetail: React.FC = () => {
+  const navigate = useNavigate();
+  
+  // ✅ REFACTORIZADO: Toda la lógica ahora está en hooks personalizados
   const {
     // Datos del estudiante
     loading,
@@ -141,6 +145,7 @@ export default function EstudianteDetail() {
         {seccionActiva === 'entrevistas' && canViewInterviews && (
           <InterviewsSection
             estudianteId={estudiante.id_estudiante}
+            estudiante={estudiante}
           />
         )}
       </div>

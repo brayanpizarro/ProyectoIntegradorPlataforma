@@ -13,9 +13,10 @@ import { TopNavbar, Sidebar, TabManager } from '../components/features/interview
 
 export function EntrevistaWorkspace() {
   const navigate = useNavigate();
-  const { id: estudianteId } = useParams();
+  const { id: entrevistaIdFromUrl } = useParams(); // Este es el ID de la entrevista, no del estudiante
   
   const [estudiante, setEstudiante] = useState<Estudiante | null>(null);
+  const [entrevistaId, setEntrevistaId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -29,29 +30,75 @@ export function EntrevistaWorkspace() {
     setActivePanel
   } = useWorkspaceTabs();
 
+  // ✅ CARGAR DATOS: Entrevista y estudiante al iniciar
   useEffect(() => {
-    const loadEstudiante = async () => {
+    const loadEntrevistaData = async () => {
       if (!authService.isAuthenticated()) {
         navigate('/');
         return;
       }
 
+      if (!entrevistaIdFromUrl) {
+        setError('No se proporcionó ID de la entrevista');
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
+        setError(null);
         
-        const estudianteData = await apiService.getEstudiantePorId(estudianteId || '0');
+        // Cargar datos de la entrevista primero
+        console.log('Cargando entrevista con ID:', entrevistaIdFromUrl);
+
+        let entrevistaData: any = null;
+
+        try {
+          entrevistaData = await apiService.getEntrevista(entrevistaIdFromUrl);
+        } catch (err) {
+          logger.warn('No se encontró entrevista por ID, intentando como estudianteId', err);
+        }
+
+        // Si no se encontró, interpretamos el parámetro como id_estudiante y tomamos la más reciente
+        if (!entrevistaData) {
+          console.log('Buscando entrevistas por estudiante:', entrevistaIdFromUrl);
+          const entrevistasDeEstudiante = await apiService.getEntrevistasByEstudiante(entrevistaIdFromUrl);
+          if (!entrevistasDeEstudiante || entrevistasDeEstudiante.length === 0) {
+            throw new Error('Entrevista no encontrada');
+          }
+          entrevistaData = entrevistasDeEstudiante[0]; // última o primera según orden DESC en el backend
+        }
+
+        const entrevistaId = entrevistaData.id || entrevistaData._id;
+        if (!entrevistaId) {
+          throw new Error('ID de entrevista no disponible');
+        }
+        setEntrevistaId(entrevistaId);
+
+        // Ahora cargar el estudiante usando el id_estudiante de la entrevista
+        const estudianteId =
+          entrevistaData.estudianteId ||
+          entrevistaData.id_estudiante ||
+          entrevistaData.estudiante?.id_estudiante;
+
+        if (!estudianteId) {
+          throw new Error('ID del estudiante no disponible en los datos de la entrevista');
+        }
+        
+        console.log('Cargando estudiante con ID:', estudianteId);
+        const estudianteData = await apiService.getEstudiantePorId(estudianteId);
         setEstudiante(estudianteData);
         
       } catch (error) {
-        logger.error('Error al cargar estudiante:', error);
-        setError('Error al cargar los datos del estudiante');
+        logger.error('Error al cargar datos de entrevista:', error);
+        setError('Error al cargar los datos de la entrevista');
       } finally {
         setLoading(false);
       }
     };
 
-    loadEstudiante();
-  }, [estudianteId, navigate]);
+    loadEntrevistaData();
+  }, [entrevistaIdFromUrl, navigate]);
 
   if (loading) {
     return <LoadingState />;
@@ -89,6 +136,7 @@ export function EntrevistaWorkspace() {
             onDisableSplitView={disableSplitView}
             onSetActivePanel={setActivePanel}
             estudiante={estudiante}
+            entrevistaId={entrevistaId}
           />
         </Box>
       </Box>

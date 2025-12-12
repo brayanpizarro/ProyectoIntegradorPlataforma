@@ -28,6 +28,7 @@ interface TabManagerProps {
   onDisableSplitView: () => void;
   onSetActivePanel: (panel: 'left' | 'right') => void;
   estudiante: Estudiante;
+  entrevistaId: string | null;
 }
 
 export function TabManager({
@@ -37,7 +38,8 @@ export function TabManager({
   onEnableSplitView,
   onDisableSplitView,
   onSetActivePanel,
-  estudiante
+  estudiante,
+  entrevistaId
 }: TabManagerProps) {
 
   // ✅ COMPONENTE: Panel de pestañas individual
@@ -178,11 +180,33 @@ export function TabManager({
         <Box sx={{ flex: 1, overflow: 'auto', height: '100%', maxHeight: 'calc(100% - 96px)' }}>
           {activeTab ? (
             activeTab.type === 'note' ? (
-              <NoteEditor
-                tabId={activeTab.id}
-                sectionTitle={activeTab.title}
-                estudiante={estudiante}
-              />
+              entrevistaId ? (
+                <NoteEditor
+                  tabId={activeTab.id}
+                  sectionTitle={activeTab.title}
+                  estudiante={estudiante}
+                  entrevistaId={entrevistaId}
+                />
+              ) : (
+                <Box sx={{ p: 4, textAlign: 'center' }}>
+                  <Typography variant="h6" color="error" gutterBottom>
+                    No hay entrevista activa
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                    Para tomar notas necesitas crear una entrevista primero.
+                  </Typography>
+                  <Button 
+                    variant="contained" 
+                    color="primary"
+                    onClick={() => {
+                      // Recargar la página para intentar crear una entrevista
+                      window.location.reload();
+                    }}
+                  >
+                    Crear Nueva Entrevista
+                  </Button>
+                </Box>
+              )
             ) : (
               <DataTable
                 tabId={activeTab.id}
