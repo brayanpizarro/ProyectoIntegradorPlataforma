@@ -13,6 +13,7 @@ const EntrevistaWorkspace = lazy(() => import('./pages/EntrevistaWorkspace').the
 const UserProfile = lazy(() => import('./pages/UserProfile').then(m => ({ default: m.UserProfile })));
 const UserManagement = lazy(() => import('./pages/UserManagement'));
 const DebugPermissions = lazy(() => import('./pages/DebugPermissions'));
+const TestPDFPage = lazy(() => import('./pages/TestPDFPage').then(m => ({ default: m.TestPDFPage })));
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -107,6 +108,10 @@ function App() {
                 <DebugPermissions /> : 
                 <Navigate to="/" replace />
             }
+          />
+          <Route 
+            path="/test-pdf" 
+            element={<TestPDFPage />}
           />
           <Route 
             path="/test" 

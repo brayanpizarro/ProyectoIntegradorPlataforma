@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Estudiante } from '../../../types';
+import { EntrevistaReportGenerator } from '../../EntrevistaReportGenerator';
 
 interface TopNavbarProps {
   estudiante: Estudiante;
@@ -57,6 +58,36 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ estudiante, onNavigateBack
 
       {/* ✅ LADO DERECHO: Usuario actual y botón terminar */}
       <div className="flex items-center gap-4">
+        {/* Botón Generar PDF */}
+        <EntrevistaReportGenerator 
+          entrevista={{
+            id: 1,
+            fecha: new Date(),
+            estudiante: {
+              nombre: estudiante.nombre || estudiante.nombres || '',
+              apellido_paterno: estudiante.apellido_paterno || estudiante.apellidos?.split(' ')[0] || '',
+              apellido_materno: estudiante.apellido_materno || estudiante.apellidos?.split(' ')[1] || '',
+              rut: estudiante.rut || '',
+              email: estudiante.email || '',
+              telefono: estudiante.telefono || '',
+              fecha_nacimiento: estudiante.fecha_nacimiento || '',
+              genero: estudiante.genero || '',
+              direccion: estudiante.direccion || '',
+              id: estudiante.id_estudiante || estudiante.id || '',
+              created_at: new Date(),
+              updated_at: new Date()
+            },
+            tutor: 'Tutor Actual',
+            temas_abordados: 'Temas abordados durante la entrevista',
+            observaciones: 'Observaciones generales de la entrevista',
+            texto_0: 'Comentario inicial de la entrevista',
+            texto_1: 'Desarrollo de la conversación',
+            comentarios_0: 'Nota adicional',
+            created_at: new Date(),
+            updated_at: new Date()
+          }}
+        />
+        
         {/* Botón Terminar Entrevista */}
         <button
           onClick={() => {

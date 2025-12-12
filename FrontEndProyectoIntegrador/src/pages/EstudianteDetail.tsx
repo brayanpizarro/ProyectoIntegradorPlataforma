@@ -160,7 +160,8 @@ const EstudianteDetail: React.FC = () => {
         {/* Entrevistas - Solo para administradores */}
         {seccionActiva === 'entrevistas' && canViewInterviews && (
           <InterviewsSection 
-            onNuevaEntrevista={() => setMostrarModalNuevaEntrevista(true)} 
+            onNuevaEntrevista={() => setMostrarModalNuevaEntrevista(true)}
+            estudiante={estudiante}
           />
         )}
       </div>
