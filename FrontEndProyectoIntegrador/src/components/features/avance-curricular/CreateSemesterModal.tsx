@@ -157,7 +157,7 @@ export const CreateSemesterModal: React.FC<CreateSemesterModalProps> = ({
             </Box>
           </Box>
 
-          {/* 🏷️ SUGERENCIAS RÁPIDAS */}
+          {/* SUGERENCIAS RÁPIDAS */}
           <Box>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               Períodos sugeridos:
@@ -177,7 +177,7 @@ export const CreateSemesterModal: React.FC<CreateSemesterModalProps> = ({
             </Box>
           </Box>
 
-          {/* ℹ️ INFORMACIÓN */}
+          {/* INFORMACIÓN */}
           <Box>
             <Divider sx={{ my: 2 }} />
             <Typography variant="body2" color="text.secondary">

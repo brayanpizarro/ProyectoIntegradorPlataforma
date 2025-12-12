@@ -4,7 +4,7 @@ import type { Estudiante } from '../../../types';
 import { NoteEditor } from './NoteEditor';
 import { DataTable } from './DataTable';
 
-// ✅ INTERFACES: Definición de tipos
+// INTERFACES: Definición de tipos
 interface Tab {
   id: string;
   title: string;
@@ -42,7 +42,7 @@ export function TabManager({
   entrevistaId
 }: TabManagerProps) {
 
-  // ✅ COMPONENTE: Panel de pestañas individual
+  // COMPONENTE: Panel de pestañas individual
   function TabPanel({
     tabs,
     panelId,
@@ -77,7 +77,7 @@ export function TabManager({
           }
         }}
       >
-        {/* ✅ HEADER DEL PANEL */}
+        {/* HEADER DEL PANEL */}
         <Box sx={{ 
           display: 'flex', 
           alignItems: 'center', 
@@ -96,7 +96,7 @@ export function TabManager({
           </Box>
         </Box>
 
-        {/* ✅ BARRA DE PESTAÑAS */}
+        {/* BARRA DE PESTAÑAS */}
         <Box sx={{ bgcolor: 'grey.50', borderBottom: 1, borderColor: 'grey.200', height: 48, minHeight: 48, maxHeight: 48, display: 'flex', alignItems: 'center', px: 1, gap: 0.5, overflowX: 'auto', overflowY: 'hidden' }}>
           {tabs.length === 0 ? (
             <Typography variant="body2" color="text.secondary" sx={{ flex: 1, textAlign: 'center', fontStyle: 'italic', py: 2 }}>
@@ -176,7 +176,7 @@ export function TabManager({
           )}
         </Box>
 
-        {/* ✅ CONTENIDO DE LA PESTAÑA ACTIVA */}
+        {/* CONTENIDO DE LA PESTAÑA ACTIVA */}
         <Box sx={{ flex: 1, overflow: 'auto', height: '100%', maxHeight: 'calc(100% - 96px)' }}>
           {activeTab ? (
             activeTab.type === 'note' ? (
@@ -233,7 +233,7 @@ export function TabManager({
 
   return (
     <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2, gap: 2, height: '100%', maxHeight: '100%', overflow: 'hidden' }}>
-      {/* ✅ CONTROLES DE VISTA */}
+      {/* CONTROLES DE VISTA */}
       {workspace.splitView && (
         <Alert
           severity="info"
@@ -249,7 +249,7 @@ export function TabManager({
         </Alert>
       )}
 
-      {/* ✅ ÁREA DE PESTAÑAS */}
+      {/* ÁREA DE PESTAÑAS */}
       <Box sx={{ flex: 1, display: 'flex', gap: 2, overflow: 'hidden', minHeight: 400, width: '100%' }}>
         <TabPanel
           tabs={workspace.leftTabs}
@@ -268,7 +268,7 @@ export function TabManager({
         )}
       </Box>
 
-      {/* ✅ BARRA DE ESTADO */}
+      {/* BARRA DE ESTADO */}
       <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.50', border: 1, borderColor: 'grey.200', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 48, minHeight: 48, maxHeight: 48, flexShrink: 0 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
           <Typography variant="caption" color="text.secondary">

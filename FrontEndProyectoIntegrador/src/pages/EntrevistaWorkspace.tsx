@@ -30,7 +30,7 @@ export function EntrevistaWorkspace() {
     setActivePanel
   } = useWorkspaceTabs();
 
-  // ✅ CARGAR DATOS: Entrevista y estudiante al iniciar
+  // CARGAR DATOS: Entrevista y estudiante al iniciar
   useEffect(() => {
     const loadEntrevistaData = async () => {
       if (!authService.isAuthenticated()) {
@@ -110,13 +110,13 @@ export function EntrevistaWorkspace() {
 
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', bgcolor: 'grey.50' }}>
-      {/* ✅ NAVBAR SUPERIOR */}
+      {/* NAVBAR SUPERIOR */}
       <TopNavbar 
         estudiante={estudiante}
         onNavigateBack={() => navigate(-1)}
       />
       
-      {/* ✅ ÁREA PRINCIPAL: Sidebar + Workspace */}
+      {/* ÁREA PRINCIPAL: Sidebar + Workspace */}
       <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden', height: 'calc(100vh - 64px)', maxHeight: 'calc(100vh - 64px)' }}>
         {/* SIDEBAR IZQUIERDO */}
         <Sidebar 

@@ -41,8 +41,8 @@ interface UseGeneracionesReturn {
  * 
  * return (
  *   <div>
- *     <StatCard icon="📊" label="Total Estudiantes" value={totalEstudiantes} />
- *     <StatCard icon="✅" label="Activos" value={estudiantesActivos} />
+ *     <StatCard icon="chart" label="Total Estudiantes" value={totalEstudiantes} />
+ *     <StatCard icon="check" label="Activos" value={estudiantesActivos} />
  *   </div>
  * );
  * ```

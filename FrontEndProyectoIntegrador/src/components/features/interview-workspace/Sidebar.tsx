@@ -26,7 +26,7 @@ export function Sidebar({
 }: SidebarProps) {
   return (
     <Box sx={{ width: 280, minWidth: 280, maxWidth: 280, bgcolor: 'white', borderRight: 1, borderColor: 'grey.200', p: 2, overflowY: 'auto', flexShrink: 0 }}>
-      {/* ✅ TÍTULO DEL SIDEBAR */}
+      {/* TÍTULO DEL SIDEBAR */}
       <Box sx={{ mb: 3, pb: 2, borderBottom: 1, borderColor: 'grey.200' }}>
         <Typography variant="h6" fontWeight={600} gutterBottom>
           📝 Etiquetas de Entrevista
@@ -35,7 +35,7 @@ export function Sidebar({
           Haz clic para abrir una pestaña
         </Typography>
         
-        {/* ✅ INDICADOR DE PANEL ACTIVO */}
+        {/* INDICADOR DE PANEL ACTIVO */}
         {splitViewActive && (
           <Alert
             icon={activePanel === 'left' ? '📋' : '📊'}
@@ -49,7 +49,7 @@ export function Sidebar({
         )}
       </Box>
 
-      {/* ✅ SECCIONES DE ETIQUETAS */}
+      {/* SECCIONES DE ETIQUETAS */}
       {sections.map((section, sectionIndex) => (
         <Box key={sectionIndex} sx={{ mb: 3 }}>
           <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1, mb: 1.5, display: 'block' }}>
@@ -100,7 +100,7 @@ export function Sidebar({
         </Box>
       ))}
 
-      {/* ✅ LEYENDA */}
+      {/* LEYENDA */}
       <Paper elevation={0} sx={{ mt: 4, p: 2, bgcolor: 'grey.50', border: 1, borderColor: 'grey.200' }}>
         <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ display: 'block', mb: 1 }}>
           💡 Tipos de pestañas

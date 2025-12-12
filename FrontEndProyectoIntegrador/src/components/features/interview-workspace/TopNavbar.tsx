@@ -8,7 +8,7 @@ interface TopNavbarProps {
 }
 
 export function TopNavbar({ estudiante, onNavigateBack }: TopNavbarProps) {
-  // ✅ DATOS: Obtener información con compatibilidad híbrida
+  // DATOS: Obtener información con compatibilidad híbrida
   const nombreCompleto = estudiante.nombre || 
     `${estudiante.nombres || ''} ${estudiante.apellidos || ''}`.trim();
   const carrera = estudiante.carrera || estudiante.institucion?.carrera_especialidad || 'Sin especificar';
@@ -19,7 +19,7 @@ export function TopNavbar({ estudiante, onNavigateBack }: TopNavbarProps) {
   return (
     <AppBar position="static" elevation={1} sx={{ bgcolor: 'white', color: 'text.primary', height: 64 }}>
       <Toolbar sx={{ justifyContent: 'space-between', height: '100%' }}>
-        {/* ✅ LADO IZQUIERDO: Logo y navegación */}
+        {/* LADO IZQUIERDO: Logo y navegación */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Button
             startIcon={<ArrowBackIcon />}
@@ -39,7 +39,7 @@ export function TopNavbar({ estudiante, onNavigateBack }: TopNavbarProps) {
           </Breadcrumbs>
         </Box>
 
-        {/* ✅ CENTRO: Información del estudiante */}
+        {/* CENTRO: Información del estudiante */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, justifyContent: 'center' }}>
           <Avatar sx={{ bgcolor: 'info.light', color: 'info.main', width: 40, height: 40 }}>
             <AccountCircleIcon />
@@ -55,7 +55,7 @@ export function TopNavbar({ estudiante, onNavigateBack }: TopNavbarProps) {
           </Box>
         </Box>
 
-        {/* ✅ LADO DERECHO: Usuario actual y botón terminar */}
+        {/* LADO DERECHO: Usuario actual y botón terminar */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Button
             startIcon={<CheckCircleIcon />}

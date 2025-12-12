@@ -37,7 +37,7 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
     return value !== null && value !== undefined ? String(value) : '';
   };
 
-  // ✅ Handler para cambios en inputs - Solo notifica al padre
+  // Handler para cambios en inputs - Solo notifica al padre
   const handleFieldChange = (campo: string, valor: any) => {
     console.log(`📝 PersonalDataSection - Cambiando campo: ${campo}, valor:`, valor);
     
@@ -47,7 +47,7 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
     }
   };
 
-  // ✅ Helpers para renders especiales
+  // Helpers para renders especiales
   const calcularEdad = (fechaNacimiento?: Date | string) => {
     if (!fechaNacimiento) return 'Sin definir';
     const fecha = typeof fechaNacimiento === 'string' ? new Date(fechaNacimiento) : fechaNacimiento;
@@ -98,7 +98,7 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
     return estudiante.informacionAcademica?.beneficios || 'Sin definir';
   };
 
-  // ✅ Función para renderizar campos según configuración
+  // Función para renderizar campos según configuración
   const renderField = (field: FieldConfig) => {
     const value = getFieldValue(field);
     

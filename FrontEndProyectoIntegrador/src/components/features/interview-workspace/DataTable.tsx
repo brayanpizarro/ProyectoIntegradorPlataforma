@@ -12,7 +12,7 @@ export function DataTable({
   sectionTitle,
   estudiante
 }: DataTableProps) {
-  // ✅ FUNCIÓN: Obtener contenido según la sección
+  // FUNCIÓN: Obtener contenido según la sección
   const getSectionContent = () => {
     switch (tabId) {
       case 'tab-info-personal':
@@ -28,7 +28,7 @@ export function DataTable({
     }
   };
 
-  // ✅ RENDER: Información personal
+  // RENDER: Información personal
   const renderInfoPersonal = () => {
     const nombreCompleto = estudiante.nombre || 
       `${estudiante.nombres || ''} ${estudiante.apellidos || ''}`.trim();
@@ -62,7 +62,7 @@ export function DataTable({
     );
   };
 
-  // ✅ RENDER: Avance académico
+  // RENDER: Avance académico
   const renderAvanceAcademico = () => {
     const datosAcademicos = [
       { 
@@ -143,7 +143,7 @@ export function DataTable({
     );
   };
 
-  // ✅ RENDER: Historial académico
+  // RENDER: Historial académico
   const renderHistorial = () => {
     // Mock de historial académico
     const historialMock = [
@@ -205,7 +205,7 @@ export function DataTable({
     );
   };
 
-  // ✅ RENDER: Información familiar
+  // RENDER: Información familiar
   const renderFamiliaData = () => {
     // Mock de datos familiares
     const familiaData = {
@@ -278,7 +278,7 @@ export function DataTable({
     );
   };
 
-  // ✅ RENDER: Datos genéricos
+  // RENDER: Datos genéricos
   const renderGenericData = () => {
     return (
       <div className="p-8 text-center text-gray-500">
@@ -295,7 +295,7 @@ export function DataTable({
 
   return (
     <div className="h-full flex flex-col bg-white">
-      {/* ✅ HEADER DE LA SECCIÓN */}
+      {/* HEADER DE LA SECCIÓN */}
       <div className="p-4 border-b border-gray-200 bg-gray-50">
         <h3 className="m-0 mb-2 text-lg font-semibold text-gray-800">
           📊 {sectionTitle}
@@ -306,7 +306,7 @@ export function DataTable({
         </p>
       </div>
 
-      {/* ✅ CONTENIDO DE LA SECCIÓN */}
+      {/* CONTENIDO DE LA SECCIÓN */}
       <div className="flex-1 overflow-y-auto">
         {getSectionContent()}
       </div>

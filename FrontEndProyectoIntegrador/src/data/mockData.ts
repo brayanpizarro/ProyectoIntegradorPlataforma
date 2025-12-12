@@ -1,4 +1,4 @@
-// ✅ DATOS MOCK CENTRALIZADOS
+// DATOS MOCK CENTRALIZADOS
 // Esta es la fuente única de verdad para todos los datos de estudiantes
 // Todos los componentes deben importar desde aquí para mantener consistencia
 
@@ -31,7 +31,7 @@ export interface EstudianteMock {
   tipo_de_estudiante?: string;
 }
 
-// ✅ DATOS UNIFICADOS DE ESTUDIANTES (7 estudiantes para toda la app)
+// DATOS UNIFICADOS DE ESTUDIANTES (7 estudiantes para toda la app)
 export const mockEstudiantes: EstudianteMock[] = [
   {
     id: 1,
@@ -231,18 +231,18 @@ export const mockEstudiantes: EstudianteMock[] = [
   }
 ];
 
-// ✅ FUNCIÓN PARA BUSCAR ESTUDIANTE POR ID
+// FUNCIÓN PARA BUSCAR ESTUDIANTE POR ID
 export const encontrarEstudiantePorId = (id: string | number): EstudianteMock | undefined => {
   const idNumerico = typeof id === 'string' ? parseInt(id) : id;
   return mockEstudiantes.find(estudiante => estudiante.id === idNumerico);
 };
 
-// ✅ FUNCIÓN PARA OBTENER ESTUDIANTES POR GENERACIÓN
+// FUNCIÓN PARA OBTENER ESTUDIANTES POR GENERACIÓN
 export const obtenerEstudiantesPorGeneracion = (año: number): EstudianteMock[] => {
   return mockEstudiantes.filter(estudiante => estudiante.año_generacion === año);
 };
 
-// ✅ DATOS DE GENERACIONES
+// DATOS DE GENERACIONES
 export const mockGeneraciones = [
   {
     id: 1,

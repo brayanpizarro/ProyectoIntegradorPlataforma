@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import type { Estudiante } from '../../../types';
 import { apiService } from '../../../services/apiService';
 
-// ✅ INTERFACE: Estructura de notas
+// INTERFACE: Estructura de notas
 interface Note {
   id: string;
   content: string;
@@ -23,14 +23,14 @@ export function NoteEditor({
   estudiante,
   entrevistaId
 }: NoteEditorProps) {
-  // ✅ ESTADOS: Gestión de notas y búsqueda
+  // ESTADOS: Gestión de notas y búsqueda
   const [notes, setNotes] = useState<Note[]>([]);
   const [newNote, setNewNote] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [searchDate, setSearchDate] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // ✅ CARGAR NOTAS: Cargar desde backend
+  // CARGAR NOTAS: Cargar desde backend
   useEffect(() => {
     const loadNotas = async () => {
       if (!entrevistaId) return;
@@ -62,7 +62,7 @@ export function NoteEditor({
     loadNotas();
   }, [tabId, sectionTitle, entrevistaId]);
 
-  // ✅ FUNCIONES: Gestión de notas
+  // FUNCIONES: Gestión de notas
   const handleSaveNote = async () => {
     if (!newNote.trim() || !entrevistaId) return;
     
@@ -93,7 +93,7 @@ export function NoteEditor({
     }
   };
 
-  // ✅ FILTROS: Aplicar búsqueda
+  // FILTROS: Aplicar búsqueda
   const filteredNotes = notes.filter(note => {
     const matchesSearch = !searchTerm || 
       note.content.toLowerCase().includes(searchTerm.toLowerCase());
@@ -104,7 +104,7 @@ export function NoteEditor({
     return matchesSearch && matchesDate;
   });
 
-  // ✅ HELPERS: Formateo de fechas
+  // HELPERS: Formateo de fechas
   const formatDate = (date: Date) => {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
@@ -126,7 +126,7 @@ export function NoteEditor({
 
   return (
     <div className="h-full flex flex-col bg-white">
-      {/* ✅ HEADER DE LA SECCIÓN */}
+      {/* HEADER DE LA SECCIÓN */}
       <div className="p-4 border-b border-gray-200 bg-gray-50">
         <h3 className="m-0 mb-2 text-lg font-semibold text-gray-800">
           📝 {sectionTitle}
@@ -137,7 +137,7 @@ export function NoteEditor({
         </p>
       </div>
 
-      {/* ✅ BARRA DE BÚSQUEDA */}
+      {/* BARRA DE BÚSQUEDA */}
       <div className="p-4 border-b border-gray-200 flex gap-3">
         {/* Búsqueda por texto */}
         <div className="flex-1">
@@ -174,7 +174,7 @@ export function NoteEditor({
         )}
       </div>
 
-      {/* ✅ LISTA DE NOTAS PREVIAS */}
+      {/* LISTA DE NOTAS PREVIAS */}
       <div className="flex-1 overflow-y-auto p-4">
         {filteredNotes.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-[200px] text-gray-400 text-center">
@@ -213,7 +213,7 @@ export function NoteEditor({
         )}
       </div>
 
-      {/* ✅ EDITOR DE NUEVA NOTA */}
+      {/* EDITOR DE NUEVA NOTA */}
       <div className="border-t border-gray-200 p-4 bg-gray-50">
         <div className="mb-3">
           <label className="block text-sm font-medium text-gray-700 mb-1">

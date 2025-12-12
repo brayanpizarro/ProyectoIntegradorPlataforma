@@ -18,7 +18,7 @@ import { NuevoSemestreModal } from '../components/features/student-detail/compon
 const EstudianteDetail: React.FC = () => {
   const navigate = useNavigate();
   
-  // ✅ REFACTORIZADO: Toda la lógica ahora está en hooks personalizados
+  // REFACTORIZADO: Toda la lógica ahora está en hooks personalizados
   const {
     // Datos del estudiante
     loading,
@@ -102,7 +102,7 @@ const EstudianteDetail: React.FC = () => {
           <ProfileSection estudiante={estudianteConEdiciones} />
         )}
 
-        {/* ✅ Datos Personales - Con callback para cambios */}
+        {/*  Datos Personales - Con callback para cambios */}
         {seccionActiva === 'personal' && (
           <PersonalDataSection
             estudiante={estudianteConEdiciones}

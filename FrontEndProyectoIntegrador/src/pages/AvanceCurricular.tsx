@@ -924,7 +924,7 @@ export const AvanceCurricular: React.FC = () => {
         {vistaActiva === 'estadisticas' && renderEstadisticas()}
       </div>
 
-      {/* 📝 MODAL DE EDICIÓN */}
+      {/* MODAL DE EDICIÓN */}
       <EditSubjectModal
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -932,7 +932,7 @@ export const AvanceCurricular: React.FC = () => {
         onSave={handleSaveSubject}
       />
 
-      {/* ➕ MODAL DE AGREGAR MATERIA */}
+      {/* MODAL DE AGREGAR MATERIA */}
       <AddSubjectModal
         open={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
@@ -940,7 +940,7 @@ export const AvanceCurricular: React.FC = () => {
         semestre={selectedSemestre}
       />
 
-      {/* ⚙️ MODAL DE CONFIGURAR SEMESTRE */}
+      {/* MODAL DE CONFIGURAR SEMESTRE */}
       <SemesterModal
         open={isSemesterModalOpen}
         onClose={() => setIsSemesterModalOpen(false)}
@@ -949,7 +949,7 @@ export const AvanceCurricular: React.FC = () => {
         onDelete={handleDeleteSemester}
       />
 
-      {/* ➕ MODAL DE CREAR SEMESTRE */}
+      {/* MODAL DE CREAR SEMESTRE */}
       <CreateSemesterModal
         open={isCreateSemesterModalOpen}
         onClose={() => setIsCreateSemesterModalOpen(false)}
