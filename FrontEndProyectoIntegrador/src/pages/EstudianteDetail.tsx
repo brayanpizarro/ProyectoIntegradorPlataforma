@@ -1,4 +1,5 @@
 ﻿import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { LoadingSpinner, ErrorMessage } from '../components/ui';
 import { 
   StudentHeader, 
@@ -14,6 +15,8 @@ import {
 } from '../components/features/student-detail';
 
 const EstudianteDetail: React.FC = () => {
+  const navigate = useNavigate();
+  
   // ✅ REFACTORIZADO: Toda la lógica ahora está en hooks personalizados
   const {
     // Datos del estudiante
@@ -160,7 +163,8 @@ const EstudianteDetail: React.FC = () => {
         {/* Entrevistas - Solo para administradores */}
         {seccionActiva === 'entrevistas' && canViewInterviews && (
           <InterviewsSection 
-            onNuevaEntrevista={() => setMostrarModalNuevaEntrevista(true)} 
+            onNuevaEntrevista={() => navigate(`/entrevista/${estudiante.id_estudiante || estudiante.id}`)}
+            estudiante={estudiante}
           />
         )}
       </div>
