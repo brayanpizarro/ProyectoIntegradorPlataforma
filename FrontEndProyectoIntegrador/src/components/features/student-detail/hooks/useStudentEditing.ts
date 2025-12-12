@@ -6,6 +6,7 @@ import { useAutosave } from './useAutosave';
 import { useEstudianteEditing } from './useEstudianteEditing';
 import { useFamiliaEditing } from './useFamiliaEditing';
 import { useAcademicEditing } from './useAcademicEditing';
+import { useInstitucionEditing } from './useInstitucionEditing';
 
 interface UseStudentEditingProps {
   id?: string;
@@ -23,12 +24,14 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
   const estudianteEditing = useEstudianteEditing({ estudiante, id });
   const familiaEditing = useFamiliaEditing({ estudiante });
   const academicEditing = useAcademicEditing({ estudiante });
+  const institucionEditing = useInstitucionEditing({ estudiante });
 
   // Combinar todos los datos editados para autosave
   const todosLosDatosEditados = {
     ...estudianteEditing.datosEditados,
     familia: familiaEditing.datosFamiliaEditados,
-    informacionAcademica: academicEditing.datosAcademicosEditados
+    informacionAcademica: academicEditing.datosAcademicosEditados,
+    institucion: institucionEditing.datosInstitucionEditados
   };
 
   // Autosave combinado
@@ -43,7 +46,8 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
   const hayCambiosPendientes =
     estudianteEditing.hayCambios ||
     familiaEditing.hayCambios ||
-    academicEditing.hayCambios;
+    academicEditing.hayCambios ||
+    institucionEditing.hayCambios;
 
 
   useEffect(() => {
@@ -84,6 +88,11 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
       'semestres_suspendidos', 'semestres_total_carrera'
     ];
 
+    const camposInstitucion = [
+      'carrera_especialidad', 'duracion', 'nombre', 'tipo_institucion',
+      'nivel_educativo', 'anio_de_ingreso', 'anio_de_egreso'
+    ];
+
     const camposAcademicos = [
       'año_ingreso_beca', 'colegio', 'especialidad_colegio',
       'comuna_colegio', 'via_acceso', 'beneficios',
@@ -93,6 +102,8 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
 
     if (camposEstudiante.includes(campo)) {
       estudianteEditing.handleCampoChange(campo, valor);
+    } else if (camposInstitucion.includes(campo)) {
+      institucionEditing.handleInstitucionChange(campo, valor);
     } else if (camposAcademicos.includes(campo)) {
       academicEditing.handleCampoChange(campo, valor);
     }
@@ -133,6 +144,10 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
         promesas.push(academicEditing.guardarCambios());
       }
 
+      if (institucionEditing.hayCambios) {
+        promesas.push(institucionEditing.guardarCambios());
+      }
+
       // Ejecutar todos los guardados en paralelo
       await Promise.all(promesas);
 
@@ -143,6 +158,7 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
       estudianteEditing.limpiarCambios();
       familiaEditing.limpiarCambios();
       academicEditing.limpiarCambios();
+      institucionEditing.limpiarCambios();
 
       setModoEdicion(false);
 
@@ -167,8 +183,7 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
       // Cancelar edición → Limpiar cambios temporales de todos los dominios
       estudianteEditing.limpiarCambios();
       familiaEditing.limpiarCambios();
-      academicEditing.limpiarCambios();
-      logger.log('❌ Modo edición CANCELADO (cambios descartados)');
+      academicEditing.limpiarCambios();      institucionEditing.limpiarCambios();      logger.log('❌ Modo edición CANCELADO (cambios descartados)');
     }
     setModoEdicion(!modoEdicion);
   };
@@ -223,11 +238,13 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
     const estudianteCombinado = estudianteEditing.getDatosCombinados();
     const familiaCombinada = familiaEditing.getDatosCombinados();
     const academicoCombinado = academicEditing.getDatosCombinados();
+    const institucionCombinada = institucionEditing.getDatosCombinados();
 
     return {
       ...estudianteCombinado,
       familia: familiaCombinada || estudiante.familia,
-      informacionAcademica: academicoCombinado || estudiante.informacionAcademica
+      informacionAcademica: academicoCombinado || estudiante.informacionAcademica,
+      institucion: institucionCombinada || estudiante.institucion
     };
   };
 
