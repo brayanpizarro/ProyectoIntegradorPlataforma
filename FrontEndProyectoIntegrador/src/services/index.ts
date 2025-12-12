@@ -5,4 +5,5 @@ export { userService } from './user.service';
 export { institucionService } from './institucion.service';
 export { historialAcademicoService } from './historial-academico.service';
 export { estadisticasService } from './estadisticas.service';
+export { familiaService } from './familia.service';
 export { default as PermissionService } from './permissionService';

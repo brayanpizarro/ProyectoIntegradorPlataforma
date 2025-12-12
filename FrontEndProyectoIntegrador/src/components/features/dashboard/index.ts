@@ -7,4 +7,4 @@ export { FilterPanel } from './FilterPanel';
 export { GenerationCard } from './GenerationCard';
 export { GenerationsGrid } from './GenerationsGrid';
 export { CreateGeneracionModal } from './CreateGeneracionModal';
-export { CreateEstudianteModal } from './CreateEstudianteModal';
+export { CreateEstudianteModal } from './CreateEstudianteModal/CreateEstudianteModal';

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { apiService } from '../services/apiService';
 import { logger } from '../config';
@@ -21,7 +21,7 @@ interface Estudiante {
   tienePendienteNotas?: boolean;
 }
 
-const GeneracionViewSimple: React.FC = () => {
+export default function GeneracionViewSimple(){
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const generationId = parseInt(id || '2024', 10);
@@ -173,5 +173,3 @@ const GeneracionViewSimple: React.FC = () => {
     </div>
   );
 };
-
-export default GeneracionViewSimple;

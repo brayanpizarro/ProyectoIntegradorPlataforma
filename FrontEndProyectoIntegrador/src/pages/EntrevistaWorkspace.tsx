@@ -9,20 +9,17 @@ import { useWorkspaceTabs } from '../hooks';
 import { sidebarSections } from '../config/workspaceSections';
 import { LoadingState, ErrorState } from '../components/features/entrevista-workspace';
 
-// Componentes del workspace
 import { TopNavbar, Sidebar, TabManager } from '../components/features/interview-workspace';
 
 export function EntrevistaWorkspace() {
   const navigate = useNavigate();
   const { id: entrevistaIdFromUrl } = useParams(); // Este es el ID de la entrevista, no del estudiante
   
-  // ✅ ESTADOS: Workspace y datos
   const [estudiante, setEstudiante] = useState<Estudiante | null>(null);
   const [entrevistaId, setEntrevistaId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // ✅ CUSTOM HOOK: Manejo de pestañas
   const {
     workspace,
     openTab,
@@ -103,9 +100,6 @@ export function EntrevistaWorkspace() {
     loadEntrevistaData();
   }, [entrevistaIdFromUrl, navigate]);
 
-
-
-  // ✅ ESTADOS DE CARGA
   if (loading) {
     return <LoadingState />;
   }

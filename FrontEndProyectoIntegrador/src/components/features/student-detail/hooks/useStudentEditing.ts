@@ -1,7 +1,12 @@
-import { useState } from 'react';
-import { estudianteService, historialAcademicoService } from '../../../../services';
+import { useState, useEffect } from 'react';
+import { historialAcademicoService } from '../../../../services';
 import type { Estudiante } from '../../../../types';
 import { logger } from '../../../../config';
+import { useAutosave } from './useAutosave';
+import { useEstudianteEditing } from './useEstudianteEditing';
+import { useFamiliaEditing } from './useFamiliaEditing';
+import { useAcademicEditing } from './useAcademicEditing';
+import { useInstitucionEditing } from './useInstitucionEditing';
 
 interface UseStudentEditingProps {
   id?: string;
@@ -12,122 +17,173 @@ interface UseStudentEditingProps {
 
 export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInformesGuardados }: UseStudentEditingProps) => {
   const [modoEdicion, setModoEdicion] = useState(false);
-  const [datosEditados, setDatosEditados] = useState<Partial<Estudiante>>({});
+  const [isGuardando, setIsGuardando] = useState(false);
+  const [mensajeExito, setMensajeExito] = useState<string>('');
+  const [mensajeError, setMensajeError] = useState<string>('');
 
-  // Handler para capturar cambios en campos editables
-  const handleCampoChange = (campo: string, valor: any) => {
-    setDatosEditados(prev => ({
-      ...prev,
-      [campo]: valor
-    }));
-    
-    logger.log(`📝 Campo editado: ${campo} =`, valor);
+  const estudianteEditing = useEstudianteEditing({ estudiante, id });
+  const familiaEditing = useFamiliaEditing({ estudiante });
+  const academicEditing = useAcademicEditing({ estudiante });
+  const institucionEditing = useInstitucionEditing({ estudiante });
+
+  // Combinar todos los datos editados para autosave
+  const todosLosDatosEditados = {
+    ...estudianteEditing.datosEditados,
+    familia: familiaEditing.datosFamiliaEditados,
+    informacionAcademica: academicEditing.datosAcademicosEditados,
+    institucion: institucionEditing.datosInstitucionEditados
   };
 
-  // Handler de guardado con datos editados
+  // Autosave combinado
+  const { recoverAutosave, clearAutosave } = useAutosave({
+    id,
+    data: todosLosDatosEditados,
+    prefix: 'student_edit_',
+    interval: 30000
+  });
+
+  // Verificar si hay cambios pendientes en cualquier dominio
+  const hayCambiosPendientes =
+    estudianteEditing.hayCambios ||
+    familiaEditing.hayCambios ||
+    academicEditing.hayCambios ||
+    institucionEditing.hayCambios;
+
+
+  useEffect(() => {
+    if (!id || !estudiante) return;
+
+    const savedData = recoverAutosave();
+    if (savedData) {
+      // Restaurar datos en los hooks especializados si es necesario
+      // Por ahora solo logueamos que se recuperaron
+      logger.log('📦 Datos de autosave disponibles');
+    }
+  }, [id, estudiante, recoverAutosave]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hayCambiosPendientes) {
+        e.preventDefault();
+        e.returnValue = ''; // Chrome requiere esto
+        return ''; // Otros navegadores
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hayCambiosPendientes]);
+
+  // ============================================
+  // HANDLERS - Delegan a los hooks especializados
+  // ============================================
+
+  // Handler para cambios en campos del estudiante
+  const handleCampoChange = (campo: string, valor: any) => {
+
+    const camposEstudiante = [
+      'nombre', 'rut', 'telefono', 'email', 'genero', 'direccion',
+      'fecha_de_nacimiento', 'tipo_de_estudiante', 'status', 'generacion',
+      'numero_carrera', 'observaciones', 'status_detalle',
+      'semestres_suspendidos', 'semestres_total_carrera'
+    ];
+
+    const camposInstitucion = [
+      'carrera_especialidad', 'duracion', 'nombre', 'tipo_institucion',
+      'nivel_educativo', 'anio_de_ingreso', 'anio_de_egreso'
+    ];
+
+    const camposAcademicos = [
+      'año_ingreso_beca', 'colegio', 'especialidad_colegio',
+      'comuna_colegio', 'via_acceso', 'beneficios',
+      'promedio_1', 'promedio_2', 'promedio_3', 'promedio_4',
+      'puntajes_paes'
+    ];
+
+    if (camposEstudiante.includes(campo)) {
+      estudianteEditing.handleCampoChange(campo, valor);
+    } else if (camposInstitucion.includes(campo)) {
+      institucionEditing.handleInstitucionChange(campo, valor);
+    } else if (camposAcademicos.includes(campo)) {
+      academicEditing.handleCampoChange(campo, valor);
+    }
+  };
+
+  const handleFamiliaChange = (campo: string, valor: any) => {
+    familiaEditing.handleFamiliaChange(campo, valor);
+  };
+
   const handleGuardar = async () => {
     if (!estudiante || !id) return;
 
-    // Validar que haya cambios
-    if (Object.keys(datosEditados).length === 0) {
-      alert('⚠️ No hay cambios para guardar');
+    if (!hayCambiosPendientes) {
+      setMensajeError('No hay cambios para guardar');
       setModoEdicion(false);
       return;
     }
 
+    setIsGuardando(true);
+    setMensajeError('');
+    setMensajeExito('');
+
     try {
-      logger.log('💾 Guardando cambios:', datosEditados);
+      logger.log('💾 Guardando cambios en todos los dominios...');
 
-      // Separar campos de estudiante vs información académica
-      const camposEstudiante = ['nombre', 'rut', 'telefono', 'email', 'genero', 'direccion', 
-        'fecha_de_nacimiento', 'tipo_de_estudiante', 'status', 'generacion', 'numero_carrera', 
-        'observaciones', 'status_detalle', 'semestres_suspendidos', 'semestres_total_carrera'];
-      
-      const camposInfoAcademica = ['año_ingreso_beca', 'colegio', 'especialidad_colegio', 
-        'comuna_colegio', 'via_acceso', 'beneficios', 'promedio_1', 'promedio_2', 
-        'promedio_3', 'promedio_4', 'puntajes_paes'];
+      // Guardar en paralelo todos los dominios que tienen cambios
+      const promesas: Promise<void>[] = [];
 
-      const datosEstudiante: any = {};
-      const datosInfoAcademica: any = {};
-
-      // Clasificar los cambios
-      Object.keys(datosEditados).forEach(campo => {
-        if (camposEstudiante.includes(campo)) {
-          datosEstudiante[campo] = datosEditados[campo];
-        } else if (camposInfoAcademica.includes(campo)) {
-          datosInfoAcademica[campo] = datosEditados[campo];
-        }
-      });
-
-      // Actualizar estudiante si hay cambios
-      if (Object.keys(datosEstudiante).length > 0) {
-        await estudianteService.update(id, datosEstudiante);
-        logger.log('✅ Datos del estudiante actualizados');
+      if (estudianteEditing.hayCambios) {
+        promesas.push(estudianteEditing.guardarCambios());
       }
 
-      // Actualizar información académica si hay cambios
-      if (Object.keys(datosInfoAcademica).length > 0 && estudiante.informacionAcademica?.id_info_academico) {
-        // Convertir año_ingreso_beca a número si existe
-        if (datosInfoAcademica.año_ingreso_beca !== undefined) {
-          const valor = parseInt(datosInfoAcademica.año_ingreso_beca);
-          datosInfoAcademica.año_ingreso_beca = isNaN(valor) ? null : valor;
-        }
-        
-        // Convertir promedios a número
-        ['promedio_1', 'promedio_2', 'promedio_3', 'promedio_4'].forEach(campo => {
-          if (datosInfoAcademica[campo] !== undefined) {
-            const valor = parseFloat(datosInfoAcademica[campo]);
-            datosInfoAcademica[campo] = isNaN(valor) ? null : valor;
-          }
-        });
-
-        // Convertir puntajes_paes a puntajes_admision
-        if (datosInfoAcademica.puntajes_paes !== undefined) {
-          datosInfoAcademica.puntajes_admision = { descripcion: datosInfoAcademica.puntajes_paes };
-          delete datosInfoAcademica.puntajes_paes;
-        }
-
-        const infoAcademicaId = estudiante.informacionAcademica.id_info_academico;
-        const response = await fetch(`http://localhost:3000/informacion-academica/${infoAcademicaId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(datosInfoAcademica)
-        });
-        
-        if (!response.ok) throw new Error('Error al actualizar información académica');
-        logger.log('✅ Información académica actualizada');
+      if (familiaEditing.hayCambios) {
+        promesas.push(familiaEditing.guardarCambios());
       }
-      
-      logger.log('✅ Cambios guardados exitosamente');
-      
-      // Recargar datos actualizados
+
+      if (academicEditing.hayCambios) {
+        promesas.push(academicEditing.guardarCambios());
+      }
+
+      if (institucionEditing.hayCambios) {
+        promesas.push(institucionEditing.guardarCambios());
+      }
+
+      // Ejecutar todos los guardados en paralelo
+      await Promise.all(promesas);
+
+      logger.log('✅ Cambios guardados exitosamente en todos los dominios');
+
       await reloadStudentData();
-      
-      // Limpiar estado temporal y salir del modo edición
-      setDatosEditados({});
+
+      estudianteEditing.limpiarCambios();
+      familiaEditing.limpiarCambios();
+      academicEditing.limpiarCambios();
+      institucionEditing.limpiarCambios();
+
       setModoEdicion(false);
-      
-      alert('✅ Cambios guardados correctamente');
-      
+
+      clearAutosave();
+
+      setMensajeExito('Cambios guardados correctamente');
+
     } catch (err: any) {
       logger.error('❌ Error al guardar cambios:', err);
-      
-      // Mensaje de error más específico
+
       const errorMsg = err.response?.data?.message || err.message || 'Error desconocido';
-      alert(`❌ Error al guardar cambios:\n\n${errorMsg}`);
+      setMensajeError(`Error al guardar cambios: ${errorMsg}`);
+    } finally {
+      setIsGuardando(false);
     }
   };
 
-  // Manejar activación/cancelación de modo edición
   const handleToggleEdicion = () => {
     if (!modoEdicion) {
-      // Activar modo edición → Limpiar cambios previos
-      setDatosEditados({});
       logger.log('✏️ Modo edición ACTIVADO');
     } else {
-      // Cancelar edición → Limpiar cambios temporales
-      setDatosEditados({});
-      logger.log('❌ Modo edición CANCELADO (cambios descartados)');
+      // Cancelar edición → Limpiar cambios temporales de todos los dominios
+      estudianteEditing.limpiarCambios();
+      familiaEditing.limpiarCambios();
+      academicEditing.limpiarCambios();      institucionEditing.limpiarCambios();      logger.log('❌ Modo edición CANCELADO (cambios descartados)');
     }
     setModoEdicion(!modoEdicion);
   };
@@ -152,18 +208,18 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
       };
 
       const response = await historialAcademicoService.create(historialData);
-      
+
       const nuevoInforme = {
         ...(response || {}),
-        fechaFormateada: new Date().toLocaleDateString('es-CL', { 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
+        fechaFormateada: new Date().toLocaleDateString('es-CL', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
         }),
       };
 
       setInformesGuardados(prev => [...prev, nuevoInforme]);
-      
+
       logger.log('✅ Informe generado:', nuevoInforme);
       alert(`✅ Informe generado\nAño: ${añoActual} | Semestre: ${semestreActual}`);
     } catch (err: any) {
@@ -172,23 +228,42 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
     }
   };
 
-  // Crear datos combinados para vista (datos originales + ediciones temporales)
+  // ============================================
+  // DATOS COMBINADOS - Originales + Ediciones
+  // ============================================
   const getDatosCombinadosParaVista = () => {
     if (!estudiante) return null;
-    
+
+    // Combinar datos de todos los dominios
+    const estudianteCombinado = estudianteEditing.getDatosCombinados();
+    const familiaCombinada = familiaEditing.getDatosCombinados();
+    const academicoCombinado = academicEditing.getDatosCombinados();
+    const institucionCombinada = institucionEditing.getDatosCombinados();
+
     return {
-      ...estudiante,
-      ...datosEditados
+      ...estudianteCombinado,
+      familia: familiaCombinada || estudiante.familia,
+      informacionAcademica: academicoCombinado || estudiante.informacionAcademica,
+      institucion: institucionCombinada || estudiante.institucion
     };
   };
 
   return {
     modoEdicion,
-    datosEditados,
+    datosEditados: todosLosDatosEditados, // Para compatibilidad
+    hayCambiosPendientes,
+    isGuardando,
+    mensajeExito,
+    mensajeError,
+
     handleCampoChange,
+    handleFamiliaChange,
     handleGuardar,
     handleToggleEdicion,
     handleGenerarInforme,
-    getDatosCombinadosParaVista
+    getDatosCombinadosParaVista,
+
+    setMensajeExito,
+    setMensajeError
   };
 };

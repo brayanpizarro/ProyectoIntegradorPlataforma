@@ -1,7 +1,3 @@
-/**
- * Custom hook para gestionar datos de estudiantes
- * Centraliza fetch, filtrado y manipulación de datos de estudiantes
- */
 import { useState, useEffect, useCallback } from 'react';
 import { apiService } from '../services/apiService';
 import { logger } from '../config';

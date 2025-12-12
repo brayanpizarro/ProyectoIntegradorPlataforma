@@ -18,8 +18,8 @@ export function ProfileSection({ estudiante }: ProfileSectionProps) {
     { label: 'RUT', value: estudiante.rut },
     { label: 'Correo Electrónico', value: estudiante.email },
     { label: 'Teléfono', value: estudiante.telefono },
-    { label: 'Universidad', value: estudiante.universidad },
-    { label: 'Carrera', value: estudiante.carrera },
+    { label: 'Universidad', value: estudiante.institucion?.nombre || estudiante.universidad },
+    { label: 'Carrera', value: estudiante.institucion?.carrera_especialidad || estudiante.carrera },
     { label: 'Generación', value: estudiante.generacion || estudiante.año_generacion },
     { label: 'Tipo de Estudiante', value: estudiante.tipo_de_estudiante }
   ];

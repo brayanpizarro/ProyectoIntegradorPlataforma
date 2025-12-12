@@ -86,6 +86,9 @@ export class Estudiante {
   })
   status: StatusEstudiante;
 
+  @Column({ type: 'uuid', nullable: true })
+  id_institucion?: string;
+
   @ManyToOne(() => Institucion, (institucion) => institucion.estudiantes, {
     nullable: true,
   })

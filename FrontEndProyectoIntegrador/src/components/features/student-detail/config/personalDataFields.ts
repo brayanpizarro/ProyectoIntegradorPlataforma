@@ -169,7 +169,6 @@ export const personalDataConfig: SectionConfig[] = [
         label: 'Universidad',
         type: 'text',
         source: 'institucion',
-        nested: 'universidad',
         placeholder: 'Nombre de la universidad',
       },
       {

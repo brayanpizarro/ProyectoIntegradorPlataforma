@@ -33,11 +33,18 @@ const EstudianteDetail: React.FC = () => {
 
     // Edición
     modoEdicion,
+    hayCambiosPendientes,
+    isGuardando,
+    mensajeExito,
+    mensajeError,
     handleCampoChange,
+    handleFamiliaChange,
     handleGuardar,
     handleToggleEdicion,
     handleGenerarInforme,
     estudianteConEdiciones,
+    setMensajeExito,
+    setMensajeError,
 
     // Semestres
     mostrarModalNuevoSemestre,
@@ -73,6 +80,8 @@ const EstudianteDetail: React.FC = () => {
         nombres={estudianteConEdiciones.nombre || ''}
         estado={estudianteConEdiciones.status || 'activo'}
         modoEdicion={modoEdicion}
+        hayCambiosPendientes={hayCambiosPendientes}
+        isGuardando={isGuardando}
         onToggleEdicion={handleToggleEdicion}
         onGuardar={handleGuardar}
         onGenerarInforme={handleGenerarInforme}
@@ -105,8 +114,9 @@ const EstudianteDetail: React.FC = () => {
         {/* Información Familiar */}
         {seccionActiva === 'familiar' && (
           <FamilyInfoSection
-            estudiante={estudiante}
+            estudiante={estudianteConEdiciones}
             modoEdicion={modoEdicion && canEdit}
+            onFamiliaChange={handleFamiliaChange}
           />
         )}
 
@@ -140,8 +150,6 @@ const EstudianteDetail: React.FC = () => {
         )}
       </div>
 
-
-
       {/* Modal para crear nuevo semestre */}
       <NuevoSemestreModal
         open={mostrarModalNuevoSemestre}
@@ -150,8 +158,29 @@ const EstudianteDetail: React.FC = () => {
         setNuevoSemestreData={setNuevoSemestreData as any}
         onCrearSemestre={handleCrearNuevoSemestre}
       />
+
+      {/* Snackbars para mensajes de éxito y error */}
+      <Snackbar
+        open={!!mensajeExito}
+        autoHideDuration={4000}
+        onClose={() => setMensajeExito('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setMensajeExito('')} severity="success" variant="filled">
+          {mensajeExito}
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={!!mensajeError}
+        autoHideDuration={6000}
+        onClose={() => setMensajeError('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setMensajeError('')} severity="error" variant="filled">
+          {mensajeError}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
-
-export default EstudianteDetail;

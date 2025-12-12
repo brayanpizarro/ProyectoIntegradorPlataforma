@@ -98,6 +98,7 @@ export class EstudianteService {
   findByGeneration(generation: string) {
     return this.estudianteRepository.find({
       where: { generacion: generation },
+      relations: ['institucion', 'informacionAcademica', 'familia'],
       order: { nombre: 'ASC' },
     });
   }

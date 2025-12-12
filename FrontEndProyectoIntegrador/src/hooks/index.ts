@@ -9,5 +9,4 @@ export { useGeneraciones } from './useGeneraciones';
 export { useWorkspaceTabs } from './useWorkspaceTabs';
 export { useSnackbar } from './useSnackbar';
 export { useFormValidation } from './useFormValidation';
-export { useConfirmDialog } from './useConfirmDialog';
 export type { Tab, WorkspaceState } from './useWorkspaceTabs';
