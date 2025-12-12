@@ -6,12 +6,10 @@ import { logger } from '../config';
 import type { Estudiante } from '../types';
 import { useWorkspaceTabs } from '../hooks';
 import { sidebarSections } from '../config/workspaceSections';
-import { LoadingState, ErrorState } from '../components/EntrevistaWorkspace';
+import { LoadingState, ErrorState } from '../components/features/entrevista-workspace';
 
 // Componentes del workspace
-import { TopNavbar } from '../components/workspace/TopNavbar';
-import { Sidebar } from '../components/workspace/Sidebar';
-import { TabManager } from '../components/workspace/TabManager';
+import { TopNavbar, Sidebar, TabManager } from '../components/features/interview-workspace';
 
 export const EntrevistaWorkspace: React.FC = () => {
   const navigate = useNavigate();

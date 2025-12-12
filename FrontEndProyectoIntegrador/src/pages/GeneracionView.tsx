@@ -2,8 +2,8 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { apiService } from '../services/apiService';
 import { logger } from '../config';
-import { GenerationHeader, StudentFilterPanel, StudentsTable } from '../components/GenerationView';
-import { CreateEstudianteModal } from '../components/Dashboard';
+import { GenerationHeader, StudentFilterPanel, StudentsTable } from '../components/features/generation-view';
+import { CreateEstudianteModal } from '../components/features/dashboard';
 
 interface Estudiante {
   id: number;

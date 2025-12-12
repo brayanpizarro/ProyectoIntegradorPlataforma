@@ -3,14 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { authService, estadisticasService } from '../services';
 import { apiService } from '../services/apiService';
 import { logger } from '../config';
-import { LoadingSpinner, ErrorMessage, StatCard } from '../components/common';
+import { LoadingSpinner, ErrorMessage, StatCard } from '../components/ui';
 import { 
   DashboardNavbar, 
   FilterPanel, 
   GenerationsGrid,
   CreateGeneracionModal,
   CreateEstudianteModal
-} from '../components/Dashboard';
+} from '../components/features/dashboard';
 import type { Estudiante, EstadisticasAdmin } from '../types';
 
 interface DashboardProps {

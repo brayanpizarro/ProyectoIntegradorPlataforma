@@ -2,8 +2,8 @@ import { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { authService } from './services/authService';
 import { logger } from './config';
-import { LoginAdminForm } from './components/LoginForm/LoginAdminForm';
-import { LoadingSpinner } from './components/common';
+import { LoginAdminForm } from './components/features/auth/login/LoginAdminForm';
+import { LoadingSpinner } from './components/ui';
 
 // Lazy loading de componentes pesados para mejor rendimiento
 const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));

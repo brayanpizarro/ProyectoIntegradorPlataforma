@@ -1,5 +1,5 @@
 ﻿import React from 'react';
-import { LoadingSpinner, ErrorMessage } from '../components/common';
+import { LoadingSpinner, ErrorMessage } from '../components/ui';
 import { 
   StudentHeader, 
   TabNavigation, 
@@ -11,7 +11,7 @@ import {
   InterviewsSection,
   AvanceCurricularSection,
   useStudentDetail
-} from '../components/StudentDetail';
+} from '../components/features/student-detail';
 
 const EstudianteDetail: React.FC = () => {
   // ✅ REFACTORIZADO: Toda la lógica ahora está en hooks personalizados
