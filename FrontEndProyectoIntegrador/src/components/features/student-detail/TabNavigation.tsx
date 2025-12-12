@@ -1,7 +1,7 @@
 /**
  * Navegación por pestañas del detalle de estudiante
  */
-import React from 'react';
+import { Tabs, Tab, Box } from '@mui/material';
 
 export type SeccionActiva = 'perfil' | 'personal' | 'familiar' | 'informe' | 'desempeno' | 'entrevistas' | 'avance';
 
@@ -21,11 +21,11 @@ const tabs = [
   { id: 'entrevistas' as SeccionActiva, label: 'Entrevistas' },
 ];
 
-export const TabNavigation: React.FC<TabNavigationProps> = ({ 
+export function TabNavigation({ 
   seccionActiva, 
   onSeccionChange,
   canViewInterviews = true
-}) => {
+}: TabNavigationProps) {
   // Filtrar tabs basado en permisos
   const visibleTabs = tabs.filter(tab => {
     if (tab.id === 'entrevistas') {
@@ -34,23 +34,42 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
     return true;
   });
 
+  const handleChange = (_event: React.SyntheticEvent, newValue: SeccionActiva) => {
+    onSeccionChange(newValue);
+  };
+
   return (
-    <div className="bg-white border-b border-gray-200 px-8">
-      <div className="flex gap-2 overflow-x-auto">
+    <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: 'white', px: 4 }}>
+      <Tabs 
+        value={seccionActiva} 
+        onChange={handleChange}
+        variant="scrollable"
+        scrollButtons="auto"
+        sx={{
+          '& .MuiTab-root': {
+            textTransform: 'none',
+            fontWeight: 500,
+            fontSize: '0.875rem',
+            minHeight: 60
+          },
+          '& .Mui-selected': {
+            color: '#4db6ac',
+            fontWeight: 600
+          },
+          '& .MuiTabs-indicator': {
+            backgroundColor: '#4db6ac',
+            height: 3
+          }
+        }}
+      >
         {visibleTabs.map((tab) => (
-          <button 
-            key={tab.id} 
-            onClick={() => onSeccionChange(tab.id)} 
-            className={`px-6 py-4 text-sm transition-all whitespace-nowrap ${
-              seccionActiva === tab.id 
-                ? 'bg-white text-emerald-500 border-b-2 border-emerald-500 font-semibold' 
-                : 'bg-transparent text-gray-600 border-b-2 border-transparent hover:text-gray-900'
-            }`}
-          >
-            {tab.label}
-          </button>
+          <Tab 
+            key={tab.id}
+            label={tab.label}
+            value={tab.id}
+          />
         ))}
-      </div>
-    </div>
+      </Tabs>
+    </Box>
   );
-};
+}

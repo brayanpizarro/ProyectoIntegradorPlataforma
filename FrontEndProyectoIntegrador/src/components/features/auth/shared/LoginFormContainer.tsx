@@ -1,4 +1,4 @@
-import React, { type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { Box, Container, Paper, Typography } from '@mui/material';
 
 interface LoginFormContainerProps {

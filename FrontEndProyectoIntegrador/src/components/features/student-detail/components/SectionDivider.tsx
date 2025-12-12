@@ -1,11 +1,10 @@
-import React from 'react';
 import { Box, Typography } from '@mui/material';
 
 interface SectionDividerProps {
   titulo: string;
 }
 
-export const SectionDivider: React.FC<SectionDividerProps> = ({ titulo }) => {
+export function SectionDivider({ titulo }: SectionDividerProps) {
   return (
     <Box
       sx={{

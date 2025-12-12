@@ -2,7 +2,9 @@
  * Sección de perfil del estudiante
  * Muestra avatar, información básica y resumen académico
  */
-import React from 'react';
+import { Box, Paper, Typography, Avatar, Chip } from '@mui/material';
+import { AccountCircle as AccountCircleIcon } from '@mui/icons-material';
+import { StatCard } from '../../ui';
 import { getEstadoColor } from '../../../utils/estadoColors';
 import type { Estudiante } from '../../../types';
 
@@ -10,92 +12,103 @@ interface ProfileSectionProps {
   estudiante: Estudiante;
 }
 
-export const ProfileSection: React.FC<ProfileSectionProps> = ({ estudiante }) => {
+export function ProfileSection({ estudiante }: ProfileSectionProps) {
+  const infoFields = [
+    { label: 'Nombre Completo', value: estudiante.nombre },
+    { label: 'RUT', value: estudiante.rut },
+    { label: 'Correo Electrónico', value: estudiante.email },
+    { label: 'Teléfono', value: estudiante.telefono },
+    { label: 'Universidad', value: estudiante.universidad },
+    { label: 'Carrera', value: estudiante.carrera },
+    { label: 'Generación', value: estudiante.generacion || estudiante.año_generacion },
+    { label: 'Tipo de Estudiante', value: estudiante.tipo_de_estudiante }
+  ];
+
   return (
-    <div>
+    <Box>
       {/* Tarjeta de Perfil */}
-      <div className="bg-white rounded-xl p-8 shadow-md mb-8">
-        <div className="grid grid-cols-[200px_1fr] gap-8 items-start">
+      <Paper elevation={2} sx={{ p: 4, mb: 4, borderRadius: 3 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '200px 1fr' }, gap: 4, alignItems: 'start' }}>
           {/* Avatar y Estado */}
-          <div className="text-center">
-            <div className="w-[180px] h-[180px] rounded-full bg-gray-200 flex items-center justify-center text-6xl text-gray-500 mb-4">
-              👤
-            </div>
-            <div 
-              className="px-4 py-2 text-white rounded-lg font-semibold text-base"
-              style={{ backgroundColor: getEstadoColor(estudiante.estado || 'Activo') }}
+          <Box sx={{ textAlign: 'center' }}>
+            <Avatar 
+              sx={{ 
+                width: 180, 
+                height: 180, 
+                bgcolor: 'grey.300',
+                mb: 2,
+                mx: 'auto',
+                fontSize: '4rem'
+              }}
             >
-              {estudiante.estado || 'Activo'}
-            </div>
-          </div>
+              <AccountCircleIcon sx={{ fontSize: '8rem', color: 'grey.500' }} />
+            </Avatar>
+            <Chip
+              label={estudiante.estado || 'Activo'}
+              sx={{
+                bgcolor: getEstadoColor(estudiante.estado || 'Activo'),
+                color: 'white',
+                fontWeight: 600,
+                fontSize: '1rem',
+                px: 2,
+                py: 1
+              }}
+            />
+          </Box>
 
           {/* Información Principal */}
-          <div>
-            <h2 className="text-2xl font-bold mb-6">Información General</h2>
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Nombre Completo</p>
-                <p className="text-base font-semibold">{estudiante.nombre || 'No especificado'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">RUT</p>
-                <p className="text-base font-semibold">{estudiante.rut || 'No especificado'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Correo Electrónico</p>
-                <p className="text-base font-semibold">{estudiante.email || 'No especificado'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Teléfono</p>
-                <p className="text-base font-semibold">{estudiante.telefono || 'No especificado'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Universidad</p>
-                <p className="text-base font-semibold">{estudiante.universidad || 'No especificada'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Carrera</p>
-                <p className="text-base font-semibold">{estudiante.carrera || 'No especificada'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Generación</p>
-                <p className="text-base font-semibold">{estudiante.generacion || estudiante.año_generacion || 'No especificada'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Tipo de Estudiante</p>
-                <p className="text-base font-semibold capitalize">{estudiante.tipo_de_estudiante || 'No especificado'}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+          <Box>
+            <Typography variant="h5" fontWeight="bold" gutterBottom>
+              Información General
+            </Typography>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 3, mt: 3 }}>
+              {infoFields.map((field) => (
+                <Box key={field.label}>
+                  <Typography variant="caption" color="text.secondary">
+                    {field.label}
+                  </Typography>
+                  <Typography variant="body1" fontWeight={600} sx={{ textTransform: field.label === 'Tipo de Estudiante' ? 'capitalize' : 'none' }}>
+                    {field.value || 'No especificado'}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        </Box>
+      </Paper>
 
       {/* Resumen Académico */}
-      <div className="bg-white rounded-xl p-8 shadow-md">
-        <h2 className="text-2xl font-bold mb-6">Resumen Académico</h2>
-        <div className="grid grid-cols-4 gap-6">
-          <div className="text-center p-6 bg-blue-50 rounded-lg">
-            <p className="text-3xl font-bold text-blue-600">{estudiante.promedio || 'N/A'}</p>
-            <p className="text-sm text-gray-600 mt-2">Promedio General</p>
-          </div>
-          <div className="text-center p-6 bg-emerald-50 rounded-lg">
-            <p className="text-3xl font-bold text-emerald-600">
-              {estudiante.informacionAcademica?.semestre_carrera || 'N/A'}
-            </p>
-            <p className="text-sm text-gray-600 mt-2">Semestre Actual</p>
-          </div>
-          <div className="text-center p-6 bg-purple-50 rounded-lg">
-            <p className="text-3xl font-bold text-purple-600">{estudiante.beca || 'Sin beca'}</p>
-            <p className="text-sm text-gray-600 mt-2">Beca</p>
-          </div>
-          <div className="text-center p-6 bg-amber-50 rounded-lg">
-            <p className="text-3xl font-bold text-amber-600">
-              {estudiante.informacionAcademica?.status_actual || estudiante.estado || 'N/A'}
-            </p>
-            <p className="text-sm text-gray-600 mt-2">Estado Académico</p>
-          </div>
-        </div>
-      </div>
-    </div>
+      <Paper elevation={2} sx={{ p: 4, borderRadius: 3 }}>
+        <Typography variant="h5" fontWeight="bold" gutterBottom>
+          Resumen Académico
+        </Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 3, mt: 3 }}>
+          <StatCard
+            icon="📊"
+            label="Promedio General"
+            value={estudiante.promedio || 'N/A'}
+            accentColor="#2196f3"
+          />
+          <StatCard
+            icon="📚"
+            label="Semestre Actual"
+            value={estudiante.semestre || 'N/A'}
+            accentColor="#4caf50"
+          />
+          <StatCard
+            icon="🎓"
+            label="Beca"
+            value={estudiante.beca || 'Sin beca'}
+            accentColor="#9c27b0"
+          />
+          <StatCard
+            icon="✅"
+            label="Estado Académico"
+            value={estudiante.status || estudiante.estado || 'N/A'}
+            accentColor="#ff9800"
+          />
+        </Box>
+      </Paper>
+    </Box>
   );
-};
+}

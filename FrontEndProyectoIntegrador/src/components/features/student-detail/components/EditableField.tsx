@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { TableRow, TableCell, TextField, MenuItem, Typography } from '@mui/material';
 
 export type FieldType = 'text' | 'email' | 'tel' | 'date' | 'select' | 'number';
@@ -16,7 +16,7 @@ interface EditableFieldProps {
   readOnly?: boolean;
 }
 
-export const EditableField: React.FC<EditableFieldProps> = ({
+export function EditableField({
   label,
   value,
   type = 'text',
@@ -27,7 +27,7 @@ export const EditableField: React.FC<EditableFieldProps> = ({
   maxLength,
   inputMode,
   readOnly = false,
-}) => {
+}: EditableFieldProps) {
   const displayValue = value || 'Sin definir';
 
   const renderInput = () => {

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, TextField, MenuItem } from '@mui/material';
 
 interface StudentFilterPanelProps {

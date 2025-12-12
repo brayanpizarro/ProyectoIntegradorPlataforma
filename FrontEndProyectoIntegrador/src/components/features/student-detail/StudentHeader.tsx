@@ -2,8 +2,15 @@
  * Header del detalle de estudiante
  * Muestra nombre, estado, botones de edición y volver
  */
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Box, Typography, Button, Chip, Paper } from '@mui/material';
+import { 
+  ArrowBack as ArrowBackIcon,
+  Edit as EditIcon,
+  Visibility as VisibilityIcon,
+  Save as SaveIcon,
+  Description as DescriptionIcon
+} from '@mui/icons-material';
 import { getEstadoColor } from '../../../utils/estadoColors';
 
 interface StudentHeaderProps {
@@ -16,7 +23,7 @@ interface StudentHeaderProps {
   canEdit?: boolean;
 }
 
-export const StudentHeader: React.FC<StudentHeaderProps> = ({
+export function StudentHeader({
   nombres,
   estado,
   modoEdicion,
@@ -24,57 +31,104 @@ export const StudentHeader: React.FC<StudentHeaderProps> = ({
   onGuardar,
   onGenerarInforme,
   canEdit = true,
-}) => {
+}: StudentHeaderProps) {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-white px-8 py-4 border-b-2 border-gray-200 shadow-sm">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={() => navigate(-1)} 
-            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm"
+    <Paper 
+      elevation={1}
+      sx={{ 
+        px: 4, 
+        py: 2, 
+        borderBottom: 2, 
+        borderColor: 'grey.200'
+      }}
+    >
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Button 
+            variant="contained"
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate(-1)}
+            sx={{
+              bgcolor: 'grey.600',
+              textTransform: 'none',
+              '&:hover': {
+                bgcolor: 'grey.700'
+              }
+            }}
           >
             Volver
-          </button>
-          <h1 className="text-2xl text-gray-900 font-semibold flex items-center gap-3">
-            {nombres}
-            <span 
-              className="px-3 py-1 text-white rounded-lg text-sm font-semibold"
-              style={{ backgroundColor: getEstadoColor(estado) }}
-            >
-              {estado}
-            </span>
-          </h1>
-        </div>
+          </Button>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Typography variant="h5" fontWeight={600} color="text.primary">
+              {nombres}
+            </Typography>
+            <Chip
+              label={estado}
+              sx={{
+                bgcolor: getEstadoColor(estado),
+                color: 'white',
+                fontWeight: 600
+              }}
+            />
+          </Box>
+        </Box>
         
-        <div className="flex gap-3 items-center">
+        <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
           {canEdit && (
             <>
-              <button 
+              <Button 
+                variant="contained"
+                startIcon={modoEdicion ? <VisibilityIcon /> : <EditIcon />}
                 onClick={onToggleEdicion}
-                className="px-5 py-2.5 bg-[var(--color-turquoise)] text-white rounded-lg hover:bg-[var(--color-turquoise-light)] transition-colors text-sm font-medium"
+                sx={{
+                  bgcolor: '#4db6ac',
+                  textTransform: 'none',
+                  fontWeight: 500,
+                  '&:hover': {
+                    bgcolor: '#80cbc4'
+                  }
+                }}
               >
-                {modoEdicion ? '👁️ Modo Vista' : '✏️ Modo Edición'}
-              </button>
+                {modoEdicion ? 'Modo Vista' : 'Modo Edición'}
+              </Button>
               {modoEdicion && (
-                <button 
+                <Button 
+                  variant="contained"
+                  startIcon={<SaveIcon />}
                   onClick={onGuardar}
-                  className="px-5 py-2.5 bg-[var(--color-turquoise)] text-white rounded-lg hover:bg-[var(--color-turquoise-light)] transition-colors text-sm font-medium"
+                  sx={{
+                    bgcolor: '#4db6ac',
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    '&:hover': {
+                      bgcolor: '#80cbc4'
+                    }
+                  }}
                 >
-                  💾 Guardar
-                </button>
+                  Guardar
+                </Button>
               )}
             </>
           )}
-          <button 
+          <Button 
+            variant="contained"
+            startIcon={<DescriptionIcon />}
             onClick={onGenerarInforme}
-            className="px-5 py-2.5 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors text-sm font-medium"
+            sx={{
+              bgcolor: 'warning.main',
+              textTransform: 'none',
+              fontWeight: 500,
+              '&:hover': {
+                bgcolor: 'warning.dark'
+              }
+            }}
           >
-            📄 Generar Informe
-          </button>
-        </div>
-      </div>
-    </div>
+            Generar Informe
+          </Button>
+        </Box>
+      </Box>
+    </Paper>
   );
-};
+}
