@@ -10,23 +10,25 @@ export class InstitucionService {
 
   constructor(@InjectRepository(Institucion) private institucionRepository: Repository<Institucion>) {}
 
-  create(createInstitucionDto: CreateInstitucionDto) {
-    return this.institucionRepository.create(createInstitucionDto);
+  async create(createInstitucionDto: CreateInstitucionDto) {
+    const institucion = this.institucionRepository.create(createInstitucionDto);
+    return await this.institucionRepository.save(institucion);
   }
 
-  findAll() {
-    return `This action returns all institucion`;
+  async findAll() {
+    return await this.institucionRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} institucion`;
+  async findOne(id: string) {
+    return await this.institucionRepository.findOne({ where: { id_institucion: id } });
   }
 
-  update(id: number, updateInstitucionDto: UpdateInstitucionDto) {
-    return `This action updates a #${id} institucion`;
+  async update(id: string, updateInstitucionDto: UpdateInstitucionDto) {
+    await this.institucionRepository.update(id, updateInstitucionDto);
+    return await this.findOne(id);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} institucion`;
+  async remove(id: string) {
+    return await this.institucionRepository.delete(id);
   }
 }

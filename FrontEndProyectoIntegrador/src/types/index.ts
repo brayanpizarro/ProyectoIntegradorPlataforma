@@ -94,6 +94,7 @@ export interface Institucion {
   tipo_institucion?: string;
   nivel_educativo?: string;
   carrera_especialidad?: string;
+  duracion?: string;
   anio_de_ingreso?: string | number;
   anio_de_egreso?: string;
   direccion?: string;
