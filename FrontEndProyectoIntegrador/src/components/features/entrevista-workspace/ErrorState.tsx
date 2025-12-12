@@ -1,4 +1,5 @@
-import React from 'react';
+import { Box, Typography, Button, Alert } from '@mui/material';
+import { ArrowBack as ArrowBackIcon, Error as ErrorIcon } from '@mui/icons-material';
 
 interface ErrorStateProps {
   error: string;
@@ -8,20 +9,26 @@ interface ErrorStateProps {
 /**
  * Error state component for workspace
  */
-export const ErrorState: React.FC<ErrorStateProps> = ({ error, onBack }) => {
+export function ErrorState({ error, onBack }: ErrorStateProps) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <div className="text-center max-w-md p-8">
-        <div className="text-5xl mb-4">⚠️</div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Error al cargar</h2>
-        <p className="text-slate-600 mb-4">{error}</p>
-        <button 
+    <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'grey.50' }}>
+      <Box sx={{ textAlign: 'center', maxWidth: 500, p: 4 }}>
+        <ErrorIcon sx={{ fontSize: 80, color: 'error.main', mb: 2 }} />
+        <Typography variant="h4" fontWeight={600} gutterBottom>
+          Error al cargar
+        </Typography>
+        <Alert severity="error" sx={{ mb: 3, textAlign: 'left' }}>
+          {error}
+        </Alert>
+        <Button 
+          startIcon={<ArrowBackIcon />}
           onClick={onBack}
-          className="px-6 py-3 bg-[var(--color-turquoise)] text-white rounded-lg hover:bg-[var(--color-turquoise-light)] transition-colors"
+          variant="contained"
+          size="large"
         >
-          ← Volver
-        </button>
-      </div>
-    </div>
+          Volver
+        </Button>
+      </Box>
+    </Box>
   );
-};
+}

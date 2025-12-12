@@ -1,4 +1,4 @@
-﻿import React from 'react';
+﻿import { Fragment } from 'react';
 import type { Estudiante } from '../../../types';
 
 interface DataTableProps {
@@ -7,11 +7,11 @@ interface DataTableProps {
   estudiante: Estudiante;
 }
 
-export const DataTable: React.FC<DataTableProps> = ({
+export function DataTable({
   tabId,
   sectionTitle,
   estudiante
-}) => {
+}: DataTableProps) {
   // ✅ FUNCIÓN: Obtener contenido según la sección
   const getSectionContent = () => {
     switch (tabId) {
@@ -48,14 +48,14 @@ export const DataTable: React.FC<DataTableProps> = ({
       <div className="p-6">
         <div className="grid grid-cols-[1fr_2fr] gap-4 max-w-[600px]">
           {datos.map((item, index) => (
-            <React.Fragment key={index}>
+            <Fragment key={index}>
               <div className="text-sm font-medium text-gray-700 p-3 bg-gray-50 rounded-md">
                 {item.label}
               </div>
               <div className="text-sm text-gray-800 p-3 bg-white border border-gray-200 rounded-md">
                 {item.value}
               </div>
-            </React.Fragment>
+            </Fragment>
           ))}
         </div>
       </div>
@@ -67,7 +67,7 @@ export const DataTable: React.FC<DataTableProps> = ({
     const datosAcademicos = [
       { 
         label: 'Carrera', 
-        value: estudiante.carrera || estudiante.informacionAcademica?.carrera || 'No especificada'
+        value: estudiante.carrera || estudiante.institucion?.carrera_especialidad || 'No especificada'
       },
       { 
         label: 'Universidad', 
@@ -83,11 +83,11 @@ export const DataTable: React.FC<DataTableProps> = ({
       },
       { 
         label: 'Promedio actual', 
-        value: (estudiante.promedio || estudiante.informacionAcademica?.promedio_actual)?.toString() || 'No especificado'
+        value: estudiante.promedio?.toString() || 'No especificado'
       },
       { 
         label: 'Estado académico', 
-        value: estudiante.estado || estudiante.informacionAcademica?.status_actual || 'No especificado'
+        value: estudiante.status || estudiante.estado || 'No especificado'
       },
       { 
         label: 'Vía de acceso', 
@@ -103,14 +103,14 @@ export const DataTable: React.FC<DataTableProps> = ({
       <div className="p-6">
         <div className="grid grid-cols-[1fr_2fr] gap-4 max-w-[700px]">
           {datosAcademicos.map((item, index) => (
-            <React.Fragment key={index}>
+            <Fragment key={index}>
               <div className="text-sm font-medium text-gray-700 p-3 bg-[var(--color-turquoise)]/10 rounded-md">
                 {item.label}
               </div>
               <div className="text-sm text-gray-800 p-3 bg-white border border-blue-200 rounded-md">
                 {item.value}
               </div>
-            </React.Fragment>
+            </Fragment>
           ))}
         </div>
 

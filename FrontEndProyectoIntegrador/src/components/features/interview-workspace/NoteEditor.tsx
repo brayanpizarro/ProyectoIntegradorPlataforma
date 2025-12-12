@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import type { Estudiante } from '../../../types';
 
 // ✅ INTERFACE: Estructura de notas
@@ -15,11 +15,11 @@ interface NoteEditorProps {
   estudiante: Estudiante;
 }
 
-export const NoteEditor: React.FC<NoteEditorProps> = ({
+export function NoteEditor({
   tabId,
   sectionTitle,
   estudiante
-}) => {
+}: NoteEditorProps) {
   // ✅ ESTADOS: Gestión de notas y búsqueda
   const [notes, setNotes] = useState<Note[]>([]);
   const [newNote, setNewNote] = useState('');

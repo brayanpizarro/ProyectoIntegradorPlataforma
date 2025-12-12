@@ -1,4 +1,5 @@
-import React from 'react';
+import { Box, Typography, List, ListItemButton, Chip, Paper, Divider, Alert } from '@mui/material';
+import { Notes as NotesIcon, TableChart as TableChartIcon } from '@mui/icons-material';
 
 interface SidebarSection {
   title: string;
@@ -17,90 +18,104 @@ interface SidebarProps {
   splitViewActive?: boolean;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ 
+export function Sidebar({ 
   sections, 
   onSectionClick, 
   activePanel = 'left',
   splitViewActive = false 
-}) => {
+}: SidebarProps) {
   return (
-    <div className="w-[280px] min-w-[280px] max-w-[280px] bg-white border-r border-gray-200 p-4 overflow-y-auto flex-shrink-0">
+    <Box sx={{ width: 280, minWidth: 280, maxWidth: 280, bgcolor: 'white', borderRight: 1, borderColor: 'grey.200', p: 2, overflowY: 'auto', flexShrink: 0 }}>
       {/* ✅ TÍTULO DEL SIDEBAR */}
-      <div className="mb-6 pb-3 border-b border-gray-200">
-        <h3 className="m-0 text-lg font-semibold text-gray-800">
+      <Box sx={{ mb: 3, pb: 2, borderBottom: 1, borderColor: 'grey.200' }}>
+        <Typography variant="h6" fontWeight={600} gutterBottom>
           📝 Etiquetas de Entrevista
-        </h3>
-        <p className="mt-1 mb-0 text-xs text-gray-500">
+        </Typography>
+        <Typography variant="caption" color="text.secondary">
           Haz clic para abrir una pestaña
-        </p>
+        </Typography>
         
         {/* ✅ INDICADOR DE PANEL ACTIVO */}
         {splitViewActive && (
-          <div className={`mt-3 p-2 ${activePanel === 'left' ? 'bg-[var(--color-turquoise)]/10 border-[var(--color-turquoise)]' : 'bg-[var(--color-orange)]/10 border-[var(--color-orange)]'} border rounded-md text-xs`}>
-            <div className={`flex items-center gap-2 ${activePanel === 'left' ? 'text-[var(--color-turquoise)]' : 'text-[var(--color-orange)]'} font-medium`}>
-              <span>{activePanel === 'left' ? '📋' : '📊'}</span>
-              <span>Abrirá en panel {activePanel === 'left' ? 'izquierdo' : 'derecho'}</span>
-            </div>
-          </div>
+          <Alert
+            icon={activePanel === 'left' ? '📋' : '📊'}
+            severity={activePanel === 'left' ? 'info' : 'warning'}
+            sx={{ mt: 2, py: 0.5 }}
+          >
+            <Typography variant="caption" fontWeight={600}>
+              Abrirá en panel {activePanel === 'left' ? 'izquierdo' : 'derecho'}
+            </Typography>
+          </Alert>
         )}
-      </div>
+      </Box>
 
       {/* ✅ SECCIONES DE ETIQUETAS */}
       {sections.map((section, sectionIndex) => (
-        <div key={sectionIndex} className="mb-6">
-          {/* Título de sección */}
-          <h4 className="m-0 mb-3 text-sm font-medium text-gray-600 uppercase tracking-wide">
+        <Box key={sectionIndex} sx={{ mb: 3 }}>
+          <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1, mb: 1.5, display: 'block' }}>
             {section.title}
-          </h4>
+          </Typography>
           
-          {/* Lista de etiquetas */}
-          <div className="flex flex-col gap-1">
+          <List sx={{ p: 0 }}>
             {section.items.map((item) => (
-              <button
+              <ListItemButton
                 key={item.id}
                 onClick={() => onSectionClick(item.id, item.title, item.type)}
-                className="flex items-center gap-3 p-3 bg-transparent border-none rounded-lg cursor-pointer text-left transition-all duration-200 text-sm text-gray-700 hover:bg-gray-100 hover:translate-x-0.5"
+                sx={{ 
+                  borderRadius: 1.5, 
+                  mb: 0.5,
+                  py: 1.5,
+                  px: 2,
+                  display: 'flex',
+                  gap: 2,
+                  '&:hover': {
+                    bgcolor: 'grey.100',
+                    transform: 'translateX(4px)',
+                    transition: 'all 0.2s'
+                  }
+                }}
               >
-                {/* Icono */}
-                <span className="text-xl w-6 text-center">
+                <Typography sx={{ fontSize: '1.25rem', width: 24, textAlign: 'center' }}>
                   {item.icon}
-                </span>
+                </Typography>
                 
-                {/* Texto */}
-                <span className="flex-1 font-medium">
+                <Typography variant="body2" fontWeight={500} sx={{ flex: 1 }}>
                   {item.title}
-                </span>
+                </Typography>
                 
-                {/* Indicador de tipo */}
-                <span className={`text-[0.625rem] px-1.5 py-0.5 rounded-full font-medium ${item.type === 'note' ? 'bg-[var(--color-turquoise)]/20 text-[var(--color-turquoise)]' : 'bg-[var(--color-orange)]/20 text-[var(--color-orange)]'}`}>
-                  {item.type === 'note' ? 'NOTA' : 'DATA'}
-                </span>
-              </button>
+                <Chip
+                  label={item.type === 'note' ? 'NOTA' : 'DATA'}
+                  size="small"
+                  sx={{
+                    height: 20,
+                    fontSize: '0.625rem',
+                    fontWeight: 600,
+                    bgcolor: item.type === 'note' ? 'info.light' : 'warning.light',
+                    color: item.type === 'note' ? 'info.dark' : 'warning.dark'
+                  }}
+                />
+              </ListItemButton>
             ))}
-          </div>
-        </div>
+          </List>
+        </Box>
       ))}
 
       {/* ✅ LEYENDA */}
-      <div className="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
-        <div className="text-xs text-gray-500 mb-2 font-medium">
+      <Paper elevation={0} sx={{ mt: 4, p: 2, bgcolor: 'grey.50', border: 1, borderColor: 'grey.200' }}>
+        <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ display: 'block', mb: 1 }}>
           💡 Tipos de pestañas
-        </div>
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2 text-xs">
-            <span className="px-1.5 py-0.5 rounded-full bg-[var(--color-turquoise)]/20 text-[var(--color-turquoise)] font-medium">
-              NOTA
-            </span>
-            <span className="text-gray-500">Tomar apuntes de entrevista</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs">
-            <span className="px-1.5 py-0.5 rounded-full bg-[var(--color-orange)]/20 text-[var(--color-orange)] font-medium">
-              DATA
-            </span>
-            <span className="text-gray-500">Ver información del alumno</span>
-          </div>
-        </div>
-      </div>
-    </div>
+        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Chip label="NOTA" size="small" sx={{ height: 20, fontSize: '0.625rem', fontWeight: 600, bgcolor: 'info.light', color: 'info.dark' }} />
+            <Typography variant="caption" color="text.secondary">Tomar apuntes de entrevista</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Chip label="DATA" size="small" sx={{ height: 20, fontSize: '0.625rem', fontWeight: 600, bgcolor: 'warning.light', color: 'warning.dark' }} />
+            <Typography variant="caption" color="text.secondary">Ver información del alumno</Typography>
+          </Box>
+        </Box>
+      </Paper>
+    </Box>
   );
-};
+}
