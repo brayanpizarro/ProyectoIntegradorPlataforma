@@ -1,4 +1,5 @@
-﻿import { LoadingSpinner, ErrorMessage } from '../components/ui';
+﻿import { Snackbar, Alert } from '@mui/material';
+import { LoadingSpinner, ErrorMessage } from '../components/ui';
 import {
   StudentHeader,
   TabNavigation,
@@ -28,12 +29,18 @@ export default function EstudianteDetail() {
 
     // Edición
     modoEdicion,
+    hayCambiosPendientes,
+    isGuardando,
+    mensajeExito,
+    mensajeError,
     handleCampoChange,
     handleFamiliaChange,
     handleGuardar,
     handleToggleEdicion,
     handleGenerarInforme,
     estudianteConEdiciones,
+    setMensajeExito,
+    setMensajeError,
 
     // Semestres
     mostrarModalNuevoSemestre,
@@ -69,6 +76,8 @@ export default function EstudianteDetail() {
         nombres={estudianteConEdiciones.nombre || ''}
         estado={estudianteConEdiciones.status || 'activo'}
         modoEdicion={modoEdicion}
+        hayCambiosPendientes={hayCambiosPendientes}
+        isGuardando={isGuardando}
         onToggleEdicion={handleToggleEdicion}
         onGuardar={handleGuardar}
         onGenerarInforme={handleGenerarInforme}
@@ -144,6 +153,29 @@ export default function EstudianteDetail() {
         setNuevoSemestreData={setNuevoSemestreData as any}
         onCrearSemestre={handleCrearNuevoSemestre}
       />
+
+      {/* Snackbars para mensajes de éxito y error */}
+      <Snackbar
+        open={!!mensajeExito}
+        autoHideDuration={4000}
+        onClose={() => setMensajeExito('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setMensajeExito('')} severity="success" variant="filled">
+          {mensajeExito}
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={!!mensajeError}
+        autoHideDuration={6000}
+        onClose={() => setMensajeError('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setMensajeError('')} severity="error" variant="filled">
+          {mensajeError}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

@@ -1,9 +1,5 @@
-/**
- * Header del detalle de estudiante
- * Muestra nombre, estado, botones de edición y volver
- */
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Button, Chip, Paper } from '@mui/material';
+import { Box, Typography, Button, Chip, Paper, Badge, CircularProgress } from '@mui/material';
 import { 
   ArrowBack as ArrowBackIcon,
   Edit as EditIcon,
@@ -17,6 +13,8 @@ interface StudentHeaderProps {
   nombres: string;
   estado: string;
   modoEdicion: boolean;
+  hayCambiosPendientes?: boolean;
+  isGuardando?: boolean;
   onToggleEdicion: () => void;
   onGuardar?: () => void;
   onGenerarInforme?: () => void;
@@ -27,6 +25,8 @@ export function StudentHeader({
   nombres,
   estado,
   modoEdicion,
+  hayCambiosPendientes = false,
+  isGuardando = false,
   onToggleEdicion,
   onGuardar,
   onGenerarInforme,
@@ -94,21 +94,39 @@ export function StudentHeader({
                 {modoEdicion ? 'Modo Vista' : 'Modo Edición'}
               </Button>
               {modoEdicion && (
-                <Button 
-                  variant="contained"
-                  startIcon={<SaveIcon />}
-                  onClick={onGuardar}
+                <Badge 
+                  badgeContent={hayCambiosPendientes ? '*' : null}
+                  color="error"
                   sx={{
-                    bgcolor: '#4db6ac',
-                    textTransform: 'none',
-                    fontWeight: 500,
-                    '&:hover': {
-                      bgcolor: '#80cbc4'
+                    '& .MuiBadge-badge': {
+                      fontSize: '1.2rem',
+                      fontWeight: 700,
+                      minWidth: '20px',
+                      height: '20px'
                     }
                   }}
                 >
-                  Guardar
-                </Button>
+                  <Button 
+                    variant="contained"
+                    startIcon={isGuardando ? <CircularProgress size={18} color="inherit" /> : <SaveIcon />}
+                    onClick={onGuardar}
+                    disabled={!hayCambiosPendientes || isGuardando}
+                    sx={{
+                      bgcolor: '#4db6ac',
+                      textTransform: 'none',
+                      fontWeight: 500,
+                      '&:hover': {
+                        bgcolor: '#80cbc4'
+                      },
+                      '&.Mui-disabled': {
+                        bgcolor: 'grey.400',
+                        color: 'grey.600'
+                      }
+                    }}
+                  >
+                    {isGuardando ? 'Guardando...' : 'Guardar'}
+                  </Button>
+                </Badge>
               )}
             </>
           )}
