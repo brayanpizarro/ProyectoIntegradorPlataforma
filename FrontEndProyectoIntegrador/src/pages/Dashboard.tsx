@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService, estadisticasService } from '../services';
-import { apiService } from '../services/apiService';
+import { estudianteService } from '../services';
 import { logger } from '../config';
 import { LoadingSpinner, ErrorMessage, StatCard } from '../components/ui';
 import { 
@@ -66,7 +66,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
           logger.log('📊 Cargando datos del backend...');
 
           const [estudiantesData, estadisticasData] = await Promise.all([
-            apiService.getEstudiantes(),
+            estudianteService.getAll(),
             estadisticasService.getDashboard()
           ]);
           setEstadisticas(estadisticasData);
@@ -158,7 +158,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
     const generacionesCalculadas = Object.entries(estudiantesPorAño)
       .map(([año, estudiantesAño]) => {
         const añoNum = parseInt(año);
-        const currentYear = new Date().getFullYear();
 
         const activos = estudiantesAño.filter(e =>
           e.estado === 'Activo' ||
@@ -233,7 +232,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onAuthChange }) => {
     setLoading(true);
     try {
       const [estudiantesData, estadisticasData] = await Promise.all([
-        apiService.getEstudiantes(),
+        estudianteService.getAll(),
         estadisticasService.getDashboard()
       ]);
       setEstadisticas(estadisticasData);

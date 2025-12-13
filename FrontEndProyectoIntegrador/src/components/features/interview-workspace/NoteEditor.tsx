@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Estudiante } from '../../../types';
-import { apiService } from '../../../services/apiService';
+import { entrevistaService } from '../../../services';
 
 // INTERFACE: Estructura de notas
 interface Note {
@@ -37,7 +37,7 @@ export function NoteEditor({
       
       try {
         setIsLoading(true);
-        const textos = await apiService.getTextosByEntrevista(entrevistaId);
+        const textos = await entrevistaService.getTextos(entrevistaId);
         
         // Filtrar por etiqueta (sectionTitle)
         const textosFiltrados = textos.filter(
@@ -70,7 +70,7 @@ export function NoteEditor({
     
     try {
       // Guardar en el backend
-      const textoGuardado = await apiService.addTexto(entrevistaId, {
+      const textoGuardado = await entrevistaService.addTexto(entrevistaId, {
         nombre_etiqueta: sectionTitle,
         contenido: newNote.trim(),
         contexto: `Entrevista con ${estudiante.nombre || estudiante.nombres}`

@@ -3,7 +3,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import type { Estudiante } from '../../../types';
-import { apiService } from '../../../services/apiService';
+import { ramosCursadosService } from '../../../services';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import type { DropResult } from '@hello-pangea/dnd';
 import Box from '@mui/material/Box';
@@ -85,7 +85,7 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
   const cargarDatosReales = async () => {
     try {
       // Obtener ramos cursados del estudiante
-      const ramosReales = await apiService.getRamosCursadosByEstudiante(String(estudiante.id_estudiante));
+      const ramosReales = await ramosCursadosService.getByEstudiante(String(estudiante.id_estudiante));
       
       console.log('📥 Datos recibidos del backend:', ramosReales);
       
@@ -329,7 +329,7 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
           data: ramoData
         });
 
-        await apiService.updateRamoCursado(String(ramoMovido.backendId), ramoData);
+        await ramosCursadosService.update(String(ramoMovido.backendId), ramoData);
         
         // Recargar datos para mantener sincronización
         await cargarDatosReales();
@@ -405,7 +405,7 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
 
       try {
         // Llamada al backend
-        const ramoCreado = await apiService.createRamoCursado(ramoData);
+        const ramoCreado = await ramosCursadosService.create(ramoData);
         
         // Actualizar estado local con el ramo creado
         setMallaCurricular(prev => prev.map(semestre => {
@@ -757,7 +757,7 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
                   data: ramoData
                 });
                 
-                await apiService.updateRamoCursado(String(idToUse), ramoData);
+                await ramosCursadosService.update(String(idToUse), ramoData);
                 
                 // Recargar todos los datos desde el backend para asegurar consistencia
                 console.log('🔄 Recargando datos desde el backend...');

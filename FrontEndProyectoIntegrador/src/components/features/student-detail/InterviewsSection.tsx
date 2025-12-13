@@ -8,7 +8,7 @@ import { Box, Typography, Button, Paper, Chip, Stack, CircularProgress } from '@
 import { Add as AddIcon, Visibility as VisibilityIcon, Edit as EditIcon, Article as ArticleIcon } from '@mui/icons-material';
 import { NuevaEntrevistaModal } from './components';
 import { EntrevistaReportGenerator } from '../../EntrevistaReportGenerator';
-import { apiService } from '../../../services/apiService';
+import { entrevistaService } from '../../../services';
 import type { Entrevista } from '../../../types';
 
 interface InterviewsSectionProps {
@@ -29,16 +29,7 @@ export function InterviewsSection({ estudianteId, estudiante }: InterviewsSectio
       try {
         setLoading(true);
         setError(null);
-        const data = await apiService.getEntrevistasByEstudiante(estudianteId.toString());
-        console.log('Entrevistas cargadas:', data);
-        if (data.length > 0) {
-          console.log('Primera entrevista IDs:', {
-            id: data[0].id, 
-            _id: data[0]._id,
-            estudianteId: data[0].estudianteId,
-            fullObject: data[0]
-          });
-        }
+        const data = await entrevistaService.getByEstudiante(estudianteId.toString());
         setEntrevistas(data);
       } catch (err) {
         console.error('Error al cargar entrevistas:', err);
@@ -54,13 +45,12 @@ export function InterviewsSection({ estudianteId, estudiante }: InterviewsSectio
     }
   }, [estudianteId]);
 
-  const handleEditarEntrevista = (id: string) => {
-    console.log('Navegando a entrevista con ID:', id);
-    if (!id || id === 'undefined') {
-      console.error('ID de entrevista inválido:', id);
+  const handleEditarEntrevista = (entrevista: Entrevista) => {
+    if (!entrevista.id) {
+      console.error('ID de entrevista inválido');
       return;
     }
-    navigate(`/entrevista/${id}`);
+    navigate(`/entrevista/${entrevista.id}`);
   };
 
   // Generar entrevista consolidada con datos reales
@@ -84,8 +74,8 @@ export function InterviewsSection({ estudianteId, estudiante }: InterviewsSectio
     tutor: 'Reporte Consolidado',
     temas_abordados: `Resumen de ${entrevistas.length} entrevistas realizadas`,
     observaciones: `Este documento contiene el historial completo de entrevistas del estudiante.`,
-    // Incluir todos los textos de todas las entrevistas, preservando etiqueta y fecha
-    textos: entrevistas.flatMap((ent) => Array.isArray(ent.textos) ? ent.textos : []),
+    // Incluir todas las etiquetas de todas las entrevistas
+    etiquetas: entrevistas.flatMap((ent) => Array.isArray(ent.etiquetas) ? ent.etiquetas : []),
     ...entrevistas.reduce((acc, ent, idx) => {
       const fecha = new Date(ent.fecha).toLocaleDateString('es-CL');
       acc[`texto_${idx}`] = `[${fecha}] ${ent.tipo_entrevista || 'Entrevista'}: ${ent.observaciones}`;
@@ -142,9 +132,9 @@ export function InterviewsSection({ estudianteId, estudiante }: InterviewsSectio
       </Box>
 
       <Stack spacing={2}>
-        {entrevistas.map((entrevista, index) => (
+        {entrevistas.map((entrevista) => (
           <Paper 
-            key={entrevista._id || entrevista.id || index}
+            key={entrevista.id}
             elevation={2}
             sx={{ 
               p: 3, 
@@ -201,7 +191,7 @@ export function InterviewsSection({ estudianteId, estudiante }: InterviewsSectio
                 startIcon={<VisibilityIcon />}
                 variant="outlined"
                 size="small"
-                onClick={() => handleEditarEntrevista(entrevista._id || entrevista.id)}
+                onClick={() => handleEditarEntrevista(entrevista)}
               >
                 Ver Detalle
               </Button>
@@ -210,7 +200,7 @@ export function InterviewsSection({ estudianteId, estudiante }: InterviewsSectio
                 variant="outlined"
                 color="primary"
                 size="small"
-                onClick={() => handleEditarEntrevista(entrevista._id || entrevista.id)}
+                onClick={() => handleEditarEntrevista(entrevista)}
               >
                 Editar
               </Button>

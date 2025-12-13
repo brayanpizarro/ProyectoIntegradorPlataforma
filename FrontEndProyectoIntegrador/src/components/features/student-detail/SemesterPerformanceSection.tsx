@@ -4,7 +4,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import type { Estudiante } from '../../../types';
-import { apiService } from '../../../services/apiService';
+import { ramosCursadosService, historialAcademicoService } from '../../../services';
 
 interface SemesterPerformanceSectionProps {
   estudiante: Estudiante;
@@ -25,7 +25,7 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
       
       try {
         // Obtener todos los ramos cursados sin filtrar por semestre
-        const todosLosRamos = await apiService.getRamosCursadosByEstudiante(
+        const todosLosRamos = await ramosCursadosService.getByEstudiante(
           estudiante.id_estudiante.toString()
         );
         
@@ -87,7 +87,7 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
       setLoading(true);
       try {
         // Cargar ramos cursados
-        const ramos = await apiService.getRamosCursadosByEstudiante(
+        const ramos = await ramosCursadosService.getByEstudiante(
           estudiante.id_estudiante.toString(),
           semestreActual.año,
           semestreActual.semestre
@@ -107,7 +107,7 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
 
         // Intentar cargar historial académico del semestre
         try {
-          const historial = await apiService.getHistorialAcademico(
+          const historial = await historialAcademicoService.getByEstudiante(
             estudiante.id_estudiante.toString(),
             semestreActual.año,
             semestreActual.semestre

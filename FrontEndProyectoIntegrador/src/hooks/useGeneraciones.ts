@@ -3,7 +3,7 @@
  * Centraliza cálculos y estadísticas de generaciones de estudiantes
  */
 import { useState, useEffect, useMemo } from 'react';
-import { apiService } from '../services/apiService';
+import { estudianteService } from '../services';
 import { logger } from '../config';
 import type { Estudiante } from '../types';
 
@@ -58,7 +58,7 @@ export const useGeneraciones = (): UseGeneracionesReturn => {
       setError(null);
       
       logger.log('📚 Cargando datos de generaciones');
-      const data = await apiService.getEstudiantes();
+      const data = await estudianteService.getAll();
       setEstudiantes(data);
       logger.log('✅ Datos cargados:', data.length, 'estudiantes');
     } catch (err) {

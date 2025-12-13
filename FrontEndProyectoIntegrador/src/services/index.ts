@@ -6,4 +6,6 @@ export { institucionService } from './institucion.service';
 export { historialAcademicoService } from './historial-academico.service';
 export { estadisticasService } from './estadisticas.service';
 export { familiaService } from './familia.service';
+export { entrevistaService } from './entrevista.service';
+export { ramosCursadosService } from './ramos-cursados.service';
 export { default as PermissionService } from './permissionService';

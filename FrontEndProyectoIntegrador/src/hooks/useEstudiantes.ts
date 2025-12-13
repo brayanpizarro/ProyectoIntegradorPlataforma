@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { apiService } from '../services/apiService';
+import { estudianteService } from '../services';
 import { logger } from '../config';
 import type { Estudiante } from '../types';
 
@@ -49,9 +49,9 @@ export const useEstudiantes = (params: UseEstudiantesParams = {}): UseEstudiante
       
       let data: Estudiante[];
       if (generacionId) {
-        data = await apiService.EstudiantesPorGeneracion(generacionId);
+        data = await estudianteService.getByGeneracion(generacionId);
       } else {
-        data = await apiService.getEstudiantes();
+        data = await estudianteService.getAll();
       }
       
       setEstudiantes(data);

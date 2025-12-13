@@ -35,7 +35,6 @@ export class BaseHttpClient {
       localStorage.removeItem('user');
       localStorage.removeItem('refreshtoken');
       window.location.href = '/';
-      return;
     }
     
     if (!response.ok) {

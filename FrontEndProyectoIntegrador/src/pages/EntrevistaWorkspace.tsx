@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Box } from '@mui/material';
 import { authService } from '../services/authService';
-import { apiService } from '../services/apiService';
+import { entrevistaService, estudianteService } from '../services';
 import { logger } from '../config';
 import type { Estudiante } from '../types';
 import { useWorkspaceTabs } from '../hooks';
@@ -54,7 +54,7 @@ export function EntrevistaWorkspace() {
         let entrevistaData: any = null;
 
         try {
-          entrevistaData = await apiService.getEntrevista(entrevistaIdFromUrl);
+          entrevistaData = await entrevistaService.getById(entrevistaIdFromUrl);
         } catch (err) {
           logger.warn('No se encontró entrevista por ID, intentando como estudianteId', err);
         }
@@ -62,7 +62,7 @@ export function EntrevistaWorkspace() {
         // Si no se encontró, interpretamos el parámetro como id_estudiante y tomamos la más reciente
         if (!entrevistaData) {
           console.log('Buscando entrevistas por estudiante:', entrevistaIdFromUrl);
-          const entrevistasDeEstudiante = await apiService.getEntrevistasByEstudiante(entrevistaIdFromUrl);
+          const entrevistasDeEstudiante = await entrevistaService.getByEstudiante(entrevistaIdFromUrl);
           if (!entrevistasDeEstudiante || entrevistasDeEstudiante.length === 0) {
             throw new Error('Entrevista no encontrada');
           }
@@ -86,7 +86,7 @@ export function EntrevistaWorkspace() {
         }
         
         console.log('Cargando estudiante con ID:', estudianteId);
-        const estudianteData = await apiService.getEstudiantePorId(estudianteId);
+        const estudianteData = await estudianteService.getById(estudianteId);
         setEstudiante(estudianteData);
         
       } catch (error) {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { authService } from '../services/authService';
-import { apiService } from '../services/apiService';
+import { estudianteService } from '../services';
 import type { Estudiante } from '../types';
 import {
   Box,
@@ -98,7 +98,7 @@ export const AvanceCurricular: React.FC = () => {
         setLoading(true);
         
         // Cargar estudiante desde el backend
-        const estudianteData = await apiService.getEstudiantePorId(estudianteId || '0');
+        const estudianteData = await estudianteService.getById(estudianteId || '0');
         setEstudiante(estudianteData);
         
         // Generar datos mock de avance curricular

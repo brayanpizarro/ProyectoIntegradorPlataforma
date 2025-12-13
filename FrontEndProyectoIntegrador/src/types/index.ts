@@ -184,7 +184,7 @@ export interface InformacionAcademica {
 // ============================================
 
 export interface Entrevista {
-  _id: string;
+  id: string;
   estudianteId: string;
   usuarioId: string;
   fecha: Date;

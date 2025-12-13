@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, IconButton, Box } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
-import { apiService } from '../../../../services/apiService';
+import { entrevistaService } from '../../../../services';
 import { authService } from '../../../../services/authService';
 
 interface NuevaEntrevistaModalProps {
@@ -37,7 +37,7 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
       setSubmitting(true);
 
       // Calcular siguiente número de entrevista del estudiante
-      const entrevistasPrevias = await apiService.getEntrevistasByEstudiante(String(estudianteId));
+      const entrevistasPrevias = await entrevistaService.getByEstudiante(String(estudianteId));
       const maxNumero = entrevistasPrevias.reduce((max, ent) => {
         const n = (ent as any).numero_entrevista ?? (ent as any).numero_Entrevista;
         return typeof n === 'number' ? Math.max(max, n) : max;
@@ -60,7 +60,7 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
           : [],
       } as const;
 
-      const entrevistaCreada = await apiService.createEntrevista(payload);
+      const entrevistaCreada = await entrevistaService.create(payload);
       const nuevoId = (entrevistaCreada as any)?.id || entrevistaCreada?._id || estudianteId;
 
       onClose();

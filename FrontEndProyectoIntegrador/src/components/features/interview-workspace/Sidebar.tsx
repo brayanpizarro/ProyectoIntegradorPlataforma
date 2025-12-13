@@ -1,5 +1,4 @@
-import { Box, Typography, List, ListItemButton, Chip, Paper, Divider, Alert } from '@mui/material';
-import { Notes as NotesIcon, TableChart as TableChartIcon } from '@mui/icons-material';
+import { Box, Typography, List, ListItemButton, Chip, Paper, Alert } from '@mui/material';
 
 interface SidebarSection {
   title: string;
