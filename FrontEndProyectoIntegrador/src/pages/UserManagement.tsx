@@ -128,7 +128,7 @@ export const UserManagement: React.FC = () => {
     } else if (tabValue === 'tutores') {
       setFilteredUsers(users.filter(u => u.role === 'tutor'));
     } else {
-      setFilteredUsers(users.filter(u => u.role === 'visita'));
+      setFilteredUsers(users.filter(u => u.role === 'invitado'));
     }
   };
 
@@ -201,9 +201,9 @@ export const UserManagement: React.FC = () => {
 
       if (editingUser) {
         // Actualizar usuario existente
-        const updateData = { ...userData };
+        const updateData: any = { ...userData };
         if (!updateData.password) {
-          delete updateData.password; // No enviar password vacío en actualizaciones
+          updateData.password = undefined; // Marcar como undefined si está vacío
         }
         await userService.update(editingUser.id!, updateData);
         setSnackbar({ open: true, message: 'Usuario actualizado exitosamente', severity: 'success' });
@@ -327,7 +327,7 @@ export const UserManagement: React.FC = () => {
               iconPosition="start"
             />
             <Tab 
-              label={`Visitas (${users.filter(u => u.role === 'visita').length})`} 
+              label={`Visitas (${users.filter(u => u.role === 'invitado').length})`} 
               value="visitas"
               icon={<VisibilityIcon />}
               iconPosition="start"

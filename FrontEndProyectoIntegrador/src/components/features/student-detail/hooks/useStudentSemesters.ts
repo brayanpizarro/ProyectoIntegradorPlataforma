@@ -137,7 +137,7 @@ export const useStudentSemesters = ({ id, estudiante, setInformesGuardados }: Us
     const nuevoComentario = prompt('Ingrese un comentario:');
     if (nuevoComentario && nuevoComentario.trim()) {
       const comentarioConFecha = `${new Date().toLocaleDateString('es-CL')}: ${nuevoComentario.trim()}`;
-      setDatosEditadosSemestre(prev => ({
+      setDatosEditadosSemestre((prev: any) => ({
         ...prev,
         trayectoria_academica: [...(prev.trayectoria_academica || []), comentarioConFecha]
       }));
@@ -147,7 +147,7 @@ export const useStudentSemesters = ({ id, estudiante, setInformesGuardados }: Us
   // Eliminar comentario de la trayectoria académica
   const handleEliminarComentario = (index: number) => {
     if (confirm('¿Está seguro de eliminar este comentario?')) {
-      setDatosEditadosSemestre(prev => ({
+      setDatosEditadosSemestre((prev: any) => ({
         ...prev,
         trayectoria_academica: prev.trayectoria_academica.filter((_: any, i: number) => i !== index)
       }));

@@ -16,6 +16,7 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 
 interface Ramo {
+  codigo: string;
   nombre: string;
   creditos: number;
   prerequisitos: string[];
@@ -37,6 +38,7 @@ export const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
   semestre
 }) => {
   const [formData, setFormData] = useState<Ramo>({
+    codigo: '',
     nombre: '',
     creditos: 5,
     prerequisitos: [],
@@ -44,15 +46,15 @@ export const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
   });
 
   const handleSave = () => {
-    if (formData.nombre) {
+    if (formData.nombre && formData.codigo) {
       onSave(formData);
-      setFormData({ nombre: '', creditos: 5, prerequisitos: [], estado: 'pendiente' });
+      setFormData({ codigo: '', nombre: '', creditos: 5, prerequisitos: [], estado: 'pendiente' });
       onClose();
     }
   };
 
   const handleClose = () => {
-    setFormData({ nombre: '', creditos: 5, prerequisitos: [], estado: 'pendiente' });
+    setFormData({ codigo: '', nombre: '', creditos: 5, prerequisitos: [], estado: 'pendiente' });
     onClose();
   };
 
@@ -63,6 +65,14 @@ export const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
       </DialogTitle>
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+          <TextField
+            fullWidth
+            label="Código del Ramo *"
+            placeholder="Ej: MAT101"
+            value={formData.codigo}
+            onChange={(e) => setFormData({ ...formData, codigo: e.target.value })}
+          />
+          
           <TextField
             fullWidth
             label="Nombre del Ramo *"

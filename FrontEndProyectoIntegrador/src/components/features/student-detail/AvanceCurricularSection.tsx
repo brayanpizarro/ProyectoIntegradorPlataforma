@@ -4,27 +4,29 @@
 import React, { useState, useEffect } from 'react';
 import type { Estudiante } from '../../../types';
 import { ramosCursadosService } from '../../../services';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { DragDropContext, Draggable } from '@hello-pangea/dnd';
 import type { DropResult } from '@hello-pangea/dnd';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import Button from '@mui/material/Button';
-import Fab from '@mui/material/Fab';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
-import EditIcon from '@mui/icons-material/Edit';
-import AddIcon from '@mui/icons-material/Add';
-import SettingsIcon from '@mui/icons-material/Settings';
 import { 
-  SemesterCard, 
+  Box, 
+  Paper, 
+  Typography, 
+  Button, 
+  Snackbar, 
+  Alert,
+  IconButton,
+  Chip
+} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import { 
   SubjectCard,
   EditSubjectModal,
   AddSubjectModal,
   SemesterModal,
   CreateSemesterModal 
 } from '../avance-curricular';
+import { LoadingSpinner, ErrorMessage, StatCard } from '../../ui';
+import { ProgressBar, SemesterCard } from './avance-curricular-components';
 
 // Interfaces para avance curricular
 interface MallaCurricular {
@@ -187,32 +189,7 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
     }
   }, [estudiante.id_estudiante]);
 
-  // Función para recalcular progreso
-  const recalcularProgreso = async () => {
-    const totalCreditos = mallaCurricular.reduce((acc, sem) => acc + (sem.ramos.length * 4), 0);
-    const creditosAprobados = mallaCurricular.reduce((acc, sem) => 
-      acc + sem.ramos.filter(r => r.estado === 'aprobado').length * 4, 0);
-    const creditosPendientes = totalCreditos - creditosAprobados;
-    const porcentajeAvance = totalCreditos > 0 ? (creditosAprobados / totalCreditos) * 100 : 0;
-    
-    const todasLasNotas = mallaCurricular.reduce((acc, sem) => {
-      const notasAprobadas = sem.ramos.filter(r => r.estado === 'aprobado' && r.nota).map(r => r.nota!);
-      return [...acc, ...notasAprobadas];
-    }, [] as number[]);
-    
-    const promedioGeneral = todasLasNotas.length > 0 
-      ? todasLasNotas.reduce((sum, nota) => sum + nota, 0) / todasLasNotas.length 
-      : 0;
 
-    setProgreso({
-      totalCreditos,
-      creditosAprobados,
-      creditosPendientes,
-      porcentajeAvance: Number(porcentajeAvance.toFixed(1)),
-      semestreActual: Math.max(...mallaCurricular.map(m => m.semestre), 0),
-      promedioGeneral: Number(promedioGeneral.toFixed(2))
-    });
-  };
 
   // Recalcular progreso cuando cambie la malla curricular
   useEffect(() => {
@@ -392,15 +369,17 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
     nota?: number;
   }) => {
     try {
-      // Crear el ramo en el backend
+      // Crear el ramo en el backend con los campos correctos
       const ramoData = {
-        id_estudiante: estudiante.id_estudiante,
+        estudiante_id: String(estudiante.id_estudiante),
+        codigo: `RAMO-${Date.now()}`,
+        nombre: nuevoRamo.nombre,
+        creditos: nuevoRamo.creditos,
+        año: new Date().getFullYear(),
         semestre: selectedSemestre,
-        nivel_educativo: 'Universitario',
-        nombre_ramo: nuevoRamo.nombre,
-        notas_parciales: {},
-        promedio_final: nuevoRamo.nota || null,
-        estado: nuevoRamo.estado
+        nota_final: nuevoRamo.nota || undefined,
+        estado: nuevoRamo.estado,
+        oportunidad: 1
       };
 
       try {
@@ -469,7 +448,7 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
     return (
       <Draggable key={ramo.backendId || ramo.codigo} draggableId={String(ramo.backendId || ramo.codigo)} index={index}>
         {(provided, snapshot) => (
-          <div
+          <Box
             ref={provided.innerRef}
             {...provided.draggableProps}
             {...provided.dragHandleProps}
@@ -481,42 +460,63 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
                 transform: snapshot.isDragging ? 'rotate(5deg)' : 'none',
                 opacity: snapshot.isDragging ? 0.8 : 1,
                 cursor: 'pointer',
+                position: 'relative',
                 '&:hover': {
                   transform: 'translateY(-2px)',
                   boxShadow: 3,
                 }
               }}
             >
-              <div className="subject-name">
-                {ramo.nombre.toUpperCase()}
-              </div>
-              <div className="subject-footer">
-                <span>NF: {ramo.nota || '-'}</span>
-                <span>{ramo.creditos} SCT</span>
-              </div>
+              <Typography 
+                variant="subtitle2" 
+                fontWeight={600} 
+                sx={{ mb: 1, textTransform: 'uppercase' }}
+              >
+                {ramo.nombre}
+              </Typography>
+              <Box 
+                sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  fontSize: '0.75rem',
+                  color: 'text.secondary'
+                }}
+              >
+                <Typography variant="caption">NF: {ramo.nota || '-'}</Typography>
+                <Typography variant="caption">{ramo.creditos} SCT</Typography>
+              </Box>
               
               {/* Indicador de oportunidad */}
               {ramo.oportunidad && ramo.oportunidad > 1 && (
-                <div className="opportunity-indicator">
-                  {ramo.oportunidad}
-                </div>
+                <Chip
+                  label={`${ramo.oportunidad}ª vez`}
+                  size="small"
+                  color="warning"
+                  sx={{ 
+                    position: 'absolute',
+                    top: 8,
+                    left: 8,
+                  }}
+                />
               )}
               
               {isEditMode && (
                 <IconButton
-                  className="edit-button"
                   size="small"
-                  onClick={(e) => {
+                  onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
                     handleEditSubject(ramo);
                   }}
                   sx={{
                     position: 'absolute',
-                    top: 4,
-                    right: 4,
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    top: 8,
+                    right: 8,
+                    backgroundColor: 'background.paper',
+                    boxShadow: 1,
                     '&:hover': {
-                      backgroundColor: 'rgba(255, 255, 255, 1)',
+                      backgroundColor: 'action.hover',
+                      boxShadow: 2,
                     }
                   }}
                 >
@@ -524,179 +524,150 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
                 </IconButton>
               )}
             </SubjectCard>
-          </div>
+          </Box>
         )}
       </Draggable>
     );
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando avance curricular...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner message="Cargando avance curricular..." />;
   }
 
   if (error && mallaCurricular.length === 0) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-        <h3 className="text-red-800 font-semibold mb-2">Error al cargar datos</h3>
-        <p className="text-red-700">{error}</p>
-      </div>
+      <ErrorMessage 
+        title="Error al cargar datos" 
+        message={error}
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Header con estadísticas */}
       {progreso && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900">Avance Curricular</h2>
-            <div className="flex gap-2">
-              <button
+        <Paper 
+          elevation={0} 
+          sx={{ 
+            border: 1, 
+            borderColor: 'divider', 
+            borderRadius: 2, 
+            p: 3 
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+            <Typography variant="h5" fontWeight="bold" color="text.primary">
+              Avance Curricular
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button
+                variant={isEditMode ? 'contained' : 'outlined'}
+                size="small"
                 onClick={() => setIsEditMode(!isEditMode)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  isEditMode 
-                    ? 'bg-red-100 text-red-700 hover:bg-red-200' 
-                    : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
-                }`}
+                color={isEditMode ? 'error' : 'success'}
               >
-                {isEditMode ? '🔒 Salir de edición' : '✏️ Editar'}
-              </button>
+                {isEditMode ? 'Salir de edición' : 'Editar'}
+              </Button>
               {isEditMode && (
-                <button
+                <Button
+                  variant="contained"
+                  size="small"
                   onClick={handleCreateSemester}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                  startIcon={<AddIcon />}
+                  color="primary"
                 >
-                  ➕ Agregar Semestre
-                </button>
+                  Agregar Semestre
+                </Button>
               )}
-            </div>
-          </div>
+            </Box>
+          </Box>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-emerald-600 mb-2">
-                {Math.floor(progreso.creditosAprobados / 4)}
-              </div>
-              <div className="text-sm text-gray-600">Ramos Aprobados</div>
-            </div>
-            
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600 mb-2">
-                {Math.floor(progreso.creditosPendientes / 4)}
-              </div>
-              <div className="text-sm text-gray-600">Pendientes</div>
-            </div>
-            
-            <div className="text-center">
-              <div className="text-3xl font-bold text-gray-600 mb-2">
-                {progreso.promedioGeneral}
-              </div>
-              <div className="text-sm text-gray-600">Promedio General</div>
-            </div>
-            
-            <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600 mb-2">
-                {progreso.porcentajeAvance}%
-              </div>
-              <div className="text-sm text-gray-600">Avance</div>
-            </div>
-          </div>
+          <Box 
+            sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, 
+              gap: 2,
+              mb: 2 
+            }}
+          >
+            <StatCard
+              icon="✅"
+              label="Ramos Aprobados"
+              value={Math.floor(progreso.creditosAprobados / 4)}
+              accentColor="#10b981"
+            />
+            <StatCard
+              icon="⏳"
+              label="Pendientes"
+              value={Math.floor(progreso.creditosPendientes / 4)}
+              accentColor="#3b82f6"
+            />
+            <StatCard
+              icon="📊"
+              label="Promedio General"
+              value={progreso.promedioGeneral}
+              accentColor="#6b7280"
+            />
+            <StatCard
+              icon="🎯"
+              label="Avance"
+              value={`${progreso.porcentajeAvance}%`}
+              accentColor="#a855f7"
+            />
+          </Box>
           
-          {/* Barra de progreso */}
-          <div className="mt-6">
-            <div className="flex justify-between text-sm text-gray-600 mb-2">
-              <span>Progreso Curricular</span>
-              <span>{progreso.porcentajeAvance}% completado</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
-              <div 
-                className="bg-emerald-500 h-3 rounded-full transition-all duration-500"
-                style={{ width: `${progreso.porcentajeAvance}%` }}
-              />
-            </div>
-          </div>
-        </div>
+          <ProgressBar 
+            percentage={progreso.porcentajeAvance}
+            label="Progreso Curricular"
+            showPercentage
+          />
+        </Paper>
       )}
 
       {/* Malla curricular por semestres */}
-      <div className="bg-white rounded-lg border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Malla Curricular</h3>
-          <p className="text-sm text-gray-600 mt-1">
+      <Paper 
+        elevation={0} 
+        sx={{ 
+          border: 1, 
+          borderColor: 'divider', 
+          borderRadius: 2, 
+          overflow: 'hidden' 
+        }}
+      >
+        <Box sx={{ p: 3, borderBottom: 1, borderColor: 'divider' }}>
+          <Typography variant="h6" fontWeight={600} color="text.primary">
+            Malla Curricular
+          </Typography>
+          <Typography variant="body2" color="text.secondary" mt={0.5}>
             Organización de ramos por semestre
-          </p>
-        </div>
+          </Typography>
+        </Box>
         
         <Box sx={{ p: 3 }}>
           <DragDropContext onDragEnd={handleDragEnd}>
-            <Grid container spacing={3}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
               {mallaCurricular.map((semestre) => (
-                <Grid xs={12} md={6} lg={4} key={semestre.semestre}>
-                  <SemesterCard>
-                    <div className="semester-header">
-                      <Typography className="semester-title" variant="h6">
-                        Semestre {semestre.semestre}
-                      </Typography>
-                      {isEditMode && (
-                        <IconButton
-                          className="semester-config-button"
-                          size="small"
-                          onClick={() => {
-                            setEditingSemester(semestre);
-                            setIsSemesterModalOpen(true);
-                          }}
-                        >
-                          <SettingsIcon fontSize="small" />
-                        </IconButton>
-                      )}
-                    </div>
-                    
-                    {semestre.periodo && (
-                      <Typography variant="caption" className="semester-info" display="block" gutterBottom>
-                        {semestre.periodo}
-                      </Typography>
-                    )}
-
-                    <Droppable droppableId={`semestre-${semestre.semestre}`}>
-                      {(provided) => (
-                        <div
-                          {...provided.droppableProps}
-                          ref={provided.innerRef}
-                          style={{ minHeight: '200px', paddingBottom: '60px' }}
-                        >
-                          {semestre.ramos.map((ramo, index) => renderRamo(ramo, index))}
-                          {provided.placeholder}
-                        </div>
-                      )}
-                    </Droppable>
-
-                    {isEditMode && (
-                      <Fab
-                        size="small"
-                        color="primary"
-                        onClick={() => handleAddSubject(semestre.semestre)}
-                        sx={{
-                          position: 'absolute',
-                          bottom: 16,
-                          right: 16,
-                        }}
-                      >
-                        <AddIcon />
-                      </Fab>
-                    )}
-                  </SemesterCard>
-                </Grid>
+                <SemesterCard
+                  key={semestre.semestre}
+                  semestre={semestre.semestre}
+                  periodo={semestre.periodo}
+                  fechaInicio={semestre.fechaInicio}
+                  fechaFin={semestre.fechaFin}
+                  ramoCount={semestre.ramos.length}
+                  onAddSubject={() => handleAddSubject(semestre.semestre)}
+                  onEditSemester={() => {
+                    setEditingSemester(semestre);
+                    setIsSemesterModalOpen(true);
+                  }}
+                >
+                  {semestre.ramos.map((ramo, index) => renderRamo(ramo, index))}
+                </SemesterCard>
               ))}
               
               {mallaCurricular.length === 0 && (
-                <Grid xs={12}>
+                <Box sx={{ gridColumn: '1 / -1' }}>
                   <Box 
                     sx={{ 
                       textAlign: 'center', 
@@ -718,12 +689,12 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
                       Crear Primer Semestre
                     </Button>
                   </Box>
-                </Grid>
+                </Box>
               )}
-            </Grid>
+            </Box>
           </DragDropContext>
         </Box>
-      </div>
+      </Paper>
 
       {/* Modales */}
       {isModalOpen && editingSubject && (
@@ -743,7 +714,7 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
               });
 
               // Usar backendId si está disponible, sino usar id
-              const idToUse = editingSubject?.backendId || updatedSubject.id;
+              const idToUse = editingSubject?.backendId || (updatedSubject as any).id;
               
               if (idToUse) {
                 const ramoData = {
@@ -849,6 +820,6 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
           {snackbarMessage}
         </Alert>
       </Snackbar>
-    </div>
+    </Box>
   );
 };

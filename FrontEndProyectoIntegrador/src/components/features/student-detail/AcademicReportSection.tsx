@@ -14,7 +14,7 @@ interface AcademicReportSectionProps {
 
 export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ estudiante, modoEdicion }) => {
   // Helper functions para calcular estadísticas académicas
-  const historialAcademico = estudiante.historial_academico || estudiante.historialesAcademicos || [];
+  const historialAcademico = estudiante.historialesAcademicos || [];
   const ramosCursados = estudiante.ramosCursados || [];
   
   // Calcular totales de ramos
@@ -58,7 +58,7 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
     }));
   };
   
-  const { aprobados, reprobados, eliminados, total } = calcularTotalRamos();
+  const { aprobados, reprobados, eliminados } = calcularTotalRamos();
   const { porcAprobados, porcReprobados, porcTotal } = calcularPorcentajes();
   const datosPorSemestre = prepararDatosPorSemestre();
   return (

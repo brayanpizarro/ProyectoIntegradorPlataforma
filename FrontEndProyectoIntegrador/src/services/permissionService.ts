@@ -8,11 +8,13 @@ import type { Usuario } from '../types';
 /**
  * Roles disponibles en el sistema
  */
-export enum UserRole {
-  ADMIN = 'admin',
-  TUTOR = 'tutor',
-  INVITADO = 'invitado'
-}
+export const UserRole = {
+  ADMIN: 'admin',
+  TUTOR: 'tutor',
+  INVITADO: 'invitado'
+} as const;
+
+export type UserRole = typeof UserRole[keyof typeof UserRole];
 
 /**
  * Servicio de permisos

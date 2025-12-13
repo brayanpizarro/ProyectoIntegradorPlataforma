@@ -5,12 +5,10 @@ import type { Usuario } from '../types';
 import {
   Box,
   Container,
-  Paper,
   Typography,
   Avatar,
   Button,
   TextField,
-  Grid,
   Divider,
   IconButton,
   Card,
@@ -68,8 +66,8 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
       // Mapear los campos del backend al formato del frontend
       const mappedProfileData = {
         ...profileData,
-        nombres: profileData.nombre || profileData.nombres,
-        apellidos: profileData.apellido || profileData.apellidos
+        nombres: profileData.nombres || '',
+        apellidos: profileData.apellidos || ''
       };
       
       setUser(mappedProfileData);
@@ -83,8 +81,8 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
         // Aplicar mapeo también al fallback
         const mappedCurrentUser = {
           ...currentUser,
-          nombres: currentUser.nombre || currentUser.nombres,
-          apellidos: currentUser.apellido || currentUser.apellidos
+          nombres: currentUser.nombres || '',
+          apellidos: currentUser.apellidos || ''
         };
         setUser(mappedCurrentUser);
         setEditedUser({ ...mappedCurrentUser });
@@ -113,11 +111,11 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
       
       // Campos que pueden actualizarse según CreateUserDto
       if (editedUser.nombres && editedUser.nombres !== user.nombres) {
-        updateData.nombre = editedUser.nombres.trim();
+        updateData.nombres = editedUser.nombres.trim();
       }
       
       if (editedUser.apellidos && editedUser.apellidos !== user.apellidos) {
-        updateData.apellido = editedUser.apellidos.trim();
+        updateData.apellidos = editedUser.apellidos.trim();
       }
       
       if (editedUser.email && editedUser.email !== user.email) {
@@ -138,11 +136,11 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
       
       console.log('📥 Respuesta del servidor:', updatedProfile);
       
-      // Mapear los campos del backend al formato del frontend
+      // Usar directamente el perfil actualizado
       const mappedProfile = {
         ...updatedProfile,
-        nombres: updatedProfile.nombre,
-        apellidos: updatedProfile.apellido
+        nombres: updatedProfile.nombres || '',
+        apellidos: updatedProfile.apellidos || ''
       };
       
       // Actualizar el usuario local con los datos mapeados
@@ -373,8 +371,8 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
                 )}
               </Box>
 
-              <Grid container spacing={3}>
-                <Grid item xs={12} sm={6}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}>
+                <Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                     <PersonIcon color="action" fontSize="small" />
                     <Typography variant="body2" color="textSecondary" sx={{ minWidth: 80 }}>
@@ -395,9 +393,9 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
                       {user.nombres || 'No especificado'}
                     </Typography>
                   )}
-                </Grid>
+                </Box>
 
-                <Grid item xs={12} sm={6}>
+                <Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                     <PersonIcon color="action" fontSize="small" />
                     <Typography variant="body2" color="textSecondary" sx={{ minWidth: 80 }}>
@@ -418,9 +416,9 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
                       {user.apellidos || 'No especificado'}
                     </Typography>
                   )}
-                </Grid>
+                </Box>
 
-                <Grid item xs={12} sm={6}>
+                <Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                     <EmailIcon color="action" fontSize="small" />
                     <Typography variant="body2" color="textSecondary" sx={{ minWidth: 80 }}>
@@ -442,11 +440,8 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
                       {user.email}
                     </Typography>
                   )}
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                </Grid>
-              </Grid>
+                </Box>
+              </Box>
             </Box>
           </CardContent>
         </Card>
@@ -470,8 +465,8 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
               </Button>
             ) : (
               <>
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Box>
                     <TextField
                       fullWidth
                       type="password"
@@ -480,8 +475,8 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
                       onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
                       variant="outlined"
                     />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
+                  </Box>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                     <TextField
                       fullWidth
                       type="password"
@@ -491,8 +486,6 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
                       variant="outlined"
                       helperText="Mínimo 6 caracteres"
                     />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
                       type="password"
@@ -501,8 +494,8 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
                       onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                       variant="outlined"
                     />
-                  </Grid>
-                </Grid>
+                  </Box>
+                </Box>
 
                 <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
                   <Button
@@ -532,8 +525,8 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
               Información de la Cuenta
             </Typography>
             
-            <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}>
+              <Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                   <BusinessIcon color="action" fontSize="small" />
                   <Typography variant="body2" color="textSecondary">
@@ -545,9 +538,9 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
                   color={getRoleColor(user.role || '')}
                   size="small"
                 />
-              </Grid>
+              </Box>
 
-              <Grid item xs={12} sm={6}>
+              <Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                   <CalendarIcon color="action" fontSize="small" />
                   <Typography variant="body2" color="textSecondary">
@@ -560,8 +553,8 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
                     : 'No disponible'
                   }
                 </Typography>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
 

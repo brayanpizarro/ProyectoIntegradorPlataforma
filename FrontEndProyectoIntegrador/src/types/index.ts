@@ -183,6 +183,23 @@ export interface InformacionAcademica {
 }
 // ============================================
 
+export type TipoEntrevista = 'presencial' | 'virtual' | 'mixta';
+export type EstadoEntrevista = 'programada' | 'completada' | 'cancelada' | 'reprogramada';
+
+export interface CreateEntrevistaDto {
+  id_estudiante: string;
+  id_usuario: number;
+  fecha: string;
+  nombre_tutor: string;
+  año: number;
+  numero_entrevista: number;
+  duracion_minutos: number;
+  tipo_entrevista: TipoEntrevista;
+  estado: EstadoEntrevista;
+  observaciones?: string;
+  temas_abordados: string[];
+}
+
 export interface Entrevista {
   id: string;
   estudianteId: string;
@@ -191,9 +208,10 @@ export interface Entrevista {
   nombre_Tutor: string;
   año: number;
   numero_Entrevista: number;
+  numero_entrevista: number; // alias
   duracion_minutos: number;
-  tipo_entrevista: string;
-  estado: string;
+  tipo_entrevista: TipoEntrevista;
+  estado: EstadoEntrevista;
   observaciones: string;
   temas_abordados: string[];
   etiquetas: EtiquetaEntrevista[];

@@ -108,9 +108,7 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
         // Intentar cargar historial académico del semestre
         try {
           const historial = await historialAcademicoService.getByEstudiante(
-            estudiante.id_estudiante.toString(),
-            semestreActual.año,
-            semestreActual.semestre
+            estudiante.id_estudiante.toString()
           );
           setHistorialSemestre(historial);
         } catch (historialError) {

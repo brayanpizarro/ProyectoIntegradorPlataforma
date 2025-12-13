@@ -1,17 +1,10 @@
 import React from 'react';
 import { getEstadoColor } from '../../../utils/estadoColors';
 import { formatDateChilean } from '../../../utils/dateHelpers';
+import type { Estudiante as EstudianteBase } from '../../../types';
 
-interface Estudiante {
-  id: number;
-  nombres: string;
-  apellidos: string;
-  rut: string;
-  carrera: string;
-  estado: 'Activo' | 'Egresado' | 'Suspendido' | 'Desertor' | 'Congelado';
-  beca: string;
-  universidad: string;
-  promedio: number;
+// Extender tipo Estudiante con campos adicionales para la vista de tabla
+interface Estudiante extends EstudianteBase {
   ultimaEntrevista?: string;
   totalEntrevistasAno?: number;
   diasSinEntrevista?: number;
@@ -20,10 +13,10 @@ interface Estudiante {
 
 interface StudentsTableProps {
   students: Estudiante[];
-  sortField: keyof Estudiante;
+  sortField: string;
   sortDirection: 'asc' | 'desc';
-  onSort: (field: keyof Estudiante) => void;
-  onViewDetails: (studentId: number) => void;
+  onSort: (field: string) => void;
+  onViewDetails: (studentId: number | string) => void;
 }
 
 /**
@@ -88,12 +81,12 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
         <tbody>
           {students.map((student, index) => (
             <tr 
-              key={student.id_estudiante || student.id || index}
+              key={String(student.id_estudiante) || String(index)}
               className={`${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'} hover:bg-[var(--color-turquoise)]/10 transition-colors`}
             >
               <td className="py-3 px-3 border-b border-gray-300">
                 <div className="font-bold text-gray-800">
-                  {student.nombre || `${student.nombres || ''} ${student.apellidos || ''}`}
+                  {student.nombre || `${student.nombres || ''} ${student.apellidos || ''}`.trim()}
                 </div>
                 <div className="text-xs text-gray-500">
                   {student.rut}
@@ -150,7 +143,7 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
               </td>
               <td className="py-3 px-3 border-b border-gray-300 text-center">
                 <button
-                  onClick={() => onViewDetails(student.id_estudiante || student.id)}
+                  onClick={() => onViewDetails(student.id_estudiante)}
                   className="px-3 py-1.5 bg-[var(--color-turquoise)] text-white rounded hover:bg-[var(--color-turquoise-light)] transition-colors text-xs font-bold"
                 >
                   Ver Detalles

@@ -81,16 +81,16 @@ export default function GeneracionViewSimple(){
     return filtered;
   }, [students, searchTerm, filterCarrera, filterEstado, sortField, sortDirection]);
 
-  const handleSort = (field: keyof Estudiante) => {
+  const handleSort = (field: string) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
-      setSortField(field);
+      setSortField(field as keyof Estudiante);
       setSortDirection('asc');
     }
   };
 
-  const handleVerDetalles = (studentId: number) => {
+  const handleVerDetalles = (studentId: number | string) => {
     navigate(`/estudiante/${studentId}`);
   };
 

@@ -16,7 +16,7 @@ interface UseSnackbarReturn {
   showError: (message: string) => void;
   showWarning: (message: string) => void;
   showInfo: (message: string) => void;
-  SnackbarComponent: () => JSX.Element;
+  SnackbarComponent: () => React.ReactElement;
 }
 
 /**

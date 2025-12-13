@@ -19,7 +19,7 @@ class EntrevistaService extends BaseHttpClient {
     return await this.request<Entrevista[]>(`/entrevistas/estudiante/${estudianteId}`);
   }
 
-  async create(data: Partial<Entrevista>): Promise<Entrevista> {
+  async create(data: Partial<Entrevista> | any): Promise<Entrevista> {
     return this.request<Entrevista>('/entrevistas', {
       method: 'POST',
       body: JSON.stringify(data),

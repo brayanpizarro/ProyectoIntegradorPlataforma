@@ -2,7 +2,7 @@ name: CPanel FundacionCarmen Deploy
 on:
   push:
     branches:
-        - main
+        - deploy
 jobs:
   FTP-Deploy-Action:
     name: FTP-Deploy-Action
@@ -12,7 +12,7 @@ jobs:
         with:
           fetch-depth: 2
       - name: FTP-Deploy-Action
-        uses: SamKirkLand/FTP-Deploy-Action@4.3.6
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           ftp-server: ${{ secrets.FTP_SERVER }}
           ftp-username: ${{ secrets.FTP_USERNAME }}
