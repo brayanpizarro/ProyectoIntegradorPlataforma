@@ -4,17 +4,19 @@ on:
     branches:
         - deploy
 jobs:
-  FTP-Deploy-Action:
-    name: FTP-Deploy-Action
+  SFTP-Deploy-Action:
+    name: SFTP-Deploy-Action
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2
-      - name: FTP-Deploy-Action
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+      - name: SFTP-Deploy-Action
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
         with:
           server: ftp.fundacioncarmengoudie.cl
           username: ftpdeployfundacion@entrevistas.fundacioncarmengoudie.cl
-          password: juV)r;3Ds$sT
-          port: 21
+          ssh_private_key: b3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABA7XyKQ6sU4mdt4oV4ARNE5AAAAEAAAAAEAAAEXAAAAB3NzaC1yc2EAAAADAQABAAABAQCs7e9RdL3Rqy/yAzFXr23gcllnTtWPUXKft4lJHdFCqWfgn0MO6X2A5Brn41k3HGvboKNxKxmQMGkRu5GU4usN+vsFXQVI0ngyeLN3/l8Dl5Cb1h7ufIAJeVxGGCvn1n7PvcFaBORAerodPjlgeZdAqUGgESVbiW51gCs7YgodqHbv9dKVnbmffmnj3CdyPaGYPkyiY+ycRrgLW1zQmhbVz3pGdjFxw5if1NP/IkZgM06EnFyDSpluhOMugsBF309QLLvSnR+pUy+31Zu8UeeeMq3eVflJ6ndjwrK1A4AjQDXAPqPr4txkRxyt1FJ9tgmQoOSSlt1YzxS2EPW8zSTvAAADwC58ldwigv+3vgWGQ5/7LhpVMn+vAWpod5L2WaLFxkYVEF8+1kUFOT5uuFJhafcpGHN/mtuqT5DaQk9Xybive7yVkKAOX6pjnQGBjCzrr6FA105xrqma5ge0GQRZ1Tpx2ke6eu6bE0nlf8ReGqFwDl+EXAARIKm/t9Nyh4lt1XULBR5Z+0WKUptfmO1f/65+4oh6qc2oXrcFW41vMILOEo8UJEMfv6qycOVEt71GBCH1k4cYvepGNPHjAuVNUfDAc5t5ZL/EFa7K2jQQ6skRLQdlLqwTI8IGvO+q7EPhavM5MHkYwYp7Qmc7oKJQY+w1cIQ/Ap0385dnyuFV8JWRDXTDWs8jZCYo3td832pwg9eO3eUrB55NsUEAc+OOYvp9AsSpgizyw/7UiWkpZ+l5Lyw42k9hHxg2nNKGPvXftiH1AHzKui7dMiMzurcLuCqTKvAZYx1ysVgyXjil/OZP0E+ChDNILe4qqgEheU6dnuPTq8pX4AaSyhWBbcsBVspYvhhhfNyI3QduGjKPCstbueADqeYupmPCXjMio+X560DHznZHPGIaIW+N3HvxVyPgX5J/7R3xCmkuq/APUFiW3gs3+MZvPayf++jTRgJmCcnDNyDUDBY2DxyKKhz9yKFDYVyvJnqo4DC/c3GdGocL3iQSnK3VNIFZTCndp79bjUs0Gfpft2jAFl5Me6v+hBnGNZjEWKyJ1SK+uyXq/++8ncHh0ejNxSvNNt0XkYOVD0htKtQhfh4rURFDMWGBeMpq7tsJcE+IkpNwgyg3XXGBBzOH5fK23Gz+qBOGv7PcuBZQXG1mcbhKlVrC4Th+OZCvsdtMQaW1cnF8HGYvGYJ3kHA+kApyNytGBF5XfCfbkII1mv3KvzTdKsdJ+lV/7QH86PbB6EBlhVQs0tNNFfWukSHd1pkpPzB0EtgRBsy6Xo6MZnChpmuJSQiFAjOFD3K05COotG3P8LfvNK+qA5SJXRf8LoDP3JAWQewld65iYmROeeFPTAY59JAIje914JRbZjjztg48vuJ7sjJcYMl+shAHmk8XzG0yO/N0GqXwZXbUR36TIBoMd0LBAZXxFxAbtAC4c6kQaZD7BtpBIyC7FljvetmrLULeb+Bta68Z0nrD+lmhNZB/XrQ14K1zo/SnujXE9tmWIKSB9Ffj0mUsB+wWweh+uP0MZDbn/VUMIVxKV1/4dyZt6IlOuiRG1t1DEaaW1qN/H3WCJiscaa2tJUTnttYmlL29SHwGrqjIm78iEb1kIBFI4ALMhdEa5dsRGw==
+          local_path: ./FrontEndProyectoIntegrador/*
+          remote_path: ./public_html/entrevistas/
+          port: 22
