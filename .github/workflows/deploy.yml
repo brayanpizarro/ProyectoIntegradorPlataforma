@@ -14,7 +14,7 @@ jobs:
       - name: FTP-Deploy-Action
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
-          server: 66.29.146.201
+          server: premium237.web-hosting.com
           username: ftpdeployfundacion@entrevistas.fundacioncarmengoudie.cl
           password: juV)r;3Ds$sT
           port: 21
