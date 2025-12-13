@@ -15,6 +15,6 @@ jobs:
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ftp.fundacioncarmengoudie.cl
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
+          username: ftpdeployfundacion@entrevistas.fundacioncarmengoudie.cl
+          password: juV)r;3Ds$sT
           port: 21
