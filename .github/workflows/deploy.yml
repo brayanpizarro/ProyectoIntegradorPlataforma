@@ -20,3 +20,5 @@ jobs:
           local_path: ./FrontEndProyectoIntegrador/*
           remote_path: ./public_html/entrevistas/
           port: 22
+          rsyncArgs: '--exclude=node_modules --exclude=.git --exclude=*.log'
+          sftpArgs: '-o ConnectTimeout=5'
