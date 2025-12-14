@@ -15,7 +15,7 @@ interface AppConfig {
  * Utiliza variables de entorno con fallbacks seguros
  */
 export const config: AppConfig = {
-  apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
+  apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:3000',
   environment: (import.meta.env.VITE_ENV || 'development') as 'development' | 'production',
   enableMockData: import.meta.env.VITE_ENABLE_MOCK_DATA === 'true',
   enableDebugLogs: import.meta.env.VITE_ENABLE_DEBUG_LOGS === 'true',
