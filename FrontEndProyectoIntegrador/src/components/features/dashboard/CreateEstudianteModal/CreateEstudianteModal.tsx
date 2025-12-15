@@ -28,8 +28,6 @@ interface FormData {
   generacion: string;
 }
 
-const STEPS = ['Datos Personales'];
-
 const INITIAL_FORM_STATE = (generacion: number): FormData => ({
   nombre: '',
   rut: '',

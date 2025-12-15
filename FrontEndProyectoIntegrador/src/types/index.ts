@@ -157,6 +157,8 @@ export interface HistorialAcademico {
   ramos_eliminados?: number;
   promedio_semestre?: number;
   trayectoria_academica?: string[];
+  observaciones?: string;
+  ultima_actualizacion_por?: string;
   estudiante?: Estudiante;
   created_at?: Date;
   updated_at?: Date;
@@ -170,6 +172,7 @@ export interface InformacionAcademica {
   promedio_2?: number;
   promedio_3?: number;
   promedio_4?: number;
+  promedio_acumulado?: number;
   via_acceso?: string;
   año_ingreso_beca?: number;
   colegio?: string;
@@ -179,6 +182,8 @@ export interface InformacionAcademica {
   puntajes_paes?: any;
   ensayos_paes?: any[];
   beneficios?: string;
+  resumen_semestres?: any;
+  ultima_actualizacion_por?: string;
   estudiante?: Estudiante;
   created_at?: Date;
   updated_at?: Date;

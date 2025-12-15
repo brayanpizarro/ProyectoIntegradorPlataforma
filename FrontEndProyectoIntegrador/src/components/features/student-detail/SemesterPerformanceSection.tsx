@@ -95,10 +95,15 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
         
         console.log(`📚 Ramos cargados del backend para ${semestreActual.año}/${semestreActual.semestre}:`, ramos);
         
-        // El backend ya debería filtrar, pero verificamos
-        if (ramos && ramos.length > 0) {
-          // Mostrar todos los ramos del backend ya que deberían estar filtrados
-          console.log(`✅ Usando ramos del backend (ya filtrados):`, ramos);
+        const ramosFiltrados = (ramos || []).filter((ramo) => 
+          Number(ramo.año) === semestreActual.año && Number(ramo.semestre) === semestreActual.semestre
+        );
+
+        if (ramosFiltrados.length > 0) {
+          console.log(`✅ Usando ramos filtrados para ${semestreActual.año}/${semestreActual.semestre}:`, ramosFiltrados);
+          setRamosSemestre(ramosFiltrados);
+        } else if (ramos && ramos.length > 0) {
+          console.log('⚠️ Backend devolvió ramos sin filtro, usando respuesta completa');
           setRamosSemestre(ramos);
         } else {
           // Si el backend no devuelve nada, usar datos locales
@@ -107,11 +112,19 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
 
         // Intentar cargar historial académico del semestre
         try {
-          const historial = await historialAcademicoService.getByEstudiante(
-            estudiante.id_estudiante.toString(),
-            semestreActual.año,
-            semestreActual.semestre
+          const historialResponse = await historialAcademicoService.getByEstudiante(
+            estudiante.id_estudiante.toString()
           );
+
+          const historial = Array.isArray(historialResponse)
+            ? historialResponse.find((h) => Number(h.año) === semestreActual.año && Number(h.semestre) === semestreActual.semestre) || null
+            : (historialResponse && typeof historialResponse === 'object'
+                && Number((historialResponse as any).año) === semestreActual.año
+                && Number((historialResponse as any).semestre) === semestreActual.semestre
+              )
+              ? historialResponse
+              : null;
+
           setHistorialSemestre(historial);
         } catch (historialError) {
           // Si no hay historial guardado para este semestre, usar null

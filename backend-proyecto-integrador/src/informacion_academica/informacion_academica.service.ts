@@ -65,6 +65,30 @@ export class InformacionAcademicaService {
     return informacionAcademica;
   }
 
+  async upsertByEstudiante(idEstudiante: string, dto: CreateInformacionAcademicaDto | UpdateInformacionAcademicaDto) {
+    const estudiante = await this.estudianteRepository.findOne({ where: { id_estudiante: idEstudiante } });
+    if (!estudiante) {
+      throw new NotFoundException(`Estudiante con ID ${idEstudiante} no encontrado`);
+    }
+
+    const existente = await this.informacionAcademicaRepository.findOne({
+      where: { estudiante: { id_estudiante: idEstudiante } },
+      relations: ['estudiante'],
+    });
+
+    if (existente) {
+      Object.assign(existente, dto);
+      return await this.informacionAcademicaRepository.save(existente);
+    }
+
+    const informacionAcademica = this.informacionAcademicaRepository.create({
+      ...dto,
+      estudiante,
+    });
+
+    return await this.informacionAcademicaRepository.save(informacionAcademica);
+  }
+
   async update(id: number, updateInformacionAcademicaDto: UpdateInformacionAcademicaDto): Promise<InformacionAcademica> {
     const informacionAcademica = await this.findOne(id);
     

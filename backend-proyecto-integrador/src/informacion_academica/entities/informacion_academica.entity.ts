@@ -50,6 +50,15 @@ export class InformacionAcademica {
   @Column({ type: 'text', nullable: true })
   beneficios: string;
 
+  @Column({ type: 'jsonb', nullable: true, default: () => "'[]'" })
+  resumen_semestres: any[];
+
+  @Column({ nullable: true, default: null })
+  ultima_actualizacion_por: string;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  promedio_acumulado: number;
+
   @CreateDateColumn()
   created_at: Date;
 
