@@ -34,6 +34,16 @@ export class UpdateFamiliaDto {
   otros_familiares?: any[];
 
   @Expose()
+  @IsString()
+  @IsOptional()
+  observaciones_hermanos?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  observaciones_otros_familiares?: string;
+
+  @Expose()
   @IsOptional()
   observaciones?: any;
 }

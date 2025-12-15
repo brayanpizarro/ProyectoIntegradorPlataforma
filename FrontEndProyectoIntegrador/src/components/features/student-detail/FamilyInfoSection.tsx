@@ -48,18 +48,20 @@ export function FamilyInfoSection({
 
   // Helper para obtener observaciones de forma segura
   const getObservacionesHermanos = () => {
-    if (!familia?.observaciones) return '';
-    if (typeof familia.observaciones === 'string') return familia.observaciones;
-    const obs = familia.observaciones as any;
-    if (Array.isArray(obs.hermanos)) return obs.hermanos.join('\n');
+    if (!familia?.observaciones_hermanos) return '';
+    if (typeof familia.observaciones_hermanos === 'string') return familia.observaciones_hermanos;
+    return '';
+  };
+
+  const getObservacionesOtrosFamiliares = () => {
+    if (!familia?.observaciones_otros_familiares) return '';
+    if (typeof familia.observaciones_otros_familiares === 'string') return familia.observaciones_otros_familiares;
     return '';
   };
 
   const getObservacionesGenerales = () => {
     if (!familia?.observaciones) return '';
     if (typeof familia.observaciones === 'string') return familia.observaciones;
-    const obs = familia.observaciones as any;
-    if (Array.isArray(obs.general)) return obs.general.join('\n');
     return '';
   };
   return (
@@ -141,19 +143,19 @@ export function FamilyInfoSection({
               observacionesPlaceholder="Observaciones sobre hermanos..."
               observacionesRows={3}
               onNombreChange={(valor) => onFamiliaChange?.('hermanos', valor.split(';').map(h => ({ nombre: h.trim() })))}
-              onObservacionesChange={(valor) => onFamiliaChange?.('observaciones', valor)}
+              onObservacionesChange={(valor) => onFamiliaChange?.('observaciones_hermanos', valor)}
             />
 
             <FamilyMemberRow
               label="Otros familiares significativos"
               nombreValue={formatearOtrosFamiliares()}
-              observacionesValue={getObservacionesGenerales()}
+              observacionesValue={getObservacionesOtrosFamiliares()}
               modoEdicion={modoEdicion}
               nombrePlaceholder="Otros familiares separados por ;"
               observacionesPlaceholder="Observaciones sobre otros familiares..."
               observacionesRows={3}
               onNombreChange={(valor) => onFamiliaChange?.('otros_familiares', valor.split(';').map(f => ({ nombre: f.trim() })))}
-              onObservacionesChange={(valor) => onFamiliaChange?.('observaciones', valor)}
+              onObservacionesChange={(valor) => onFamiliaChange?.('observaciones_otros_familiares', valor)}
             />
 
             <FamilyMemberRow

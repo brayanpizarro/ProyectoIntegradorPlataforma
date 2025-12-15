@@ -36,6 +36,12 @@ export const useFamiliaEditing = ({ estudiante }: UseFamiliaEditingProps) => {
         if (datosFamiliaEditados.otros_familiares !== undefined) {
             familiaPayload.otros_familiares = datosFamiliaEditados.otros_familiares;
         }
+        if (datosFamiliaEditados.observaciones_hermanos !== undefined) {
+            familiaPayload.observaciones_hermanos = datosFamiliaEditados.observaciones_hermanos;
+        }
+        if (datosFamiliaEditados.observaciones_otros_familiares !== undefined) {
+            familiaPayload.observaciones_otros_familiares = datosFamiliaEditados.observaciones_otros_familiares;
+        }
         if (datosFamiliaEditados.observaciones !== undefined) {
             familiaPayload.observaciones = datosFamiliaEditados.observaciones;
         }

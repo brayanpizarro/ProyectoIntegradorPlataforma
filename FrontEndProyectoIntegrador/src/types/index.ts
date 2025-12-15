@@ -120,6 +120,8 @@ export interface Familia {
   descripcion_padre?: string[] | string;
   hermanos?: any[];
   otros_familiares?: any[];
+  observaciones_hermanos?: string;
+  observaciones_otros_familiares?: string;
   observaciones?: any;
   estudiante?: Estudiante;
   created_at?: Date;
