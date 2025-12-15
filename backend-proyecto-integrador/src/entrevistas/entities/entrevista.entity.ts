@@ -7,10 +7,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  BeforeInsert,
 } from 'typeorm';
 import { Estudiante } from '../../estudiante/entities/estudiante.entity';
 import { User } from '../../users/entities/user.entity';
 import { Texto } from './texto.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 export enum TipoEntrevista {
   PRESENCIAL = 'presencial',
@@ -29,6 +31,11 @@ export enum EstadoEntrevista {
 export class Entrevista {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @BeforeInsert()
+  generateId() {
+    this.id = uuidv4();
+  }
 
   @ManyToOne(() => Estudiante, (estudiante) => estudiante.entrevistas, {
     nullable: false,

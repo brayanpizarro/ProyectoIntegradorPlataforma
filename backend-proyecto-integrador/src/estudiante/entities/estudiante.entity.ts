@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
   OneToOne,
   OneToMany,
+  BeforeInsert,
 } from 'typeorm';
 import { Institucion } from '../../institucion/entities/institucion.entity';
 import { Familia } from '../../familia/entities/familia.entity';
@@ -15,6 +16,7 @@ import { RamosCursados } from 'src/ramos_cursados/entities/ramos_cursado.entity'
 import { HistorialAcademico } from 'src/historial_academico/entities/historial_academico.entity';
 import { InformacionAcademica } from 'src/informacion_academica/entities/informacion_academica.entity';
 import { Entrevista } from '../../entrevistas/entities/entrevista.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 export enum TipoEstudiante {
   MEDIA = 'media',
@@ -32,6 +34,11 @@ export enum StatusEstudiante {
 export class Estudiante {
   @PrimaryGeneratedColumn('uuid')
   id_estudiante: string;
+
+  @BeforeInsert()
+  generateId() {
+    this.id_estudiante = uuidv4();
+  }
 
   @Column()
   nombre: string;

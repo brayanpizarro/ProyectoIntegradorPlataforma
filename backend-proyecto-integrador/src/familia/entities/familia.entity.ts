@@ -33,7 +33,7 @@ export class Familia {
   @Column({ type: 'json', nullable: true })
   otros_familiares: any[];
 
-  @Column({ type: 'jsonb', nullable: true , default: { madre: [], padre: [], hermanos: [], general: [] } })
+  @Column({ type: 'json', nullable: true , default: { madre: [], padre: [], hermanos: [], general: [] } })
   observaciones: ObservacionesFamiliares;
 
   @CreateDateColumn()

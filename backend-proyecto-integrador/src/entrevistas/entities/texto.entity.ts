@@ -5,14 +5,21 @@ import {
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
+  BeforeInsert,
 } from 'typeorm';
 import { Entrevista } from './entrevista.entity';
 import { Etiqueta } from './etiqueta.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 @Entity('texto')
 export class Texto {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @BeforeInsert()
+  generateId() {
+    this.id = uuidv4();
+  }
 
   @ManyToOne(() => Entrevista, (entrevista) => entrevista.textos, {
     nullable: false,

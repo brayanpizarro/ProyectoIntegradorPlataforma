@@ -35,7 +35,7 @@ export class HistorialAcademico {
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   promedio_semestre: number;
 
-  @Column({ type: 'jsonb', nullable: true, default: () => "'[]'" })
+  @Column({ type: 'json', nullable: true, default: () => "'[]'" })
   trayectoria_academica: string[];
 
   @CreateDateColumn()
