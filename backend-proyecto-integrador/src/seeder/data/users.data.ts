@@ -1,4 +1,4 @@
-import { UserRole } from "src/users";
+import { UserRole } from "../../users";
 
 export const usersData = [
   {
