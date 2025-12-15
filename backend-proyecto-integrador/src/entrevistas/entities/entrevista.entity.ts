@@ -1,6 +1,6 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   ManyToOne,
   JoinColumn,
@@ -29,7 +29,7 @@ export enum EstadoEntrevista {
 
 @Entity('entrevista')
 export class Entrevista {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn('uuid')
   id: string;
 
   @BeforeInsert()

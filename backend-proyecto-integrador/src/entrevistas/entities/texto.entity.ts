@@ -1,6 +1,6 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   ManyToOne,
   JoinColumn,
@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 @Entity('texto')
 export class Texto {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn('uuid')
   id: string;
 
   @BeforeInsert()

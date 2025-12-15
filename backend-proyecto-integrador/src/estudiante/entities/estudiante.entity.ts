@@ -1,6 +1,6 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   ManyToOne,
   JoinColumn,
@@ -32,7 +32,7 @@ export enum StatusEstudiante {
 
 @Entity('estudiante')
 export class Estudiante {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn('uuid')
   id_estudiante: string;
 
   @BeforeInsert()

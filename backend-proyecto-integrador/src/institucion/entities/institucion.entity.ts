@@ -1,10 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BeforeInsert } from 'typeorm';
+import { Entity, PrimaryColumn, Column, OneToMany, BeforeInsert } from 'typeorm';
 import { Estudiante } from '../../estudiante/entities/estudiante.entity';
 import { v4 as uuidv4 } from 'uuid';
 
 @Entity('institucion')
 export class Institucion {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn('uuid')
   id_institucion: string;
 
   @BeforeInsert()
