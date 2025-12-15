@@ -22,22 +22,19 @@ import { appConfig, databaseConfig, jwtConfig } from './config';
       envFilePath: ['.env.local', '.env'],
     }),
 
-    // TypeORM con MySQL
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        type: 'mysql',
-        host: configService.get('database.mysql.host'),
-        port: configService.get('database.mysql.port'),
-        username: configService.get('database.mysql.username'),
-        password: configService.get('database.mysql.password'),
-        database: configService.get('database.mysql.database'),
+        type: 'postgres',
+        host: configService.get('database.postgres.host'),
+        port: configService.get('database.postgres.port'),
+        username: configService.get('database.postgres.username'),
+        password: configService.get('database.postgres.password'),
+        database: configService.get('database.postgres.database'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: configService.get('database.mysql.synchronize'),
-        logging: configService.get('database.mysql.logging'),
-        charset: 'utf8mb4',
-        timezone: 'Z',
+        synchronize: configService.get('database.postgres.synchronize'),
+        logging: configService.get('database.postgres.logging'),
       }),
     }),
 
