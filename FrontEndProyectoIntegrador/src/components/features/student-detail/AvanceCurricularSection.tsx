@@ -367,16 +367,40 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
     nota?: number;
   }) => {
     try {
+      // Obtener el periodo del semestre seleccionado para extraer año y semestre
+      const semestreSeleccionado = mallaCurricular.find(s => s.semestre === selectedSemestre);
+      const periodo = semestreSeleccionado?.periodo;
+      
+      // Parsear periodo en formato "2025-1" o "2025-2"
+      let año: number | undefined;
+      let semestreNumero: number = selectedSemestre;
+      
+      if (periodo) {
+        const match = periodo.match(/^(\d{4})-(\d+)$/);
+        if (match) {
+          año = parseInt(match[1]);
+          semestreNumero = parseInt(match[2]);
+          console.log('📊 [AvanceCurricular] Periodo parseado:', { periodo, año, semestre: semestreNumero });
+        } else {
+          console.warn('⚠️ [AvanceCurricular] Formato de periodo no reconocido:', periodo);
+        }
+      } else {
+        console.warn('⚠️ [AvanceCurricular] Semestre sin periodo definido');
+      }
+
       // Crear el ramo en el backend
       const ramoData = {
         id_estudiante: estudiante.id_estudiante,
-        semestre: selectedSemestre,
+        año: año, // Año extraído del periodo
+        semestre: semestreNumero, // Semestre extraído del periodo
         nivel_educativo: 'Universitario',
         nombre_ramo: nuevoRamo.nombre,
         notas_parciales: {},
         promedio_final: nuevoRamo.nota || null,
         estado: nuevoRamo.estado
       };
+      
+      console.log('📤 [AvanceCurricular] Enviando ramo al backend:', ramoData);
 
       try {
         // Llamada al backend

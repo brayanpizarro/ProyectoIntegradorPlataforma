@@ -120,20 +120,41 @@ export const useSemesterPerformanceData = (
 
       setLoadingDatos(true);
       try {
-        const ramos = await ramosCursadosService.getByEstudiante(
+        // 1) Intento filtrado por año/semestre desde el backend
+        let ramos = await ramosCursadosService.getByEstudiante(
           estudiante.id_estudiante.toString(),
           semestreActual.año,
           semestreActual.semestre
         );
 
-        const ramosFiltrados = (ramos || []).filter((ramo) =>
+        // 2) Si no viene nada, obtener todos los ramos del estudiante y filtrar localmente
+        if (!ramos || ramos.length === 0) {
+          const todos = await ramosCursadosService.getByEstudiante(
+            estudiante.id_estudiante.toString()
+          );
+          ramos = todos || [];
+        }
+
+        // 3) Normalizar año/semestre faltantes para que el filtrado funcione
+        const ramosNormalizados = (ramos || []).map((ramo: any, index: number) => {
+          if (ramo.año && ramo.semestre) return ramo;
+          const { año, semestre } = asignarSemestreFallback(ramo.nombre_ramo, index);
+          return {
+            ...ramo,
+            año: ramo.año ?? año,
+            semestre: ramo.semestre ?? semestre,
+          };
+        });
+
+        const ramosFiltrados = (ramosNormalizados || []).filter((ramo) =>
           Number(ramo.año) === semestreActual.año && Number(ramo.semestre) === semestreActual.semestre
         );
 
         if (ramosFiltrados.length > 0) {
           setRamosSemestre(ramosFiltrados);
-        } else if (ramos && ramos.length > 0) {
-          setRamosSemestre(ramos);
+        } else if (ramosNormalizados && ramosNormalizados.length > 0) {
+          // Si no hay coincidencia exacta, muestra lo que llegó sin perder datos
+          setRamosSemestre(ramosNormalizados);
         } else {
           throw new Error('No data from backend, using local fallback');
         }
