@@ -362,7 +362,7 @@ export const AvanceCurricular: React.FC = () => {
     setSnackbarOpen(true);
   };
 
-  const handleAddSubject = (newSubject: Omit<MallaCurricular['ramos'][0], 'id'>) => {
+  const handleAddSubject = (newSubject: any) => {
     const subjectWithId = {
       ...newSubject,
       id: Date.now(), // ID temporal

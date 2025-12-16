@@ -40,6 +40,7 @@ export default function EstudianteDetail() {
     handleToggleEdicion,
     handleGenerarInforme,
     estudianteConEdiciones,
+    informesGuardados,
     setMensajeExito,
     setMensajeError,
 
@@ -122,6 +123,7 @@ export default function EstudianteDetail() {
           <AcademicReportSection
             estudiante={estudianteConEdiciones}
             modoEdicion={modoEdicion && canEdit}
+            historialesExternos={informesGuardados}
           />
         )}
 

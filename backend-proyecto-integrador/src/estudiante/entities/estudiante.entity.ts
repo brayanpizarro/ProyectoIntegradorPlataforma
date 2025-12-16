@@ -12,9 +12,9 @@ import {
 } from 'typeorm';
 import { Institucion } from '../../institucion/entities/institucion.entity';
 import { Familia } from '../../familia/entities/familia.entity';
-import { RamosCursados } from 'src/ramos_cursados/entities/ramos_cursado.entity';
-import { HistorialAcademico } from 'src/historial_academico/entities/historial_academico.entity';
-import { InformacionAcademica } from 'src/informacion_academica/entities/informacion_academica.entity';
+import { RamosCursados } from '../../ramos_cursados/entities/ramos_cursado.entity';
+import { HistorialAcademico } from '../../historial_academico/entities/historial_academico.entity';
+import { InformacionAcademica } from '../../informacion_academica/entities/informacion_academica.entity';
 import { Entrevista } from '../../entrevistas/entities/entrevista.entity';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -105,13 +105,13 @@ export class Estudiante {
   @OneToOne(() => Familia, (familia) => familia.estudiante, { nullable: true })
   familia: Familia;
 
-  @OneToMany(() => RamosCursados, (ramo) => ramo.estudiante)
+  @OneToMany(() => RamosCursados, (ramo: RamosCursados) => ramo.estudiante)
   ramosCursados: RamosCursados[];
 
-  @OneToMany(() => HistorialAcademico, (historial) => historial.estudiante)
+  @OneToMany(() => HistorialAcademico, (historial: HistorialAcademico) => historial.estudiante)
   historialesAcademicos: HistorialAcademico[];
 
-  @OneToOne(() => InformacionAcademica, (info) => info.estudiante, {
+  @OneToOne(() => InformacionAcademica, (info: InformacionAcademica) => info.estudiante, {
     nullable: true,
   })
   informacionAcademica: InformacionAcademica;

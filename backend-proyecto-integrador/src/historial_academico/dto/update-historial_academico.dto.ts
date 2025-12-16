@@ -41,4 +41,14 @@ export class UpdateHistorialAcademicoDto {
   @Expose()
   @IsOptional()
   trayectoria_academica?: string[]; // Array de textos incrementales
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  observaciones?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  ultima_actualizacion_por?: string;
 }

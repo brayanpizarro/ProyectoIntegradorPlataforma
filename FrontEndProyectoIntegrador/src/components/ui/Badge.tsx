@@ -1,7 +1,6 @@
 import React from 'react';
 import { Chip } from '@mui/material';
 import type { ChipProps } from '@mui/material/Chip';
-import { getEstadoClasses } from '../../utils/estadoColors';
 
 interface BadgeProps {
   estado: string;
@@ -19,8 +18,6 @@ export const Badge: React.FC<BadgeProps> = ({
   variant = 'filled'
 }) => {
   // Obtener colores del estado
-  const estadoClasses = getEstadoClasses(estado);
-  
   // Mapear clases de Tailwind a colores MUI
   const getColor = (estado: string): ChipProps['color'] => {
     const estadoLower = estado.toLowerCase();

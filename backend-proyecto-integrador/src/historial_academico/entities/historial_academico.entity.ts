@@ -38,6 +38,12 @@ export class HistorialAcademico {
   @Column({ type: 'json', nullable: true, default: () => "'[]'" })
   trayectoria_academica: string[];
 
+  @Column({ type: 'text', nullable: true, default: null })
+  observaciones: string;
+
+  @Column({ nullable: true, default: null })
+  ultima_actualizacion_por: string;
+
   @CreateDateColumn()
   created_at: Date;
 

@@ -25,6 +25,15 @@ export class InformacionAcademicaController {
     return await this.informacionAcademicaService.findByEstudiante(idEstudiante);
   }
 
+  @Patch('estudiante/:idEstudiante')
+  @HttpCode(HttpStatus.OK)
+  async upsertByEstudiante(
+    @Param('idEstudiante') idEstudiante: string,
+    @Body() payload: UpdateInformacionAcademicaDto,
+  ) {
+    return await this.informacionAcademicaService.upsertByEstudiante(idEstudiante, payload);
+  }
+
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   async findOne(@Param('id') id: string) {

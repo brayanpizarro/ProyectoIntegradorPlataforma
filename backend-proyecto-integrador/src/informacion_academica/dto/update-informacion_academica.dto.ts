@@ -60,4 +60,18 @@ export class UpdateInformacionAcademicaDto {
   @IsString()
   @IsOptional()
   beneficios?: string; // Descripción de beneficios
+
+  @Expose()
+  @IsOptional()
+  resumen_semestres?: any[];
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  ultima_actualizacion_por?: string;
+
+  @Expose()
+  @IsNumber()
+  @IsOptional()
+  promedio_acumulado?: number;
 }

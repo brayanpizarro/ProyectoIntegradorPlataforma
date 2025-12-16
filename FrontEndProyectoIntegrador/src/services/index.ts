@@ -4,6 +4,7 @@ export { estudianteService } from './estudiante.service';
 export { userService } from './user.service';
 export { institucionService } from './institucion.service';
 export { historialAcademicoService } from './historial-academico.service';
+export { informacionAcademicaService } from './informacion-academica.service';
 export { estadisticasService } from './estadisticas.service';
 export { familiaService } from './familia.service';
 export { entrevistaService } from './entrevista.service';

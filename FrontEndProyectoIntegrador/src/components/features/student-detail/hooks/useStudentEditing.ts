@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { historialAcademicoService } from '../../../../services';
+import { historialAcademicoService, authService } from '../../../../services';
 import type { Estudiante } from '../../../../types';
 import { logger } from '../../../../config';
 import { useAutosave } from './useAutosave';
@@ -195,6 +195,7 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
     try {
       const añoActual = new Date().getFullYear();
       const semestreActual = new Date().getMonth() < 6 ? 1 : 2;
+      const usuario = authService.getCurrentUser();
 
       const historialData = {
         id_estudiante: id,
@@ -203,8 +204,11 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
         nivel_educativo: estudiante.institucion?.nivel_educativo || 'Superior',
         ramos_aprobados: 0,
         ramos_reprobados: 0,
+        ramos_eliminados: 0,
         promedio_semestre: 0,
         trayectoria_academica: [],
+        observaciones: '',
+        ultima_actualizacion_por: usuario?.email || (usuario as any)?.nombres || (usuario as any)?.id || 'usuario',
       };
 
       const response = await historialAcademicoService.create(historialData);

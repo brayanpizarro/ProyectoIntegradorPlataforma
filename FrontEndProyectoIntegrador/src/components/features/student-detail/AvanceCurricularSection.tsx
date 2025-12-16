@@ -7,7 +7,7 @@ import { ramosCursadosService } from '../../../services';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import type { DropResult } from '@hello-pangea/dnd';
 import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
+import GridBase from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
@@ -61,6 +61,8 @@ interface AvanceCurricularSectionProps {
 export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = ({ 
   estudiante 
 }) => {
+  // Usamos any para relajar la validación de props del Grid en este layout complejo
+  const Grid = GridBase as any;
   // Estados
   const [progreso, setProgreso] = useState<ProgresoCurricular | null>(null);
   const [mallaCurricular, setMallaCurricular] = useState<MallaCurricular[]>([]);
@@ -186,33 +188,6 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
       loadData();
     }
   }, [estudiante.id_estudiante]);
-
-  // Función para recalcular progreso
-  const recalcularProgreso = async () => {
-    const totalCreditos = mallaCurricular.reduce((acc, sem) => acc + (sem.ramos.length * 4), 0);
-    const creditosAprobados = mallaCurricular.reduce((acc, sem) => 
-      acc + sem.ramos.filter(r => r.estado === 'aprobado').length * 4, 0);
-    const creditosPendientes = totalCreditos - creditosAprobados;
-    const porcentajeAvance = totalCreditos > 0 ? (creditosAprobados / totalCreditos) * 100 : 0;
-    
-    const todasLasNotas = mallaCurricular.reduce((acc, sem) => {
-      const notasAprobadas = sem.ramos.filter(r => r.estado === 'aprobado' && r.nota).map(r => r.nota!);
-      return [...acc, ...notasAprobadas];
-    }, [] as number[]);
-    
-    const promedioGeneral = todasLasNotas.length > 0 
-      ? todasLasNotas.reduce((sum, nota) => sum + nota, 0) / todasLasNotas.length 
-      : 0;
-
-    setProgreso({
-      totalCreditos,
-      creditosAprobados,
-      creditosPendientes,
-      porcentajeAvance: Number(porcentajeAvance.toFixed(1)),
-      semestreActual: Math.max(...mallaCurricular.map(m => m.semestre), 0),
-      promedioGeneral: Number(promedioGeneral.toFixed(2))
-    });
-  };
 
   // Recalcular progreso cuando cambie la malla curricular
   useEffect(() => {
@@ -392,20 +367,44 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
     nota?: number;
   }) => {
     try {
+      // Obtener el periodo del semestre seleccionado para extraer año y semestre
+      const semestreSeleccionado = mallaCurricular.find(s => s.semestre === selectedSemestre);
+      const periodo = semestreSeleccionado?.periodo;
+      
+      // Parsear periodo en formato "2025-1" o "2025-2"
+      let año: number | undefined;
+      let semestreNumero: number = selectedSemestre;
+      
+      if (periodo) {
+        const match = periodo.match(/^(\d{4})-(\d+)$/);
+        if (match) {
+          año = parseInt(match[1]);
+          semestreNumero = parseInt(match[2]);
+          console.log('📊 [AvanceCurricular] Periodo parseado:', { periodo, año, semestre: semestreNumero });
+        } else {
+          console.warn('⚠️ [AvanceCurricular] Formato de periodo no reconocido:', periodo);
+        }
+      } else {
+        console.warn('⚠️ [AvanceCurricular] Semestre sin periodo definido');
+      }
+
       // Crear el ramo en el backend
       const ramoData = {
         id_estudiante: estudiante.id_estudiante,
-        semestre: selectedSemestre,
+        año: año, // Año extraído del periodo
+        semestre: semestreNumero, // Semestre extraído del periodo
         nivel_educativo: 'Universitario',
         nombre_ramo: nuevoRamo.nombre,
         notas_parciales: {},
         promedio_final: nuevoRamo.nota || null,
         estado: nuevoRamo.estado
       };
+      
+      console.log('📤 [AvanceCurricular] Enviando ramo al backend:', ramoData);
 
       try {
         // Llamada al backend
-        const ramoCreado = await ramosCursadosService.create(ramoData);
+        const ramoCreado = await ramosCursadosService.create(ramoData as any);
         
         // Actualizar estado local con el ramo creado
         setMallaCurricular(prev => prev.map(semestre => {
@@ -743,7 +742,7 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
               });
 
               // Usar backendId si está disponible, sino usar id
-              const idToUse = editingSubject?.backendId || updatedSubject.id;
+              const idToUse = editingSubject?.backendId || (updatedSubject as any).id;
               
               if (idToUse) {
                 const ramoData = {

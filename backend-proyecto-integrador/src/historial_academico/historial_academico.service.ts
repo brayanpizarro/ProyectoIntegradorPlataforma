@@ -16,6 +16,10 @@ export class HistorialAcademicoService {
   ) {}
 
   async create(createHistorialAcademicoDto: CreateHistorialAcademicoDto): Promise<HistorialAcademico> {
+    return this.upsertByEstudianteAndPeriodo(createHistorialAcademicoDto);
+  }
+
+  async upsertByEstudianteAndPeriodo(createHistorialAcademicoDto: CreateHistorialAcademicoDto): Promise<HistorialAcademico> {
     // Verificar que el estudiante existe
     const estudiante = await this.estudianteRepository.findOne({
       where: { id_estudiante: createHistorialAcademicoDto.id_estudiante }
@@ -23,6 +27,24 @@ export class HistorialAcademicoService {
     
     if (!estudiante) {
       throw new NotFoundException(`Estudiante con ID ${createHistorialAcademicoDto.id_estudiante} no encontrado`);
+    }
+
+    // TypeORM where clause does not accept null; use undefined when the field is not provided
+    const año = createHistorialAcademicoDto.año ?? undefined;
+    const semestre = createHistorialAcademicoDto.semestre ?? undefined;
+
+    const existente = await this.historialRepository.findOne({
+      where: {
+        estudiante: { id_estudiante: createHistorialAcademicoDto.id_estudiante },
+        año,
+        semestre,
+      },
+      relations: ['estudiante'],
+    });
+
+    if (existente) {
+      Object.assign(existente, { ...createHistorialAcademicoDto, estudiante });
+      return await this.historialRepository.save(existente);
     }
 
     const historial = this.historialRepository.create({

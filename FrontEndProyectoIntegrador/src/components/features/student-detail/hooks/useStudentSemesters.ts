@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { historialAcademicoService } from '../../../../services';
+import { historialAcademicoService, authService } from '../../../../services';
 import { logger } from '../../../../config';
 
 interface UseStudentSemestersProps {
@@ -24,7 +24,8 @@ export const useStudentSemesters = ({ id, estudiante, setInformesGuardados }: Us
     ramos_reprobados: 0,
     ramos_eliminados: 0,
     promedio_semestre: 0,
-    trayectoria_academica: []
+    trayectoria_academica: [],
+    observaciones: '',
   });
 
   // Crear nuevo semestre
@@ -32,6 +33,7 @@ export const useStudentSemesters = ({ id, estudiante, setInformesGuardados }: Us
     if (!id || !estudiante) return;
 
     try {
+      const usuario = authService.getCurrentUser();
       const historialData = {
         id_estudiante: id,
         año: nuevoSemestreData.año,
@@ -39,8 +41,11 @@ export const useStudentSemesters = ({ id, estudiante, setInformesGuardados }: Us
         nivel_educativo: nuevoSemestreData.nivel_educativo || estudiante.institucion?.nivel_educativo || 'Superior',
         ramos_aprobados: nuevoSemestreData.ramos_aprobados,
         ramos_reprobados: nuevoSemestreData.ramos_reprobados,
+        ramos_eliminados: nuevoSemestreData.ramos_eliminados,
         promedio_semestre: nuevoSemestreData.promedio_semestre,
         trayectoria_academica: [],
+        observaciones: nuevoSemestreData.observaciones || '',
+         ultima_actualizacion_por: usuario?.email || (usuario as any)?.nombres || (usuario as any)?.id || 'usuario',
       };
 
       const response = await historialAcademicoService.create(historialData);
@@ -65,7 +70,8 @@ export const useStudentSemesters = ({ id, estudiante, setInformesGuardados }: Us
         ramos_reprobados: 0,
         ramos_eliminados: 0,
         promedio_semestre: 0,
-        trayectoria_academica: []
+        trayectoria_academica: [],
+        observaciones: '',
       });
       setMostrarModalNuevoSemestre(false);
       
@@ -94,10 +100,11 @@ export const useStudentSemesters = ({ id, estudiante, setInformesGuardados }: Us
   };
 
   // Guardar cambios de semestre
-  const handleGuardarSemestre = async () => {
+    const handleGuardarSemestre = async () => {
     if (!semestreSeleccionado) return;
 
     try {
+      const usuario = authService.getCurrentUser();
       const datosActualizados = {
         año: datosEditadosSemestre.año,
         semestre: datosEditadosSemestre.semestre,
@@ -106,7 +113,9 @@ export const useStudentSemesters = ({ id, estudiante, setInformesGuardados }: Us
         ramos_reprobados: datosEditadosSemestre.ramos_reprobados,
         ramos_eliminados: datosEditadosSemestre.ramos_eliminados,
         promedio_semestre: datosEditadosSemestre.promedio_semestre,
-        trayectoria_academica: datosEditadosSemestre.trayectoria_academica || []
+        trayectoria_academica: datosEditadosSemestre.trayectoria_academica || [],
+        observaciones: datosEditadosSemestre.observaciones,
+         ultima_actualizacion_por: usuario?.email || (usuario as any)?.nombres || (usuario as any)?.id || 'usuario',
       };
 
       await historialAcademicoService.update(semestreSeleccionado.id_historial_academico, datosActualizados);
@@ -137,7 +146,7 @@ export const useStudentSemesters = ({ id, estudiante, setInformesGuardados }: Us
     const nuevoComentario = prompt('Ingrese un comentario:');
     if (nuevoComentario && nuevoComentario.trim()) {
       const comentarioConFecha = `${new Date().toLocaleDateString('es-CL')}: ${nuevoComentario.trim()}`;
-      setDatosEditadosSemestre(prev => ({
+      setDatosEditadosSemestre((prev: any) => ({
         ...prev,
         trayectoria_academica: [...(prev.trayectoria_academica || []), comentarioConFecha]
       }));
@@ -147,7 +156,7 @@ export const useStudentSemesters = ({ id, estudiante, setInformesGuardados }: Us
   // Eliminar comentario de la trayectoria académica
   const handleEliminarComentario = (index: number) => {
     if (confirm('¿Está seguro de eliminar este comentario?')) {
-      setDatosEditadosSemestre(prev => ({
+      setDatosEditadosSemestre((prev: any) => ({
         ...prev,
         trayectoria_academica: prev.trayectoria_academica.filter((_: any, i: number) => i !== index)
       }));

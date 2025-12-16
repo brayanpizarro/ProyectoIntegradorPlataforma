@@ -47,7 +47,7 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
       const payload = {
         id_estudiante: String(estudianteId),
         id_usuario: Number((user as any).id || (user as any).userId || 1),
-        fecha,
+        fecha: new Date(fecha),
         nombre_tutor: `${(user as any).nombres || ''} ${(user as any).apellidos || ''}`.trim() || user.email || 'Entrevistador',
         año: new Date(fecha).getFullYear(),
         numero_entrevista: maxNumero + 1,
@@ -60,8 +60,8 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
           : [],
       } as const;
 
-      const entrevistaCreada = await entrevistaService.create(payload);
-      const nuevoId = (entrevistaCreada as any)?.id || entrevistaCreada?._id || estudianteId;
+      const entrevistaCreada = await entrevistaService.create(payload as any);
+      const nuevoId = (entrevistaCreada as any)?.id || (entrevistaCreada as any)?._id || estudianteId;
 
       onClose();
       navigate(`/entrevista/${nuevoId}`);

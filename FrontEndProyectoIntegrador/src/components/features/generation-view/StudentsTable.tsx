@@ -1,29 +1,21 @@
 import React from 'react';
 import { getEstadoColor } from '../../../utils/estadoColors';
 import { formatDateChilean } from '../../../utils/dateHelpers';
+import type { Estudiante } from '../../../types';
 
-interface Estudiante {
-  id: number;
-  nombres: string;
-  apellidos: string;
-  rut: string;
-  carrera: string;
-  estado: 'Activo' | 'Egresado' | 'Suspendido' | 'Desertor' | 'Congelado';
-  beca: string;
-  universidad: string;
-  promedio: number;
+type UIStudent = Estudiante & {
   ultimaEntrevista?: string;
   totalEntrevistasAno?: number;
   diasSinEntrevista?: number;
   tienePendienteNotas?: boolean;
-}
+};
 
 interface StudentsTableProps {
-  students: Estudiante[];
-  sortField: keyof Estudiante;
+  students: UIStudent[];
+  sortField: keyof UIStudent;
   sortDirection: 'asc' | 'desc';
-  onSort: (field: keyof Estudiante) => void;
-  onViewDetails: (studentId: number) => void;
+  onSort: (field: keyof UIStudent) => void;
+  onViewDetails: (studentId: string | number) => void;
 }
 
 /**
@@ -37,7 +29,7 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
   onSort,
   onViewDetails,
 }) => {
-  const getSortIcon = (field: keyof Estudiante) => {
+  const getSortIcon = (field: keyof UIStudent) => {
     if (sortField !== field) return '↕️';
     return sortDirection === 'asc' ? '↑' : '↓';
   };
@@ -88,12 +80,12 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
         <tbody>
           {students.map((student, index) => (
             <tr 
-              key={student.id_estudiante || student.id || index}
+              key={(student as any).id_estudiante || student.id || index}
               className={`${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'} hover:bg-[var(--color-turquoise)]/10 transition-colors`}
             >
               <td className="py-3 px-3 border-b border-gray-300">
                 <div className="font-bold text-gray-800">
-                  {student.nombre || `${student.nombres || ''} ${student.apellidos || ''}`}
+                  { (student as any).nombre || `${student.nombres || ''} ${student.apellidos || ''}` }
                 </div>
                 <div className="text-xs text-gray-500">
                   {student.rut}
@@ -150,7 +142,7 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
               </td>
               <td className="py-3 px-3 border-b border-gray-300 text-center">
                 <button
-                  onClick={() => onViewDetails(student.id_estudiante || student.id)}
+                  onClick={() => onViewDetails((student as any).id_estudiante || student.id)}
                   className="px-3 py-1.5 bg-[var(--color-turquoise)] text-white rounded hover:bg-[var(--color-turquoise-light)] transition-colors text-xs font-bold"
                 >
                   Ver Detalles

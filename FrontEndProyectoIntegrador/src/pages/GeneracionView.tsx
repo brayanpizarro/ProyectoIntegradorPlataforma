@@ -4,22 +4,14 @@ import { estudianteService } from '../services';
 import { logger } from '../config';
 import { GenerationHeader, StudentFilterPanel, StudentsTable } from '../components/features/generation-view';
 import { CreateEstudianteModal } from '../components/features/dashboard';
+import type { Estudiante } from '../types';
 
-interface Estudiante {
-  id: number;
-  nombres: string;
-  apellidos: string;
-  rut: string;
-  carrera: string;
-  estado: 'Activo' | 'Egresado' | 'Suspendido' | 'Desertor' | 'Congelado';
-  beca: string;
-  universidad: string;
-  promedio: number;
+type UIStudent = Estudiante & {
   ultimaEntrevista?: string;
   totalEntrevistasAno?: number;
   diasSinEntrevista?: number;
   tienePendienteNotas?: boolean;
-}
+};
 
 export default function GeneracionViewSimple(){
   const { id } = useParams<{ id: string }>();
@@ -29,10 +21,10 @@ export default function GeneracionViewSimple(){
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCarrera, setFilterCarrera] = useState('');
   const [filterEstado, setFilterEstado] = useState('');
-  const [sortField, setSortField] = useState<keyof Estudiante>('apellidos');
+  const [sortField, setSortField] = useState<keyof UIStudent>('apellidos');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
-  const [students, setStudents] = useState<any[]>([]);
+  const [students, setStudents] = useState<UIStudent[]>([]);
   const [openCreateEstudiante, setOpenCreateEstudiante] = useState(false);
   
   // Obtener opciones únicas para los filtros
@@ -67,21 +59,27 @@ export default function GeneracionViewSimple(){
     filtered.sort((a, b) => {
       let aValue = a[sortField];
       let bValue = b[sortField];
+
+      if (aValue === undefined || aValue === null) aValue = '' as any;
+      if (bValue === undefined || bValue === null) bValue = '' as any;
+
+      const aVal = aValue as any;
+      const bVal = bValue as any;
       
       if (typeof aValue === 'string') {
         aValue = aValue.toLowerCase();
         bValue = (bValue as string).toLowerCase();
       }
       
-      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
       return 0;
     });
 
     return filtered;
   }, [students, searchTerm, filterCarrera, filterEstado, sortField, sortDirection]);
 
-  const handleSort = (field: keyof Estudiante) => {
+  const handleSort = (field: keyof UIStudent) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
@@ -90,7 +88,7 @@ export default function GeneracionViewSimple(){
     }
   };
 
-  const handleVerDetalles = (studentId: number) => {
+  const handleVerDetalles = (studentId: string | number) => {
     navigate(`/estudiante/${studentId}`);
   };
 

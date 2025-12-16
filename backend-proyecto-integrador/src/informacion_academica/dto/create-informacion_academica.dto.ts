@@ -50,4 +50,15 @@ export class CreateInformacionAcademicaDto {
   @IsOptional()
   @IsString()
   beneficios?: string;
+
+  @IsOptional()
+  resumen_semestres?: any[];
+
+  @IsOptional()
+  @IsString()
+  ultima_actualizacion_por?: string;
+
+  @IsOptional()
+  @IsNumber()
+  promedio_acumulado?: number;
 }

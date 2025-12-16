@@ -123,7 +123,7 @@ export const EntrevistaReportGenerator: React.FC<EntrevistaReportGeneratorProps>
       doc.text('Comentarios y Notas:', margin, yPosition);
       yPosition += 10;
 
-      textos.forEach((texto: any, idx: number) => {
+      textos.forEach((texto: any) => {
         checkPageBreak(32);
 
         const etiqueta = texto.etiqueta?.nombre_etiqueta || texto.nombre_etiqueta || 'Sin etiqueta';

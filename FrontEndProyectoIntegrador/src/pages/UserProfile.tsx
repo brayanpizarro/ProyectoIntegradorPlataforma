@@ -5,12 +5,11 @@ import type { Usuario } from '../types';
 import {
   Box,
   Container,
-  Paper,
   Typography,
   Avatar,
   Button,
   TextField,
-  Grid,
+  Grid as GridBase,
   Divider,
   IconButton,
   Card,
@@ -33,6 +32,7 @@ import {
 interface UserProfileProps {}
 
 export const UserProfile: React.FC<UserProfileProps> = () => {
+  const Grid: any = GridBase;
   const navigate = useNavigate();
   const [user, setUser] = useState<Usuario | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -68,8 +68,8 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
       // Mapear los campos del backend al formato del frontend
       const mappedProfileData = {
         ...profileData,
-        nombres: profileData.nombre || profileData.nombres,
-        apellidos: profileData.apellido || profileData.apellidos
+        nombres: (profileData as any).nombre || profileData.nombres,
+        apellidos: (profileData as any).apellido || profileData.apellidos
       };
       
       setUser(mappedProfileData);
@@ -83,8 +83,8 @@ export const UserProfile: React.FC<UserProfileProps> = () => {
         // Aplicar mapeo también al fallback
         const mappedCurrentUser = {
           ...currentUser,
-          nombres: currentUser.nombre || currentUser.nombres,
-          apellidos: currentUser.apellido || currentUser.apellidos
+          nombres: (currentUser as any).nombre || currentUser.nombres,
+          apellidos: (currentUser as any).apellido || currentUser.apellidos
         };
         setUser(mappedCurrentUser);
         setEditedUser({ ...mappedCurrentUser });

@@ -27,8 +27,20 @@ export class CreateHistorialAcademicoDto {
 
   @IsOptional()
   @IsNumber()
+  ramos_eliminados?: number;
+
+  @IsOptional()
+  @IsNumber()
   promedio_semestre?: number;
 
   @IsOptional()
   trayectoria_academica?: string[];
+
+  @IsOptional()
+  @IsString()
+  observaciones?: string;
+
+  @IsOptional()
+  @IsString()
+  ultima_actualizacion_por?: string;
 }

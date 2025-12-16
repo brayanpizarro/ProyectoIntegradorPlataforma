@@ -2,9 +2,13 @@
  * Sección de desempeño por semestre
  * Tabla detallada de ramos con comentarios y notas
  */
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import type { Estudiante } from '../../../types';
-import { ramosCursadosService, historialAcademicoService } from '../../../services';
+import {
+  useSemesterOptions,
+  useSemesterPerformanceData,
+  useSemesterStats
+} from './hooks/useSemesterPerformance';
 
 interface SemesterPerformanceSectionProps {
   estudiante: Estudiante;
@@ -12,211 +16,21 @@ interface SemesterPerformanceSectionProps {
 }
 
 export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProps> = ({ estudiante, modoEdicion }) => {
-  const [ramosSemestre, setRamosSemestre] = useState<any[]>([]);
-  const [semestreActual, setSemestreActual] = useState({ año: 2025, semestre: 1 });
-  const [historialSemestre, setHistorialSemestre] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [semestresDisponibles, setSemestresDisponibles] = useState<{año: number, semestre: number}[]>([]);
+  const {
+    semestresDisponibles,
+    semestreActual,
+    setSemestreActual,
+    loadingSemestres
+  } = useSemesterOptions(estudiante.id_estudiante);
 
-  // Cargar todos los semestres disponibles del estudiante
-  useEffect(() => {
-    const cargarSemestresDisponibles = async () => {
-      if (!estudiante.id_estudiante) return;
-      
-      try {
-        // Obtener todos los ramos cursados sin filtrar por semestre
-        const todosLosRamos = await ramosCursadosService.getByEstudiante(
-          estudiante.id_estudiante.toString()
-        );
-        
-        console.log('📥 Todos los ramos recibidos:', todosLosRamos);
-        
-        // Extraer semestres únicos
-        const semestresUnicos = new Set<string>();
-        todosLosRamos.forEach((ramo: any) => {
-          console.log('🔍 Procesando ramo:', { 
-            nombre: ramo.nombre_ramo, 
-            año: ramo.año, 
-            semestre: ramo.semestre 
-          });
-          
-          // Ser más permisivo con los datos
-          const año = ramo.año || new Date().getFullYear();
-          const semestre = ramo.semestre || 1;
-          
-          semestresUnicos.add(`${año}-${semestre}`);
-        });
-        
-        // Si no hay ramos, crear semestre por defecto
-        if (semestresUnicos.size === 0) {
-          console.log('⚠️ No se encontraron ramos, usando semestre por defecto');
-          semestresUnicos.add(`${new Date().getFullYear()}-1`);
-        }
-        
-        // Convertir a array y ordenar
-        const semestres = Array.from(semestresUnicos)
-          .map(str => {
-            const [año, semestre] = str.split('-').map(Number);
-            return { año, semestre };
-          })
-          .sort((a, b) => {
-            if (a.año !== b.año) return b.año - a.año; // Años más recientes primero
-            return b.semestre - a.semestre; // Semestres más recientes primero
-          });
-        
-        setSemestresDisponibles(semestres);
-        console.log('📊 Semestres disponibles encontrados:', semestres);
-        
-        // Establecer el semestre más reciente como actual si hay semestres disponibles
-        if (semestres.length > 0) {
-          setSemestreActual(semestres[0]);
-        }
-      } catch (error) {
-        console.error('Error cargando semestres disponibles:', error);
-      }
-    };
-    
-    cargarSemestresDisponibles();
-  }, [estudiante.id_estudiante]);
+  const {
+    ramosSemestre,
+    historialSemestre,
+    loadingDatos
+  } = useSemesterPerformanceData(estudiante, semestreActual);
 
-  // Cargar ramos y historial del semestre actual
-  useEffect(() => {
-    const cargarDatosSemestre = async () => {
-      if (!estudiante.id_estudiante) return;
-      
-      setLoading(true);
-      try {
-        // Cargar ramos cursados
-        const ramos = await ramosCursadosService.getByEstudiante(
-          estudiante.id_estudiante.toString(),
-          semestreActual.año,
-          semestreActual.semestre
-        );
-        
-        console.log(`📚 Ramos cargados del backend para ${semestreActual.año}/${semestreActual.semestre}:`, ramos);
-        
-        // El backend ya debería filtrar, pero verificamos
-        if (ramos && ramos.length > 0) {
-          // Mostrar todos los ramos del backend ya que deberían estar filtrados
-          console.log(`✅ Usando ramos del backend (ya filtrados):`, ramos);
-          setRamosSemestre(ramos);
-        } else {
-          // Si el backend no devuelve nada, usar datos locales
-          throw new Error('No data from backend, using local fallback');
-        }
-
-        // Intentar cargar historial académico del semestre
-        try {
-          const historial = await historialAcademicoService.getByEstudiante(
-            estudiante.id_estudiante.toString(),
-            semestreActual.año,
-            semestreActual.semestre
-          );
-          setHistorialSemestre(historial);
-        } catch (historialError) {
-          // Si no hay historial guardado para este semestre, usar null
-          setHistorialSemestre(null);
-          console.log('No hay historial guardado para este semestre');
-        }
-      } catch (error) {
-        console.error('Error cargando datos del semestre:', error);
-        
-        // Fallback con datos locales con asignación inteligente de semestres
-        const todosLosRamos = estudiante.ramosCursados || [];
-        
-        // Función para asignar semestre basándose en el nombre del ramo (lógica mejorada)
-        const asignarSemestre = (nombreRamo: string, index: number) => {
-          const nombre = nombreRamo.toLowerCase();
-          
-          // Lógica específica basada en nombres comunes
-          if (nombre.includes('calculo2') || nombre.includes('cálculo2') || nombre.includes('calculo 2')) {
-            return { año: 2025, semestre: 1 };
-          }
-          if (nombre.includes('calculo3') || nombre.includes('cálculo3') || nombre.includes('calculo 3')) {
-            return { año: 2025, semestre: 2 };
-          }
-          if (nombre.includes('calculo1') || nombre.includes('cálculo1') || nombre.includes('calculo 1')) {
-            return { año: 2024, semestre: 2 };
-          }
-          
-          // Asignar por patrón de nombres o índice
-          if (nombre.includes('matemática') || nombre.includes('álgebra')) {
-            return { año: 2024, semestre: 1 };
-          }
-          
-          if (nombre.includes('física') || nombre.includes('química')) {
-            return { año: 2024, semestre: 2 };
-          }
-          
-          if (nombre.includes('programación') || nombre.includes('informática')) {
-            return { año: 2025, semestre: 1 };
-          }
-          
-          // Si no coincide con patrones, alternar entre semestres
-          return {
-            año: 2025,
-            semestre: (index % 2) + 1
-          };
-        };
-        
-        const ramosConSemestre = todosLosRamos.map((ramo, index) => {
-          // Si ya tiene año y semestre, mantenerlos
-          if (ramo.año && ramo.semestre) {
-            return ramo;
-          }
-          
-          // Si no, asignarlos basándose en el nombre
-          const { año, semestre } = asignarSemestre(ramo.nombre_ramo, index);
-          return {
-            ...ramo,
-            año: ramo.año || año,
-            semestre: ramo.semestre || semestre
-          };
-        });
-        
-        // Ahora filtrar por el semestre actual
-        const ramosLocales = ramosConSemestre.filter(r => 
-          r.año === semestreActual.año && r.semestre === semestreActual.semestre
-        );
-        
-        console.log(`📊 Ramos locales filtrados para ${semestreActual.año}/${semestreActual.semestre}:`, ramosLocales);
-        setRamosSemestre(ramosLocales);
-        setHistorialSemestre(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    cargarDatosSemestre();
-  }, [estudiante.id_estudiante, semestreActual]);
-
-  // Helper functions para calcular estadísticas
-  const calcularEstadisticas = () => {
-    // Si existe historial guardado para este semestre, usar esos datos
-    if (historialSemestre) {
-      return {
-        total: (historialSemestre.ramos_aprobados || 0) + (historialSemestre.ramos_reprobados || 0) + (historialSemestre.ramos_eliminados || 0),
-        aprobados: historialSemestre.ramos_aprobados || 0,
-        reprobados: historialSemestre.ramos_reprobados || 0,
-        eliminados: historialSemestre.ramos_eliminados || 0,
-        promedio: historialSemestre.promedio_semestre || null
-      };
-    }
-    
-    // Si no hay historial, calcular desde los ramos actuales
-    const total = ramosSemestre.length;
-    const aprobados = ramosSemestre.filter(r => r.estado === 'aprobado' || r.estado === 'A').length;
-    const reprobados = ramosSemestre.filter(r => r.estado === 'reprobado' || r.estado === 'R').length;
-    const eliminados = ramosSemestre.filter(r => r.estado === 'eliminado' || r.estado === 'E').length;
-    
-    // Calcular promedio si hay ramos con notas
-    const ramosConNota = ramosSemestre.filter(r => r.promedio_final && !isNaN(parseFloat(r.promedio_final)));
-    const promedio = ramosConNota.length > 0 
-      ? ramosConNota.reduce((sum, r) => sum + parseFloat(r.promedio_final), 0) / ramosConNota.length
-      : null;
-    
-    return { total, aprobados, reprobados, eliminados, promedio };
-  };
+  const { total, aprobados, reprobados, eliminados, promedio } = useSemesterStats(ramosSemestre, historialSemestre);
+  const loading = loadingSemestres || loadingDatos;
 
   // Formatear notas parciales para mostrar
   const formatearNotasParciales = (notas: any) => {
@@ -236,7 +50,6 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
     return estado || 'Sin definir';
   };
 
-  const { total, aprobados, reprobados, eliminados, promedio } = calcularEstadisticas();
   return (
     <div>
       <div className="bg-[var(--color-turquoise)] text-white text-center font-bold text-xl py-3 mb-2">
