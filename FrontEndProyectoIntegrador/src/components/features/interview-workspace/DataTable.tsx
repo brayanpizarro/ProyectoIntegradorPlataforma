@@ -335,27 +335,59 @@ export function DataTable({
               Avance de carrera:
             </span>
             <div className="flex-1 h-2 bg-gray-200 rounded overflow-hidden">
-              <div 
+              <div
                 className="h-full bg-[var(--color-turquoise)] rounded"
-                style={{ width: `${((() => {
-                  const semestreActual = (estudiante as any).semestre || 0;
-                  if (semestreActual > 0) return (semestreActual / 10) * 100;
-                  
+                style={{ width: `${(() => {
                   const historialesList = historiales || estudiante.historialesAcademicos || [];
                   const conSemestre = historialesList.filter(h => h.semestre);
+                  let porcentaje = 0;
                   if (conSemestre.length > 0) {
-                    // Contar semestres únicos (con o sin año)
                     const conAño = conSemestre.filter(h => h.año);
                     if (conAño.length > 0) {
                       const semestresUnicos = new Set<string>();
                       conAño.forEach(h => semestresUnicos.add(`${h.año}-${h.semestre}`));
-                      return (semestresUnicos.size / 10) * 100;
+                      porcentaje = (semestresUnicos.size / 10) * 100;
+                    } else {
+                      const semestresUnicos = new Set<number>();
+                      conSemestre.forEach(h => semestresUnicos.add(h.semestre!));
+                      porcentaje = (semestresUnicos.size / 10) * 100;
                     }
+                  } else {
+                    const ramos = estudiante.ramosCursados || [];
+                    const ramosConSemestre = ramos.filter(r => r.semestre);
+                    if (ramosConSemestre.length > 0) {
+                      const conAño = ramosConSemestre.filter(r => r.año);
+                      if (conAño.length > 0) {
+                        const semestresUnicos = new Set<string>();
+                        conAño.forEach(r => semestresUnicos.add(`${r.año}-${r.semestre}`));
+                        porcentaje = (semestresUnicos.size / 10) * 100;
+                      } else {
+                        const semestreMax = Math.max(...ramosConSemestre.map(r => r.semestre || 0));
+                        porcentaje = (semestreMax / 10) * 100;
+                      }
+                    }
+                  }
+                  return porcentaje.toFixed(0);
+                })()}%` }}
+              />
+            </div>
+            <span className="text-sm font-medium text-gray-800">
+              {(() => {
+                const historialesList = historiales || estudiante.historialesAcademicos || [];
+                const conSemestre = historialesList.filter(h => h.semestre);
+                let porcentaje = 0;
+                if (conSemestre.length > 0) {
+                  const conAño = conSemestre.filter(h => h.año);
+                  if (conAño.length > 0) {
+                    const semestresUnicos = new Set<string>();
+                    conAño.forEach(h => semestresUnicos.add(`${h.año}-${h.semestre}`));
+                    porcentaje = (semestresUnicos.size / 10) * 100;
+                  } else {
                     const semestresUnicos = new Set<number>();
                     conSemestre.forEach(h => semestresUnicos.add(h.semestre!));
-                    return (semestresUnicos.size / 10) * 100;
+                    porcentaje = (semestresUnicos.size / 10) * 100;
                   }
-                  
+                } else {
                   const ramos = estudiante.ramosCursados || [];
                   const ramosConSemestre = ramos.filter(r => r.semestre);
                   if (ramosConSemestre.length > 0) {
@@ -363,48 +395,14 @@ export function DataTable({
                     if (conAño.length > 0) {
                       const semestresUnicos = new Set<string>();
                       conAño.forEach(r => semestresUnicos.add(`${r.año}-${r.semestre}`));
-                      return (semestresUnicos.size / 10) * 100;
+                      porcentaje = (semestresUnicos.size / 10) * 100;
+                    } else {
+                      const semestreMax = Math.max(...ramosConSemestre.map(r => r.semestre || 0));
+                      porcentaje = (semestreMax / 10) * 100;
                     }
-                    // Si no hay año, usar el semestre más alto
-                    const semestreMax = Math.max(...ramosConSemestre.map(r => r.semestre || 0));
-                    return (semestreMax / 10) * 100;
                   }
-                  return 0;
-                })())}%` }}
-              />
-            </div>
-            <span className="text-sm font-medium text-gray-800">
-              {(() => {
-                const semestreActual = (estudiante as any).semestre;
-                if (semestreActual) return `${semestreActual}/10`;
-                
-                const historialesList = historiales || estudiante.historialesAcademicos || [];
-                const conSemestre = historialesList.filter(h => h.semestre);
-                if (conSemestre.length > 0) {
-                  const conAño = conSemestre.filter(h => h.año);
-                  if (conAño.length > 0) {
-                    const semestresUnicos = new Set<string>();
-                    conAño.forEach(h => semestresUnicos.add(`${h.año}-${h.semestre}`));
-                    return `${semestresUnicos.size}/10`;
-                  }
-                  const semestresUnicos = new Set<number>();
-                  conSemestre.forEach(h => semestresUnicos.add(h.semestre!));
-                  return `${semestresUnicos.size}/10`;
                 }
-                
-                const ramos = estudiante.ramosCursados || [];
-                const ramosConSemestre = ramos.filter(r => r.semestre);
-                if (ramosConSemestre.length > 0) {
-                  const conAño = ramosConSemestre.filter(r => r.año);
-                  if (conAño.length > 0) {
-                    const semestresUnicos = new Set<string>();
-                    conAño.forEach(r => semestresUnicos.add(`${r.año}-${r.semestre}`));
-                    return `${semestresUnicos.size}/10`;
-                  }
-                  const semestreMax = Math.max(...ramosConSemestre.map(r => r.semestre || 0));
-                  return `${semestreMax}/10`;
-                }
-                return '0/10';
+                return `${porcentaje.toFixed(0)}%`;
               })()}
             </span>
           </div>
