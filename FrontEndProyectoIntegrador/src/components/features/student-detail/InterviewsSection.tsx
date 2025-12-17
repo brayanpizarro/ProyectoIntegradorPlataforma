@@ -74,14 +74,8 @@ export function InterviewsSection({ estudianteId, estudiante }: InterviewsSectio
     tutor: 'Reporte Consolidado',
     temas_abordados: `Resumen de ${entrevistas.length} entrevistas realizadas`,
     observaciones: `Este documento contiene el historial completo de entrevistas del estudiante.`,
-    // Incluir todas las etiquetas de todas las entrevistas
     etiquetas: entrevistas.flatMap((ent) => Array.isArray(ent.etiquetas) ? ent.etiquetas : []),
-    ...entrevistas.reduce((acc, ent, idx) => {
-      const fecha = new Date(ent.fecha).toLocaleDateString('es-CL');
-      acc[`texto_${idx}`] = `[${fecha}] ${ent.tipo_entrevista || 'Entrevista'}: ${ent.observaciones}`;
-      acc[`comentarios_${idx}`] = `Tutor: ${ent.nombre_Tutor} - ${ent.temas_abordados?.join(', ') || 'N/A'}`;
-      return acc;
-    }, {} as any),
+    textos: entrevistas.flatMap((ent) => Array.isArray(ent.textos) ? ent.textos : []),
     created_at: new Date(),
     updated_at: new Date()
   };

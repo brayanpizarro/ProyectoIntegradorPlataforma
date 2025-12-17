@@ -2,17 +2,65 @@
  * Sección de perfil del estudiante
  * Muestra avatar, información básica y resumen académico
  */
-import { Box, Paper, Typography, Avatar, Chip } from '@mui/material';
+import { Box, Paper, Typography, Avatar, Select, MenuItem, FormControl, InputLabel, CircularProgress } from '@mui/material';
 import { AccountCircle as AccountCircleIcon } from '@mui/icons-material';
 import { StatCard } from '../../ui';
-import { getEstadoColor } from '../../../utils/estadoColors';
-import type { Estudiante } from '../../../types';
+// Colores personalizados para cada estado
+const estadoColorMap: Record<string, string> = {
+  activo: '#43a047', // verde
+  egresado: '#1976d2', // azul
+  inactivo: '#fbc02d', // amarillo
+  retirado: '#e53935', // rojo
+};
+import { useState, useEffect } from 'react';
+import type { SelectChangeEvent } from '@mui/material';
+import { estudianteService } from '../../../services/estudiante.service';
+import type { Estudiante, StatusEstudiante } from '../../../types';
+import type { SeccionActiva } from '../TabNavigation';
+
 
 interface ProfileSectionProps {
   estudiante: Estudiante;
+  seccionActiva?: SeccionActiva;
 }
 
-export function ProfileSection({ estudiante }: ProfileSectionProps) {
+export function ProfileSection({ estudiante, seccionActiva }: ProfileSectionProps) {
+  const [status, setStatus] = useState<StatusEstudiante>(estudiante.status || estudiante.estado || 'activo');
+
+  // Sincroniza el estado local si cambia el prop estudiante.status o estudiante.estado
+  useEffect(() => {
+    setStatus(estudiante.status || estudiante.estado || 'activo');
+  }, [estudiante.status, estudiante.estado]);
+
+  // Si seccionActiva está presente, sincroniza el status cada vez que se vuelve a la pestaña de perfil
+  useEffect(() => {
+    if (seccionActiva === 'perfil') {
+      setStatus(estudiante.status || estudiante.estado || 'activo');
+    }
+  }, [seccionActiva, estudiante.status, estudiante.estado]);
+  const [loading, setLoading] = useState(false);
+  const statusOptions: { value: StatusEstudiante; label: string }[] = [
+    { value: 'activo', label: 'Activo' },
+    { value: 'inactivo', label: 'Inactivo' },
+    { value: 'egresado', label: 'Egresado' },
+    { value: 'retirado', label: 'Retirado' },
+  ];
+
+  const handleStatusChange = async (e: SelectChangeEvent) => {
+    const newStatus = e.target.value as StatusEstudiante;
+    setStatus(newStatus);
+    setLoading(true);
+    const estudianteId = (estudiante.id_estudiante ?? estudiante.id) ? String(estudiante.id_estudiante ?? estudiante.id) : '';
+    try {
+      await estudianteService.update(estudianteId, { status: newStatus });
+    } catch {
+      alert('No se pudo actualizar el estado.');
+      setStatus(estudiante.status || estudiante.estado || 'activo');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const infoFields = [
     { label: 'Nombre Completo', value: estudiante.nombre },
     { label: 'RUT', value: estudiante.rut },
@@ -43,17 +91,33 @@ export function ProfileSection({ estudiante }: ProfileSectionProps) {
             >
               <AccountCircleIcon sx={{ fontSize: '8rem', color: 'grey.500' }} />
             </Avatar>
-            <Chip
-              label={estudiante.estado || 'Activo'}
-              sx={{
-                bgcolor: getEstadoColor(estudiante.estado || 'Activo'),
-                color: 'white',
-                fontWeight: 600,
-                fontSize: '1rem',
-                px: 2,
-                py: 1
-              }}
-            />
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mt: 1 }}>
+              <Typography sx={{ fontWeight: 600, mr: 1, minWidth: 60 }} color="text.secondary">
+                Estado:
+              </Typography>
+              <FormControl size="small" sx={{ minWidth: 140 }}>
+                <Select
+                  value={status}
+                  onChange={handleStatusChange}
+                  disabled={loading}
+                  displayEmpty
+                  sx={{
+                    bgcolor: estadoColorMap[status],
+                    color: 'white',
+                    fontWeight: 600,
+                    fontSize: '1rem',
+                    borderRadius: 2,
+                    '.MuiSelect-icon': { color: 'white' },
+                    '.MuiOutlinedInput-notchedOutline': { border: 'none' },
+                  }}
+                >
+                  {statusOptions.map(opt => (
+                    <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              {loading && <CircularProgress size={20} sx={{ ml: 2 }} />}
+            </Box>
           </Box>
 
           {/* Información Principal */}

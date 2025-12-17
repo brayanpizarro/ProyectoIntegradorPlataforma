@@ -6,6 +6,18 @@ import { BaseHttpClient } from './base.http';
 import type { Entrevista } from '../types';
 
 class EntrevistaService extends BaseHttpClient {
+
+  /**
+   * Obtiene todos los textos (comentarios/notas) de todas las entrevistas de un estudiante
+   */
+  async getAllTextosByEstudiante(estudianteId: string): Promise<any[]> {
+    const entrevistas = await this.getByEstudiante(estudianteId);
+    if (!entrevistas || entrevistas.length === 0) return [];
+    const textosArrays = await Promise.all(
+      entrevistas.map(e => this.getTextos(e.id || e._id))
+    );
+    return textosArrays.flat();
+  }
   
   async getAll(): Promise<Entrevista[]> {
     return await this.request<Entrevista[]>('/entrevistas');
@@ -66,6 +78,7 @@ class EntrevistaService extends BaseHttpClient {
       method: 'DELETE',
     });
   }
+  
 }
 
 export const entrevistaService = new EntrevistaService();

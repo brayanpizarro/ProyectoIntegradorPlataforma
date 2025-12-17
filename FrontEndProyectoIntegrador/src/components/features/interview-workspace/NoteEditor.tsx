@@ -33,24 +33,28 @@ export function NoteEditor({
   // CARGAR NOTAS: Cargar desde backend
   useEffect(() => {
     const loadNotas = async () => {
-      if (!entrevistaId) return;
-      
+      if (!entrevistaId && !estudiante?.id_estudiante) return;
       try {
         setIsLoading(true);
-        const textos = await entrevistaService.getTextos(entrevistaId);
-        
+        let textos = [];
+        // Si hay estudiante, cargar todos los textos históricos
+        if (estudiante?.id_estudiante) {
+          textos = await entrevistaService.getAllTextosByEstudiante(estudiante.id_estudiante.toString());
+        } else if (entrevistaId) {
+          textos = await entrevistaService.getTextos(entrevistaId);
+        }
         // Filtrar por etiqueta (sectionTitle)
         const textosFiltrados = textos.filter(
           (texto: any) => texto.nombre_etiqueta === sectionTitle
         );
-        
         // Convertir a formato Note
         const notasFormateadas: Note[] = textosFiltrados.map((texto: any) => ({
           id: texto.id,
           content: texto.contenido,
           timestamp: new Date(texto.fecha),
         }));
-        
+        // Ordenar por fecha descendente
+        notasFormateadas.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
         setNotes(notasFormateadas);
       } catch (error) {
         console.error('Error al cargar notas:', error);
@@ -58,9 +62,8 @@ export function NoteEditor({
         setIsLoading(false);
       }
     };
-
     loadNotas();
-  }, [tabId, sectionTitle, entrevistaId]);
+  }, [tabId, sectionTitle, entrevistaId, estudiante?.id_estudiante]);
 
   // FUNCIONES: Gestión de notas
   const handleSaveNote = async () => {

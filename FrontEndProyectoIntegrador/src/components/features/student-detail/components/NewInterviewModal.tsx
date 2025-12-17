@@ -23,6 +23,8 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
   const [tipoEntrevista, setTipoEntrevista] = useState<'presencial' | 'virtual' | 'mixta'>('presencial');
   const [estadoEntrevista, setEstadoEntrevista] = useState<'programada' | 'completada' | 'cancelada' | 'reprogramada'>('completada');
   const [submitting, setSubmitting] = useState(false);
+  const user = authService.getCurrentUser();
+  const nombreEntrevistador = user ? `${user.nombres || ''} ${user.apellidos || ''}`.trim() || user.email || 'Entrevistador' : 'Usuario Actual';
 
   const handleCrearEntrevista = async () => {
     if (submitting) return;
@@ -96,7 +98,7 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
 
           <TextField
             label="Entrevistador"
-            defaultValue="Usuario Actual"
+            value={nombreEntrevistador}
             required
             fullWidth
             InputProps={{ readOnly: true }}

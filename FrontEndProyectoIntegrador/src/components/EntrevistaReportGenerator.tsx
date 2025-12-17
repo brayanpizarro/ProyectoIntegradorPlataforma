@@ -114,50 +114,59 @@ export const EntrevistaReportGenerator: React.FC<EntrevistaReportGeneratorProps>
 
     checkPageBreak(20);
 
-    // TEXTOS POR ETIQUETA (backend: entrevista.textos con etiqueta asociada)
+    // TEXTOS AGRUPADOS POR ETIQUETA
     const textos = Array.isArray(entrevista.textos) ? entrevista.textos : [];
-
     if (textos.length > 0) {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
       doc.text('Comentarios y Notas:', margin, yPosition);
       yPosition += 10;
 
+      // Agrupar por etiqueta
+      const textosPorEtiqueta: { [etiqueta: string]: any[] } = {};
       textos.forEach((texto: any) => {
-        checkPageBreak(32);
-
         const etiqueta = texto.etiqueta?.nombre_etiqueta || texto.nombre_etiqueta || 'Sin etiqueta';
-        const fechaTxt = texto.fecha ? new Date(texto.fecha).toLocaleDateString('es-CL') : 'Sin fecha';
-        const contexto = texto.contexto ? `Contexto: ${texto.contexto}` : '';
+        if (!textosPorEtiqueta[etiqueta]) textosPorEtiqueta[etiqueta] = [];
+        textosPorEtiqueta[etiqueta].push(texto);
+      });
 
+      // Mostrar cada grupo de etiqueta
+      Object.entries(textosPorEtiqueta).forEach(([etiqueta, textosDeEtiqueta]) => {
+        checkPageBreak(20);
         doc.setFontSize(11);
         doc.setFont('helvetica', 'bold');
-        // Mostrar solo la etiqueta como título del bloque
         doc.text(etiqueta, margin, yPosition);
         yPosition += 6;
 
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        doc.text(`Fecha: ${fechaTxt}`, margin, yPosition);
-        yPosition += 6;
+        textosDeEtiqueta.forEach((texto: any) => {
+          checkPageBreak(18);
+          const fechaTxt = texto.fecha ? new Date(texto.fecha).toLocaleDateString('es-CL') : 'Sin fecha';
+          const contexto = texto.contexto ? `Contexto: ${texto.contexto}` : '';
 
-        const lineasContenido = splitText(texto.contenido || 'Sin contenido', maxWidth);
-        lineasContenido.forEach(linea => {
-          checkPageBreak(6);
-          doc.text(linea, margin + 5, yPosition);
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'normal');
+          doc.text(`Fecha: ${fechaTxt}`, margin, yPosition);
           yPosition += 6;
-        });
 
-        if (contexto) {
-          const lineasCtx = splitText(contexto, maxWidth);
-          lineasCtx.forEach(linea => {
+          const lineasContenido = splitText(texto.contenido || 'Sin contenido', maxWidth);
+          lineasContenido.forEach(linea => {
             checkPageBreak(6);
-            doc.text(linea, margin + 5, yPosition);
+            doc.text(linea, margin + 8, yPosition);
             yPosition += 6;
           });
-        }
 
-        yPosition += 6;
+          if (contexto) {
+            const lineasCtx = splitText(contexto, maxWidth);
+            lineasCtx.forEach(linea => {
+              checkPageBreak(6);
+              doc.text(linea, margin + 8, yPosition);
+              yPosition += 6;
+            });
+          }
+
+          yPosition += 4;
+        });
+        yPosition += 4;
       });
     }
 
