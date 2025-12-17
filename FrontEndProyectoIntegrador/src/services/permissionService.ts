@@ -66,10 +66,10 @@ export default class PermissionService {
 
   /**
    * Verifica si un usuario puede editar estudiantes
-   * Solo administradores pueden editar estudiantes (tutores solo lectura)
+   * Solo administradores y tutores pueden editar estudiantes
    */
   static canEditStudent(user: Usuario | null): boolean {
-    return this.isAdmin(user);
+    return this.isAdmin(user) || this.isTutor(user);
   }
 
   /**
@@ -80,20 +80,21 @@ export default class PermissionService {
     return this.isAdmin(user);
   }
 
+
   /**
    * Verifica si un usuario puede ver entrevistas
-   * Solo administradores pueden ver entrevistas (tutores no)
+   * Administradores y tutores pueden ver entrevistas
    */
   static canViewInterviews(user: Usuario | null): boolean {
-    return this.isAdmin(user);
+    return this.isAdmin(user) || this.isTutor(user);
   }
 
   /**
    * Verifica si un usuario puede crear entrevistas
-   * Solo administradores pueden crear entrevistas
+   * Administradores y tutores pueden crear entrevistas
    */
   static canCreateInterview(user: Usuario | null): boolean {
-    return this.isAdmin(user);
+    return this.isAdmin(user) || this.isTutor(user);
   }
 
   /**
