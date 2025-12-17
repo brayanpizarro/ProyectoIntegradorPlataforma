@@ -204,6 +204,7 @@ export interface Entrevista {
   observaciones: string;
   temas_abordados: string[];
   etiquetas: EtiquetaEntrevista[];
+  textos: TextoEtiqueta[];
 }
 
 export interface EtiquetaEntrevista {

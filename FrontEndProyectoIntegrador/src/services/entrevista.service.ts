@@ -14,7 +14,7 @@ class EntrevistaService extends BaseHttpClient {
     const entrevistas = await this.getByEstudiante(estudianteId);
     if (!entrevistas || entrevistas.length === 0) return [];
     const textosArrays = await Promise.all(
-      entrevistas.map(e => this.getTextos(e.id || e._id))
+      entrevistas.map(e => this.getTextos(e.id))
     );
     return textosArrays.flat();
   }

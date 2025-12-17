@@ -2,7 +2,7 @@
  * Sección de perfil del estudiante
  * Muestra avatar, información básica y resumen académico
  */
-import { Box, Paper, Typography, Avatar, Select, MenuItem, FormControl, InputLabel, CircularProgress } from '@mui/material';
+import { Box, Paper, Typography, Avatar, Select, MenuItem, FormControl, CircularProgress } from '@mui/material';
 import { AccountCircle as AccountCircleIcon } from '@mui/icons-material';
 import { StatCard } from '../../ui';
 // Colores personalizados para cada estado
@@ -16,7 +16,7 @@ import { useState, useEffect } from 'react';
 import type { SelectChangeEvent } from '@mui/material';
 import { estudianteService } from '../../../services/estudiante.service';
 import type { Estudiante, StatusEstudiante } from '../../../types';
-import type { SeccionActiva } from '../TabNavigation';
+import type { SeccionActiva } from './TabNavigation';
 
 
 interface ProfileSectionProps {
