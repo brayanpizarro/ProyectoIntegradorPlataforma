@@ -56,33 +56,9 @@ export class InformacionAcademicaController {
     return await this.informacionAcademicaService.updatePromedio(+id, nivel, body.promedio);
   }
 
-  @Post(':id/ensayo-paes')
-  @HttpCode(HttpStatus.CREATED)
-  async addEnsayoPaes(
-    @Param('id') id: string,
-    @Body() ensayo: any, // JSONB flexible
-  ) {
-    return await this.informacionAcademicaService.addEnsayoPaes(+id, ensayo);
-  }
-
-  @Patch(':id/ensayo-paes/:index')
-  @HttpCode(HttpStatus.OK)
-  async updateEnsayoPaes(
-    @Param('id') id: string,
-    @Param('index') index: string,
-    @Body() ensayo: any, // JSONB flexible
-  ) {
-    return await this.informacionAcademicaService.updateEnsayoPaes(+id, +index, ensayo);
-  }
-
-  @Delete(':id/ensayo-paes/:index')
-  @HttpCode(HttpStatus.OK)
-  async deleteEnsayoPaes(
-    @Param('id') id: string,
-    @Param('index') index: string,
-  ) {
-    return await this.informacionAcademicaService.deleteEnsayoPaes(+id, +index);
-  }
+  // === ENDPOINTS DE ENSAYO PAES ELIMINADOS ===
+  // addEnsayoPaes, updateEnsayoPaes, deleteEnsayoPaes eliminados
+  // Los ensayos PAES fueron migrados al módulo informacion-admision/ensayo-paes
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)

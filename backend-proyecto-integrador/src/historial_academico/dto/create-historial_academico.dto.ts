@@ -5,13 +5,9 @@ export class CreateHistorialAcademicoDto {
   @IsNotEmpty()
   id_estudiante: string;
 
-  @IsOptional()
-  @IsNumber()
-  año?: number;
-
-  @IsOptional()
-  @IsNumber()
-  semestre?: number;
+  // === CAMPOS MIGRADOS A PERIODO_ACADEMICO ===
+  // año y semestre fueron eliminados
+  // Usar PeriodoAcademicoEstudiante para relacionar con períodos
 
   @IsOptional()
   @IsString()

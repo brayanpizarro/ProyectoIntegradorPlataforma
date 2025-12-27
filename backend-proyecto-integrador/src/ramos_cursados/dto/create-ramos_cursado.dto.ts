@@ -5,13 +5,11 @@ export class CreateRamosCursadosDto {
   @IsNotEmpty()
   id_estudiante: string;
 
+  // === CAMPOS MIGRADOS A PERIODO_ACADEMICO ===
+  // año y semestre fueron eliminados, usar periodo_academico_estudiante_id
   @IsOptional()
   @IsNumber()
-  semestre?: number;
-
-  @IsOptional()
-  @IsNumber()
-  año?: number;
+  periodo_academico_estudiante_id?: number;
 
   @IsOptional()
   @IsNumber()

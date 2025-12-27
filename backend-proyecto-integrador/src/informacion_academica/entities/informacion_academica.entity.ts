@@ -41,11 +41,10 @@ export class InformacionAcademica {
   @Column({ nullable: true, default: null })
   comuna_colegio: string;
 
-  @Column({ type: 'jsonb', nullable: true, default: () => "'{}'" })
-  puntajes_admision: any;
-
-  @Column({ type: 'jsonb', nullable: true, default: () => "'[]'" })
-  ensayos_paes: any[];
+  // === CAMPOS LEGACY ELIMINADOS ===
+  // puntajes_admision migrado a informacion_admision (normalizado con puntajes específicos)
+  // ensayos_paes migrado a ensayo_paes (entidad separada 1:N)
+  // beneficios migrado a beneficio + beneficio_estudiante (catálogo + relación temporal)
 
   @Column({ type: 'text', nullable: true })
   beneficios: string;

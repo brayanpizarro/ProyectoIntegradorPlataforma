@@ -20,13 +20,11 @@ export class RamosCursadosController {
   @Get('estudiante/:estudianteId')
   findByEstudiante(
     @Param('estudianteId') estudianteId: string,
-    @Query('año') año?: string,
-    @Query('semestre') semestre?: string
+    @Query('periodo_academico_estudiante_id') periodoId?: string
   ) {
-    const filtros = {
-      año: año ? parseInt(año) : undefined,
-      semestre: semestre ? parseInt(semestre) : undefined
-    };
+    const filtros = periodoId ? {
+      periodo_academico_estudiante_id: parseInt(periodoId)
+    } : undefined;
     return this.ramosCursadosService.findByEstudiante(estudianteId, filtros);
   }
 
@@ -38,12 +36,10 @@ export class RamosCursadosController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateRamosCursadosDto: UpdateRamosCursadosDto) {
     return this.ramosCursadosService.update(+id, updateRamosCursadosDto);
- }
-
-  @Post('fix-semestres')
-  fixSemestres() {
-    return this.ramosCursadosService.fixSemestres();
   }
+
+  // === ENDPOINT fixSemestres ELIMINADO ===
+  // Los campos año/semestre fueron migrados a periodo_academico
 
   @Delete(':id')
   remove(@Param('id') id: string) {

@@ -31,10 +31,9 @@ async function seed() {
     const estudiante = estudianteRepository.create({
       nombre: 'Juan Carlos Pérez González',
       rut: '12.345.678-9',
-      email: 'juan.perez@ejemplo.cl',
-      telefono: '+56912345678',
       fecha_de_nacimiento: new Date('2000-05-15'),
       generacion: '2024',
+      tipo_de_estudiante: 'media' as any,
       institucion: institucion,
     });
 

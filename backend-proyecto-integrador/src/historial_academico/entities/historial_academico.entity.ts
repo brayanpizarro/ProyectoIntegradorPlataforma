@@ -14,11 +14,9 @@ export class HistorialAcademico {
   @PrimaryGeneratedColumn()
   id_historial_academico: number;
 
-  @Column({ nullable: true, default: null })
-  año: number;
-
-  @Column({ nullable: true, default: null })
-  semestre: number;
+  // === CAMPOS LEGACY ELIMINADOS ===
+  // año y semestre fueron migrados a periodo_academico (centralizado)
+  // Usar la relación periodo_academico_estudiante en su lugar
 
   @Column({ nullable: true, default: null })
   nivel_educativo: string;

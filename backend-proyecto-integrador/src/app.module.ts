@@ -13,6 +13,14 @@ import { AuthModule } from './auth/auth.module';
 import { SeederModule } from './seeder/seeder.module';
 import { appConfig, databaseConfig, jwtConfig } from './config';
 
+// === MÓDULOS REFACTORIZADOS ===
+import { InformacionContactoModule } from './informacion-contacto/informacion-contacto.module';
+import { EstadoAcademicoModule } from './estado-academico/estado-academico.module';
+import { InformacionAdmisionModule } from './informacion-admision/informacion-admision.module';
+import { FamiliarModule } from './familiar/familiar.module';
+import { BeneficiosModule } from './beneficios/beneficios.module';
+import { PeriodoAcademicoModule } from './periodo-academico/periodo-academico.module';
+
 @Module({
   imports: [
     
@@ -38,6 +46,7 @@ import { appConfig, databaseConfig, jwtConfig } from './config';
       }),
     }),
 
+    // === MÓDULOS LEGACY ===
     EstudianteModule,
     FamiliaModule,
     RamosCursadosModule,
@@ -48,6 +57,14 @@ import { appConfig, databaseConfig, jwtConfig } from './config';
     EntrevistasModule,
     AuthModule,
     SeederModule,
+
+    // === MÓDULOS REFACTORIZADOS ===
+    InformacionContactoModule,
+    EstadoAcademicoModule,
+    InformacionAdmisionModule,
+    FamiliarModule,
+    BeneficiosModule,
+    PeriodoAcademicoModule,
   ],
 })
 export class AppModule {}

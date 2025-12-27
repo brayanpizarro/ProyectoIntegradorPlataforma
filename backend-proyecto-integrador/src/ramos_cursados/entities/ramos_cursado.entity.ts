@@ -8,18 +8,26 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Estudiante } from '../../estudiante/entities/estudiante.entity';
+import { PeriodoAcademicoEstudiante } from '../../periodo-academico/entities/periodo-academico-estudiante.entity';
 
 @Entity('ramos_cursados')
 export class RamosCursados {
   @PrimaryGeneratedColumn()
   id_ramo: number;
 
-  @Column({ nullable: true, default: null })
-  semestre: number;
+  // === PERIODO ACADÉMICO (normalizado) ===
+  @Column({ type: 'int', nullable: true })
+  periodo_academico_estudiante_id: number;
 
-  @Column({ nullable: true, default: null })
-  año: number;
+  @ManyToOne(() => PeriodoAcademicoEstudiante, { nullable: true })
+  @JoinColumn({ name: 'periodo_academico_estudiante_id' })
+  periodo_academico_estudiante: PeriodoAcademicoEstudiante;
 
+  // === CAMPOS LEGACY ELIMINADOS ===
+  // año y semestre fueron migrados a periodo_academico (centralizado)
+  // Usar periodo_academico_estudiante para acceder a esta información
+
+  // === INFORMACIÓN DEL RAMO ===
   @Column({ type: 'int', nullable: true, default: 1 })
   oportunidad: number;
 
@@ -44,17 +52,17 @@ export class RamosCursados {
   @Column({ type: 'text', nullable: true })
   comentarios: string;
 
+  // === RELACIÓN CON ESTUDIANTE ===
   @Column({ nullable: true })
   id_estudiante: string;
+
+  @ManyToOne(() => Estudiante, (estudiante) => estudiante.ramosCursados)
+  @JoinColumn({ name: 'id_estudiante' })
+  estudiante: Estudiante;
 
   @CreateDateColumn()
   created_at: Date;
 
   @UpdateDateColumn()
   updated_at: Date;
-
-  // Relación con Estudiante
-  @ManyToOne(() => Estudiante, (estudiante) => estudiante.ramosCursados)
-  @JoinColumn({ name: 'id_estudiante' })
-  estudiante: Estudiante;
 }

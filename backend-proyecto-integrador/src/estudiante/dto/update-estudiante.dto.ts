@@ -11,7 +11,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { Exclude, Expose } from 'class-transformer';
-import { TipoEstudiante, StatusEstudiante } from '../entities/estudiante.entity';
+import { TipoEstudiante } from '../entities/estudiante.entity';
 
 @Exclude()
 export class UpdateEstudianteDto extends PartialType(CreateEstudianteDto) {
@@ -45,11 +45,6 @@ export class UpdateEstudianteDto extends PartialType(CreateEstudianteDto) {
   @IsOptional()
   @IsEnum(TipoEstudiante)
   tipo_de_estudiante?: TipoEstudiante;
-
-  @Expose()
-  @IsOptional()
-  @IsEnum(StatusEstudiante)
-  status?: StatusEstudiante;
 
   @Expose()
   @IsOptional()

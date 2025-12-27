@@ -6,12 +6,10 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  OneToOne,
   OneToMany,
   BeforeInsert,
 } from 'typeorm';
 import { Institucion } from '../../institucion/entities/institucion.entity';
-import { Familia } from '../../familia/entities/familia.entity';
 import { RamosCursados } from '../../ramos_cursados/entities/ramos_cursado.entity';
 import { HistorialAcademico } from '../../historial_academico/entities/historial_academico.entity';
 import { InformacionAcademica } from '../../informacion_academica/entities/informacion_academica.entity';
@@ -23,12 +21,8 @@ export enum TipoEstudiante {
   UNIVERSITARIO = 'universitario',
 }
 
-export enum StatusEstudiante {
-  ACTIVO = 'activo',
-  INACTIVO = 'inactivo',
-  EGRESADO = 'egresado',
-  RETIRADO = 'retirado',
-}
+// StatusEstudiante movido a estado-academico module
+// Los campos de contacto (telefono, email, direccion) movidos a informacion-contacto module
 
 @Entity('estudiante')
 export class Estudiante {
@@ -40,39 +34,20 @@ export class Estudiante {
     this.id_estudiante = uuidv4();
   }
 
+  // === CAMPOS CORE (identificación personal) ===
   @Column()
   nombre: string;
 
-  @Column()
+  @Column({ unique: true })
   rut: string;
-
-  @Column()
-  telefono: string;
 
   @Column()
   fecha_de_nacimiento: Date;
 
-  @Column()
-  email: string;
-
   @Column({ nullable: true })
   genero: string;
 
-  @Column({ nullable: true })
-  direccion: string;
-
-  @Column({ type: 'text', nullable: true })
-  observaciones: string;
-
-  @Column({ type: 'text', nullable: true })
-  status_detalle: string;
-
-  @Column({ type: 'int', nullable: true, default: 0 })
-  semestres_suspendidos: number;
-
-  @Column({ type: 'int', nullable: true, default: 10 })
-  semestres_total_carrera: number;
-
+  // === TIPO DE ESTUDIANTE ===
   @Column({
     type: 'enum',
     enum: TipoEstudiante,
@@ -85,14 +60,11 @@ export class Estudiante {
   @Column({ type: 'int', nullable: true, default: null })
   numero_carrera: number;
 
-  @Column({
-    type: 'enum',
-    enum: StatusEstudiante,
-    nullable: true,
-    default: null,
-  })
-  status: StatusEstudiante;
+  // === OBSERVACIONES GENERALES ===
+  @Column({ type: 'text', nullable: true })
+  observaciones: string;
 
+  // === RELACIÓN CON INSTITUCIÓN ACTUAL ===
   @Column({ type: 'uuid', nullable: true })
   id_institucion?: string;
 
@@ -102,19 +74,25 @@ export class Estudiante {
   @JoinColumn({ name: 'id_institucion' })
   institucion?: Institucion;
 
-  @OneToOne(() => Familia, (familia) => familia.estudiante, { nullable: true })
-  familia: Familia;
+  // === RELACIONES CON MÓDULOS REFACTORIZADOS ===
+  // InformacionContacto (1:1) - telefono, email, direccion
+  // EstadoAcademico (1:1) - status, status_detalle, semestres_suspendidos, semestres_total_carrera
+  // InformacionAdmision (1:1) - puntajes PAES, ensayos
+  // Familiar (1:N) - familiares relacionados
+  // BeneficioEstudiante (1:N) - beneficios del estudiante
+  // PeriodoAcademicoEstudiante (1:N) - historial por períodos
 
+  // === RELACIONES LEGACY (se mantendrán hasta migración) ===
   @OneToMany(() => RamosCursados, (ramo: RamosCursados) => ramo.estudiante)
   ramosCursados: RamosCursados[];
 
   @OneToMany(() => HistorialAcademico, (historial: HistorialAcademico) => historial.estudiante)
   historialesAcademicos: HistorialAcademico[];
 
-  @OneToOne(() => InformacionAcademica, (info: InformacionAcademica) => info.estudiante, {
+  @OneToMany(() => InformacionAcademica, (info: InformacionAcademica) => info.estudiante, {
     nullable: true,
   })
-  informacionAcademica: InformacionAcademica;
+  informacionAcademica: InformacionAcademica[];
 
   @OneToMany(() => Entrevista, (entrevista) => entrevista.estudiante)
   entrevistas: Entrevista[];

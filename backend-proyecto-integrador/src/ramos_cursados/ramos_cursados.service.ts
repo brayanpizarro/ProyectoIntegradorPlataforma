@@ -28,23 +28,19 @@ export class RamosCursadosService {
     });
   }
 
-  async findByEstudiante(estudianteId: string, filtros?: { año?: number; semestre?: number }): Promise<RamosCursados[]> {
+  async findByEstudiante(estudianteId: string, filtros?: { periodo_academico_estudiante_id?: number }): Promise<RamosCursados[]> {
     const whereCondition: any = { estudiante: { id_estudiante: estudianteId } };
     
-    if (filtros?.año) {
-      whereCondition.año = filtros.año;
-    }
-    
-    if (filtros?.semestre) {
-      whereCondition.semestre = filtros.semestre;
+    if (filtros?.periodo_academico_estudiante_id) {
+      whereCondition.periodo_academico_estudiante_id = filtros.periodo_academico_estudiante_id;
     }
     
     console.log(`🔍 Buscando ramos para estudiante ${estudianteId} con filtros:`, whereCondition);
     
     return await this.ramosCursadosRepository.find({
       where: whereCondition,
-      relations: ['estudiante'],
-      order: { semestre: 'ASC', nombre_ramo: 'ASC' }
+      relations: ['estudiante', 'periodo_academico_estudiante'],
+      order: { nombre_ramo: 'ASC' }
     });
   }
 
@@ -53,64 +49,9 @@ export class RamosCursadosService {
     return this.findOne(id);
   }
 
-  async fixSemestres(): Promise<any> {
-    // Obtener todos los ramos que no tienen año o semestre
-    const ramosSinSemestre = await this.ramosCursadosRepository.find({
-      where: [
-        { año: IsNull() },
-        { semestre: IsNull() }
-      ]
-    });
-
-    console.log(`🔧 Encontrados ${ramosSinSemestre.length} ramos sin año/semestre asignado`);
-    console.log('✅ Usando IsNull() para consultas TypeORM');
-
-    const updates: Array<{ id: number; nombre: string; año: number; semestre: number }> = [];
-
-    for (const ramo of ramosSinSemestre) {
-      let año = 2025;
-      let semestre = 1;
-
-      // Lógica basada en el nombre del ramo
-      const nombre = ramo.nombre_ramo?.toLowerCase() || '';
-      
-      if (nombre.includes('calculo2') || nombre.includes('cálculo2')) {
-        año = 2025;
-        semestre = 1;
-      } else if (nombre.includes('calculo3') || nombre.includes('cálculo3')) {
-        año = 2025;
-        semestre = 2;
-      } else if (nombre.includes('calculo1') || nombre.includes('cálculo1')) {
-        año = 2024;
-        semestre = 2;
-      } else {
-        // Alternar entre semestres para otros ramos
-        año = 2025;
-        semestre = (ramo.id_ramo % 2) + 1;
-      }
-
-      // Actualizar el ramo
-      await this.ramosCursadosRepository.update(ramo.id_ramo, {
-        año,
-        semestre,
-        oportunidad: ramo.oportunidad || 1 // Asignar primera oportunidad por defecto
-      });
-
-      updates.push({
-        id: ramo.id_ramo,
-        nombre: ramo.nombre_ramo,
-        año,
-        semestre
-      });
-
-      console.log(`✅ ${ramo.nombre_ramo} → ${año}/${semestre}`);
-    }
-
-    return {
-      message: `Se actualizaron ${updates.length} ramos`,
-      updates: updates
-    };
-  }
+  // === MÉTODO fixSemestres ELIMINADO ===
+  // Los campos año/semestre fueron migrados a periodo_academico
+  // Usar PeriodoAcademicoService para gestionar períodos académicos
 
   async remove(id: number): Promise<void> {
     await this.ramosCursadosRepository.delete(id);

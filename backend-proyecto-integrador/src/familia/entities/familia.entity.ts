@@ -15,29 +15,13 @@ export class Familia {
   @PrimaryGeneratedColumn()
   id_familia: number;
 
-  @Column({ nullable: true })
-  nombre_madre: string;
-
-  @Column({ type: 'json', nullable: true, default: [] })
-  descripcion_madre: string[];
-
-  @Column({ nullable: true })
-  nombre_padre: string;
-
-  @Column({ type: 'json', nullable: true, default: [] })
-  descripcion_padre: string[];
-
-  @Column({ type: 'json', nullable: true })
-  hermanos: any[];
-
-  @Column({ type: 'text', nullable: true })
-  observaciones_hermanos: string;
-
-  @Column({ type: 'json', nullable: true })
-  otros_familiares: any[];
-
-  @Column({ type: 'text', nullable: true })
-  observaciones_otros_familiares: string;
+  // === CAMPOS LEGACY ELIMINADOS ===
+  // Los siguientes campos fueron migrados a la tabla normalizada 'familiar':
+  // - nombre_madre, descripcion_madre
+  // - nombre_padre, descripcion_padre
+  // - hermanos, observaciones_hermanos
+  // - otros_familiares, observaciones_otros_familiares
+  // Ahora cada familiar es un registro individual relacionado mediante tipo_familiar
 
   @Column({ type: 'json', nullable: true , default: { madre: [], padre: [], hermanos: [], general: [] } })
   observaciones: ObservacionesFamiliares;
@@ -49,7 +33,7 @@ export class Familia {
   updated_at: Date;
 
   // Relación con Estudiante
-  @OneToOne(() => Estudiante, (estudiante) => estudiante.familia)
+  @OneToOne(() => Estudiante)
   @JoinColumn({ name: 'id_estudiante' })
   estudiante: Estudiante;
 }
