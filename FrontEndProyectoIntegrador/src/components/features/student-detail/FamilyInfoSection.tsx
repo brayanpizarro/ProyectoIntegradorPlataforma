@@ -10,6 +10,17 @@ import {
 } from '@mui/material';
 import { FamilyMemberRow } from './components';
 import type { Estudiante } from '../../../types';
+import {
+  getFamiliaNombreMadre,
+  getFamiliaNombrePadre,
+  getFamiliaDescripcionMadre,
+  getFamiliaDescripcionPadre,
+  getFamiliaHermanos,
+  getFamiliaOtrosFamiliares,
+  getFamiliaObservacionesHermanos,
+  getFamiliaObservacionesOtrosFamiliares,
+  getFamiliaObservacionesGenerales
+} from '../../../utils/migration-helpers';
 
 interface FamilyInfoSectionProps {
   estudiante: Estudiante;
@@ -36,32 +47,37 @@ export function FamilyInfoSection({
   
   // Formatear hermanos para mostrar
   const formatearHermanos = () => {
-    if (!familia?.hermanos || familia.hermanos.length === 0) return '';
-    return familia.hermanos.map(h => h.nombre || h).join('; ');
+    const hermanos = getFamiliaHermanos(familia);
+    if (!hermanos || hermanos.length === 0) return '';
+    return hermanos.map(h => (typeof h === 'object' && h !== null && 'nombre' in h) ? (h as any).nombre : String(h)).join('; ');
   };
   
   // Formatear otros familiares
   const formatearOtrosFamiliares = () => {
-    if (!familia?.otros_familiares || familia.otros_familiares.length === 0) return '';
-    return familia.otros_familiares.map(f => f.nombre || f).join('; ');
+    const otrosFamiliares = getFamiliaOtrosFamiliares(familia);
+    if (!otrosFamiliares || otrosFamiliares.length === 0) return '';
+    return otrosFamiliares.map(f => (typeof f === 'object' && f !== null && 'nombre' in f) ? (f as any).nombre : String(f)).join('; ');
   };
 
   // Helper para obtener observaciones de forma segura
   const getObservacionesHermanos = () => {
-    if (!familia?.observaciones_hermanos) return '';
-    if (typeof familia.observaciones_hermanos === 'string') return familia.observaciones_hermanos;
+    const obs = getFamiliaObservacionesHermanos(familia);
+    if (!obs) return '';
+    if (typeof obs === 'string') return obs;
     return '';
   };
 
   const getObservacionesOtrosFamiliares = () => {
-    if (!familia?.observaciones_otros_familiares) return '';
-    if (typeof familia.observaciones_otros_familiares === 'string') return familia.observaciones_otros_familiares;
+    const obs = getFamiliaObservacionesOtrosFamiliares(familia);
+    if (!obs) return '';
+    if (typeof obs === 'string') return obs;
     return '';
   };
 
   const getObservacionesGenerales = () => {
-    if (!familia?.observaciones) return '';
-    if (typeof familia.observaciones === 'string') return familia.observaciones;
+    const obs = getFamiliaObservacionesGenerales(familia);
+    if (!obs) return '';
+    if (typeof obs === 'string') return obs;
     return '';
   };
   return (
@@ -112,8 +128,8 @@ export function FamilyInfoSection({
           <TableBody>
             <FamilyMemberRow
               label="Mamá"
-              nombreValue={familia?.nombre_madre || ''}
-              observacionesValue={formatearDescripciones(familia?.descripcion_madre)}
+              nombreValue={getFamiliaNombreMadre(familia) || ''}
+              observacionesValue={formatearDescripciones(getFamiliaDescripcionMadre(familia))}
               modoEdicion={modoEdicion}
               nombrePlaceholder="Nombre de la madre"
               observacionesPlaceholder="Observaciones sobre la madre..."
@@ -124,8 +140,8 @@ export function FamilyInfoSection({
 
             <FamilyMemberRow
               label="Papá"
-              nombreValue={familia?.nombre_padre || ''}
-              observacionesValue={formatearDescripciones(familia?.descripcion_padre)}
+              nombreValue={getFamiliaNombrePadre(familia) || ''}
+              observacionesValue={formatearDescripciones(getFamiliaDescripcionPadre(familia))}
               modoEdicion={modoEdicion}
               nombrePlaceholder="Nombre del padre"
               observacionesPlaceholder="Observaciones sobre el padre..."

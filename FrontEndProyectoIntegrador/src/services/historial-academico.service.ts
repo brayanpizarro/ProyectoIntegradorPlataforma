@@ -8,8 +8,7 @@ class HistorialAcademicoService extends BaseHttpClient {
   
   async create(data: {
     id_estudiante: string;
-    año: number | null;
-    semestre: number | null;
+    // año, semestre eliminados
     nivel_educativo?: string;
     ramos_aprobados?: number;
     ramos_reprobados?: number;
@@ -34,8 +33,7 @@ class HistorialAcademicoService extends BaseHttpClient {
   }
 
   async update(id: number, data: Partial<{
-    año: number | null;
-    semestre: number | null;
+    // año, semestre eliminados
     nivel_educativo: string;
     ramos_aprobados: number;
     ramos_reprobados: number;

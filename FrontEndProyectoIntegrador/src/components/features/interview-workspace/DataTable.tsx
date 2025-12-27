@@ -1,6 +1,25 @@
 ﻿import { Fragment, useEffect, useState } from 'react';
-import type { Estudiante, HistorialAcademico } from '../../../types';
+import type { Estudiante, HistorialAcademico, RamosCursados } from '../../../types';
 import { historialAcademicoService } from '../../../services';
+import {
+  getEstudianteEmail,
+  getEstudianteTelefono,
+  getEstudianteDireccion,
+  getEstudianteStatus,
+  getEstudianteSemestre,
+  getFamiliaNombreMadre,
+  getFamiliaNombrePadre,
+  getFamiliaDescripcionMadre,
+  getFamiliaDescripcionPadre,
+  getFamiliaHermanos,
+  getFamiliaOtrosFamiliares,
+  getFamiliaObservacionesHermanos,
+  getFamiliaObservacionesOtrosFamiliares,
+  getRamoSemestre,
+  getRamoAño,
+  getHistorialSemestre,
+  getHistorialAño
+} from '../../../utils/migration-helpers';
 
 interface DataTableProps {
   tabId: string;
@@ -92,9 +111,9 @@ export function DataTable({
     const datos = [
       { label: 'Nombre completo', value: nombreCompleto },
       { label: 'RUT', value: estudiante.rut || 'No especificado' },
-      { label: 'Email', value: estudiante.email || 'No especificado' },
-      { label: 'Teléfono', value: estudiante.telefono || 'No especificado' },
-      { label: 'Dirección', value: estudiante.direccion || 'No especificada' },
+      { label: 'Email', value: getEstudianteEmail(estudiante) },
+      { label: 'Teléfono', value: getEstudianteTelefono(estudiante) },
+      { label: 'Dirección', value: getEstudianteDireccion(estudiante) },
       { label: 'Fecha de nacimiento', value: formatearFecha(estudiante.fecha_de_nacimiento) },
       { label: 'Género', value: estudiante.genero || 'No especificado' },
       { label: 'Región', value: estudiante.region || 'No especificada' },
@@ -130,25 +149,26 @@ export function DataTable({
     const calcularSemestreActual = () => {
       try {
         console.log('📊 [DataTable] Calculando semestre actual...');
-        console.log('📊 [DataTable] estudiante.semestre:', (estudiante as any).semestre);
+        const semestreEstudiante = getEstudianteSemestre(estudiante);
+        console.log('📊 [DataTable] estudiante.semestre:', semestreEstudiante);
         
-        if ((estudiante as any).semestre) return (estudiante as any).semestre;
+        if (semestreEstudiante) return semestreEstudiante;
         
         const historialesList = historiales || estudiante.historialesAcademicos || [];
         console.log('📊 [DataTable] Historiales disponibles:', historialesList.length);
         
         if (historialesList.length > 0) {
           const ordenados = [...historialesList]
-            .filter(h => h.año && h.semestre)
+            .filter(h => getHistorialAño(h) && getHistorialSemestre(h))
             .sort((a, b) => {
-              if ((a.año ?? 0) !== (b.año ?? 0)) return (b.año ?? 0) - (a.año ?? 0);
-              return (b.semestre ?? 0) - (a.semestre ?? 0);
+              if ((getHistorialAño(a) ?? 0) !== (getHistorialAño(b) ?? 0)) return (getHistorialAño(b) ?? 0) - (getHistorialAño(a) ?? 0);
+              return (getHistorialSemestre(b) ?? 0) - (getHistorialSemestre(a) ?? 0);
             });
           console.log('📊 [DataTable] Historiales ordenados:', ordenados.length);
           if (ordenados.length > 0) {
             const ultimo = ordenados[0];
-            console.log('📊 [DataTable] Último semestre:', `${ultimo.año}/${ultimo.semestre}`);
-            return `${ultimo.año}/${ultimo.semestre}`;
+            console.log('📊 [DataTable] Último semestre:', `${getHistorialAño(ultimo)}/${getHistorialSemestre(ultimo)}`);
+            return `${getHistorialAño(ultimo)}/${getHistorialSemestre(ultimo)}`;
           }
         }
 
@@ -156,25 +176,25 @@ export function DataTable({
         console.log('📊 [DataTable] Ramos cursados:', ramos.length);
         if (ramos.length > 0) {
           // Buscar el semestre más alto registrado (con o sin año)
-          const ramosConSemestre = ramos.filter(r => r.semestre);
+          const ramosConSemestre = ramos.filter(r => getRamoSemestre(r));
           console.log('📊 [DataTable] Ramos con semestre definido:', ramosConSemestre.length);
           
           if (ramosConSemestre.length > 0) {
             // Si hay años, buscar el periodo más reciente
-            const conAño = ramosConSemestre.filter(r => r.año);
+            const conAño = ramosConSemestre.filter(r => getRamoAño(r));
             if (conAño.length > 0) {
               // Ordenar por año descendente, luego por semestre descendente
               const ordenados = [...conAño].sort((a, b) => {
-                if ((a.año ?? 0) !== (b.año ?? 0)) return (b.año ?? 0) - (a.año ?? 0);
-                return (b.semestre ?? 0) - (a.semestre ?? 0);
+                if ((getRamoAño(a) ?? 0) !== (getRamoAño(b) ?? 0)) return (getRamoAño(b) ?? 0) - (getRamoAño(a) ?? 0);
+                return (getRamoSemestre(b) ?? 0) - (getRamoSemestre(a) ?? 0);
               });
               const ultimo = ordenados[0];
-              console.log('📊 [DataTable] Último periodo con año:', `${ultimo.año}-${ultimo.semestre}`);
-              return `${ultimo.semestre}`;
+              console.log('📊 [DataTable] Último periodo con año:', `${getRamoAño(ultimo)}-${getRamoSemestre(ultimo)}`);
+              return `${getRamoSemestre(ultimo)}`;
             }
             
             // Si no hay años, usar el semestre más alto
-            const semestreMax = Math.max(...ramosConSemestre.map(r => r.semestre || 0));
+            const semestreMax = Math.max(...ramosConSemestre.map(r => getRamoSemestre(r) || 0));
             console.log('📊 [DataTable] Semestre más alto encontrado:', semestreMax);
             return semestreMax > 0 ? `${semestreMax}` : null;
           }
@@ -222,8 +242,8 @@ export function DataTable({
         console.log('📊 [DataTable] Total ramos cursados:', ramos.length);
         console.log('📊 [DataTable] Ramos detalle:', ramos.map(r => ({ 
           nombre: r.nombre_ramo, 
-          semestre: r.semestre, 
-          año: r.año,
+          semestre: getRamoSemestre(r), 
+          año: getRamoAño(r),
           promedio: r.promedio_final,
           estado: r.estado 
         })));
@@ -275,7 +295,7 @@ export function DataTable({
       },
       {
         label: 'Estado académico',
-        value: estudiante.status || estudiante.estado || 'No especificado'
+        value: getEstudianteStatus(estudiante) || estudiante.estado || 'No especificado'
       }
     ];
 
@@ -304,7 +324,7 @@ export function DataTable({
                   ramosCursados: estudiante.ramosCursados?.length || 0,
                   historialesAcademicos: (historiales || estudiante.historialesAcademicos || []).length,
                   generacion: estudiante.generacion,
-                  status: estudiante.status
+                  status: getEstudianteStatus(estudiante)
                 }, null, 2)}
               </pre>
             </details>
@@ -339,30 +359,30 @@ export function DataTable({
                 className="h-full bg-[var(--color-turquoise)] rounded"
                 style={{ width: `${(() => {
                   const historialesList = historiales || estudiante.historialesAcademicos || [];
-                  const conSemestre = historialesList.filter(h => h.semestre);
+                  const conSemestre = historialesList.filter(h => getHistorialSemestre(h));
                   let porcentaje = 0;
                   if (conSemestre.length > 0) {
-                    const conAño = conSemestre.filter(h => h.año);
+                    const conAño = conSemestre.filter(h => getHistorialAño(h));
                     if (conAño.length > 0) {
                       const semestresUnicos = new Set<string>();
-                      conAño.forEach(h => semestresUnicos.add(`${h.año}-${h.semestre}`));
+                      conAño.forEach(h => semestresUnicos.add(`${getHistorialAño(h)}-${getHistorialSemestre(h)}`));
                       porcentaje = (semestresUnicos.size / 10) * 100;
                     } else {
                       const semestresUnicos = new Set<number>();
-                      conSemestre.forEach(h => semestresUnicos.add(h.semestre!));
+                      conSemestre.forEach(h => semestresUnicos.add(getHistorialSemestre(h)!));
                       porcentaje = (semestresUnicos.size / 10) * 100;
                     }
                   } else {
                     const ramos = estudiante.ramosCursados || [];
-                    const ramosConSemestre = ramos.filter(r => r.semestre);
+                    const ramosConSemestre = ramos.filter(r => getRamoSemestre(r));
                     if (ramosConSemestre.length > 0) {
-                      const conAño = ramosConSemestre.filter(r => r.año);
+                      const conAño = ramosConSemestre.filter(r => getRamoAño(r));
                       if (conAño.length > 0) {
                         const semestresUnicos = new Set<string>();
-                        conAño.forEach(r => semestresUnicos.add(`${r.año}-${r.semestre}`));
+                        conAño.forEach(r => semestresUnicos.add(`${getRamoAño(r)}-${getRamoSemestre(r)}`));
                         porcentaje = (semestresUnicos.size / 10) * 100;
                       } else {
-                        const semestreMax = Math.max(...ramosConSemestre.map(r => r.semestre || 0));
+                        const semestreMax = Math.max(...ramosConSemestre.map(r => getRamoSemestre(r) || 0));
                         porcentaje = (semestreMax / 10) * 100;
                       }
                     }
@@ -374,30 +394,30 @@ export function DataTable({
             <span className="text-sm font-medium text-gray-800">
               {(() => {
                 const historialesList = historiales || estudiante.historialesAcademicos || [];
-                const conSemestre = historialesList.filter(h => h.semestre);
+                const conSemestre = historialesList.filter(h => getHistorialSemestre(h));
                 let porcentaje = 0;
                 if (conSemestre.length > 0) {
-                  const conAño = conSemestre.filter(h => h.año);
+                  const conAño = conSemestre.filter(h => getHistorialAño(h));
                   if (conAño.length > 0) {
                     const semestresUnicos = new Set<string>();
-                    conAño.forEach(h => semestresUnicos.add(`${h.año}-${h.semestre}`));
+                    conAño.forEach(h => semestresUnicos.add(`${getHistorialAño(h)}-${getHistorialSemestre(h)}`));
                     porcentaje = (semestresUnicos.size / 10) * 100;
                   } else {
                     const semestresUnicos = new Set<number>();
-                    conSemestre.forEach(h => semestresUnicos.add(h.semestre!));
+                    conSemestre.forEach(h => semestresUnicos.add(getHistorialSemestre(h)!));
                     porcentaje = (semestresUnicos.size / 10) * 100;
                   }
                 } else {
                   const ramos = estudiante.ramosCursados || [];
-                  const ramosConSemestre = ramos.filter(r => r.semestre);
+                  const ramosConSemestre = ramos.filter(r => getRamoSemestre(r));
                   if (ramosConSemestre.length > 0) {
-                    const conAño = ramosConSemestre.filter(r => r.año);
+                    const conAño = ramosConSemestre.filter(r => getRamoAño(r));
                     if (conAño.length > 0) {
                       const semestresUnicos = new Set<string>();
-                      conAño.forEach(r => semestresUnicos.add(`${r.año}-${r.semestre}`));
+                      conAño.forEach(r => semestresUnicos.add(`${getRamoAño(r)}-${getRamoSemestre(r)}`));
                       porcentaje = (semestresUnicos.size / 10) * 100;
                     } else {
-                      const semestreMax = Math.max(...ramosConSemestre.map(r => r.semestre || 0));
+                      const semestreMax = Math.max(...ramosConSemestre.map(r => getRamoSemestre(r) || 0));
                       porcentaje = (semestreMax / 10) * 100;
                     }
                   }
@@ -437,10 +457,12 @@ export function DataTable({
     }
 
     // Agrupar ramos por semestre
-    const ramosPorSemestre: { [key: string]: any[] } = {};
+    const ramosPorSemestre: Record<string, RamosCursados[]> = {};
     ramos.forEach(ramo => {
-      if (ramo.semestre) {
-        const key = ramo.año ? `${ramo.año}-${ramo.semestre}` : `Semestre ${ramo.semestre}`;
+      const semestreRamo = getRamoSemestre(ramo);
+      if (semestreRamo) {
+        const añoRamo = getRamoAño(ramo);
+        const key = añoRamo ? `${añoRamo}-${semestreRamo}` : `Semestre ${semestreRamo}`;
         if (!ramosPorSemestre[key]) {
           ramosPorSemestre[key] = [];
         }
@@ -572,7 +594,7 @@ export function DataTable({
       return valor;
     };
 
-    const formatListado = (items?: any[]) => {
+    const formatListado = (items?: unknown[]) => {
       if (!items || items.length === 0) return 'Sin información';
 
       const nombres = items
@@ -618,12 +640,12 @@ export function DataTable({
       );
     }
 
-    const descripcionMadre = formatTexto(familia.descripcion_madre);
-    const descripcionPadre = formatTexto(familia.descripcion_padre);
-    const hermanosDetalle = formatListado(familia.hermanos);
-    const otrosFamiliaresDetalle = formatListado(familia.otros_familiares);
-    const obsHermanos = formatTexto(familia.observaciones_hermanos);
-    const obsOtros = formatTexto(familia.observaciones_otros_familiares);
+    const descripcionMadre = formatTexto(getFamiliaDescripcionMadre(familia));
+    const descripcionPadre = formatTexto(getFamiliaDescripcionPadre(familia));
+    const hermanosDetalle = formatListado(getFamiliaHermanos(familia));
+    const otrosFamiliaresDetalle = formatListado(getFamiliaOtrosFamiliares(familia));
+    const obsHermanos = formatTexto(getFamiliaObservacionesHermanos(familia));
+    const obsOtros = formatTexto(getFamiliaObservacionesOtrosFamiliares(familia));
     const obsGenerales = formatObservacionesGenerales();
 
     return (
@@ -641,7 +663,7 @@ export function DataTable({
                   Madre
                 </h5>
                 <div className="text-sm text-gray-800">
-                  {familia.nombre_madre || 'No registrada'}
+                  {getFamiliaNombreMadre(familia) || 'No registrada'}
                   <div className="text-xs text-gray-600 mt-1 whitespace-pre-line">
                     {descripcionMadre}
                   </div>
@@ -653,7 +675,7 @@ export function DataTable({
                   Padre
                 </h5>
                 <div className="text-sm text-gray-800">
-                  {familia.nombre_padre || 'No registrado'}
+                  {getFamiliaNombrePadre(familia) || 'No registrado'}
                   <div className="text-xs text-gray-600 mt-1 whitespace-pre-line">
                     {descripcionPadre}
                   </div>

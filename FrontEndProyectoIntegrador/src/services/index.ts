@@ -10,3 +10,9 @@ export { familiaService } from './familia.service';
 export { entrevistaService } from './entrevista.service';
 export { ramosCursadosService } from './ramos-cursados.service';
 export { default as PermissionService } from './permissionService';
+
+// Nuevos servicios para entidades refactorizadas
+export { informacionContactoService } from './informacion-contacto.service';
+export { estadoAcademicoService } from './estado-academico.service';
+export { familiarService } from './familiar.service';
+export { periodoAcademicoService } from './periodo-academico.service';

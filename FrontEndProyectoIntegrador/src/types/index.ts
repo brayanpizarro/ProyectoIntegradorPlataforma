@@ -39,19 +39,16 @@ export interface Estudiante {
   id_estudiante: string | number;
   nombre: string;
   rut: string;
-  telefono?: string;
   fecha_de_nacimiento?: Date | string;
-  email?: string;
   genero?: string;
-  direccion?: string;
   tipo_de_estudiante: TipoEstudiante;
   generacion?: string;
   numero_carrera?: number;
-  status: StatusEstudiante;
   observaciones?: string;
-  status_detalle?: string;
-  semestres_suspendidos?: number;
-  semestres_total_carrera?: number;
+  
+  // === CAMPOS MIGRADOS (usar servicios específicos) ===
+  // telefono, email, direccion -> informacionContactoService
+  // status, status_detalle, semestres_suspendidos, semestres_total_carrera -> estadoAcademicoService
   
   // Relaciones
   institucion?: Institucion;
@@ -114,14 +111,13 @@ export interface Institucion {
 
 export interface Familia {
   id_familia: string | number;
-  nombre_madre?: string;
-  descripcion_madre?: string[] | string;
-  nombre_padre?: string;
-  descripcion_padre?: string[] | string;
-  hermanos?: any[];
-  otros_familiares?: any[];
-  observaciones_hermanos?: string;
-  observaciones_otros_familiares?: string;
+  
+  // === CAMPOS MIGRADOS (usar familiarService) ===
+  // nombre_madre, descripcion_madre -> familiar con tipo_familiar_id = MADRE
+  // nombre_padre, descripcion_padre -> familiar con tipo_familiar_id = PADRE
+  // hermanos -> familiar con tipo_familiar_id = HERMANO
+  // otros_familiares -> familiar con tipo_familiar_id = OTRO
+  
   observaciones?: any;
   estudiante?: Estudiante;
   created_at?: Date;
@@ -132,8 +128,11 @@ export interface Familia {
 
 export interface RamosCursados {
   id_ramos_cursados: string;
-  semestre: number;
-  año?: number;
+  
+  // === CAMPOS MIGRADOS ===
+  // año, semestre -> usar periodoAcademicoService y periodo_academico_estudiante_id
+  periodo_academico_estudiante_id?: number;
+  
   oportunidad?: number;
   codigo_ramo?: string;
   nombre_ramo: string;
@@ -149,8 +148,10 @@ export interface RamosCursados {
 
 export interface HistorialAcademico {
   id_historial_academico: string;
-  año: number;
-  semestre: number;
+  
+  // === CAMPOS MIGRADOS ===
+  // año, semestre -> usar periodoAcademicoService
+  
   nivel_educativo?: string;
   ramos_aprobados?: number;
   ramos_reprobados?: number;
@@ -178,9 +179,12 @@ export interface InformacionAcademica {
   colegio?: string;
   especialidad_colegio?: string;
   comuna_colegio?: string;
-  puntajes_admision?: any;
-  puntajes_paes?: any;
-  ensayos_paes?: any[];
+  
+  // === CAMPOS MIGRADOS ===
+  // puntajes_admision -> usar informacionAdmisionService
+  // ensayos_paes -> usar informacionAdmisionService / ensayoPaesService
+  // puntajes_paes es alias de puntajes_admision (deprecado)
+  
   beneficios?: string;
   resumen_semestres?: any;
   ultima_actualizacion_por?: string;

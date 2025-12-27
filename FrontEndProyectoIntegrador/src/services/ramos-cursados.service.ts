@@ -33,8 +33,8 @@ class RamosCursadosService extends BaseHttpClient {
     codigo: string;
     nombre: string;
     creditos: number;
-    año: number;
-    semestre: number;
+    // año, semestre eliminados - usar periodo_academico_estudiante_id
+    periodo_academico_estudiante_id?: number;
     nota_final?: number;
     estado?: string;
     oportunidad?: number;
@@ -49,8 +49,8 @@ class RamosCursadosService extends BaseHttpClient {
     codigo: string;
     nombre: string;
     creditos: number;
-    año: number;
-    semestre: number;
+    // año, semestre eliminados
+    periodo_academico_estudiante_id: number;
     nota_final: number;
     estado: string;
     oportunidad: number;

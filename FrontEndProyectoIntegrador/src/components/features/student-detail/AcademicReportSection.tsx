@@ -5,6 +5,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import type { Estudiante, HistorialAcademico } from '../../../types';
 import { historialAcademicoService, authService, informacionAcademicaService } from '../../../services';
+import {
+  getEstudianteSemestresSuspendidos,
+  getEstudianteSemestresCarrera,
+  getHistorialAño,
+  getHistorialSemestre
+} from '../../../utils/migration-helpers';
 
 interface AcademicReportSectionProps {
   estudiante: Estudiante;
@@ -55,8 +61,8 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
     return {
       numeroCarrera: estudiante.numero_carrera || 1,
       semestresFinalizados: historialAcademico.length,
-      semestresSuspendidos: estudiante.semestres_suspendidos || 0,
-      semestresCarrera: estudiante.semestres_total_carrera || 10,
+      semestresSuspendidos: getEstudianteSemestresSuspendidos(estudiante) || 0,
+      semestresCarrera: getEstudianteSemestresCarrera(estudiante) || 10,
       totalAprobados: aprobados,
       totalReprobados: reprobados,
       totalEliminados: eliminados,
@@ -102,14 +108,14 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
     const porPeriodo = new Map<string, typeof filas[number]>();
 
     historialAcademico
-      .filter((historial: HistorialAcademico) => historial.año || historial.semestre)
+      .filter((historial: HistorialAcademico) => getHistorialAño(historial) || getHistorialSemestre(historial))
       .forEach((historial: HistorialAcademico) => {
-        const key = `${historial.año ?? 'sin-año'}-${historial.semestre ?? 'sin-sem'}`;
+        const key = `${getHistorialAño(historial) ?? 'sin-año'}-${getHistorialSemestre(historial) ?? 'sin-sem'}`;
         if (!porPeriodo.has(key)) {
           porPeriodo.set(key, {
             id: historial.id_historial_academico,
-            año: historial.año ?? null,
-            semestre: historial.semestre ?? null,
+            año: getHistorialAño(historial) ?? null,
+            semestre: getHistorialSemestre(historial) ?? null,
             nSemestreCarrera: 0,
             ramosAprobados: historial.ramos_aprobados ?? 0,
             ramosReprobados: historial.ramos_reprobados ?? 0,

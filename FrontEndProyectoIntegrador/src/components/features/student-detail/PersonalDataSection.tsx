@@ -3,6 +3,7 @@ import { Box, Table, TableBody, TableContainer, Paper } from '@mui/material';
 import type { Estudiante } from '../../../types';
 import { SectionDivider, EditableField, EditableTextarea } from './components';
 import { personalDataConfig, type FieldConfig } from './config/personalDataFields';
+import { getInformacionAcademicaPuntajesAdmision } from '../../../utils/migration-helpers';
 
 interface PersonalDataSectionProps {
   estudiante: Estudiante;
@@ -75,7 +76,7 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
   };
 
   const formatearPuntajesPAES = () => {
-    const puntajes = estudiante.informacionAcademica?.puntajes_admision;
+    const puntajes = getInformacionAcademicaPuntajesAdmision(estudiante.informacionAcademica);
     if (!puntajes || typeof puntajes !== 'object') return 'Sin definir';
     
     return Object.entries(puntajes)

@@ -5,6 +5,11 @@
 import { Box, Paper, Typography, Avatar, Select, MenuItem, FormControl, CircularProgress } from '@mui/material';
 import { AccountCircle as AccountCircleIcon } from '@mui/icons-material';
 import { StatCard } from '../../ui';
+import {
+  getEstudianteStatus,
+  getEstudianteEmail,
+  getEstudianteTelefono
+} from '../../../utils/migration-helpers';
 // Colores personalizados para cada estado
 const estadoColorMap: Record<string, string> = {
   activo: '#43a047', // verde
@@ -25,19 +30,22 @@ interface ProfileSectionProps {
 }
 
 export function ProfileSection({ estudiante, seccionActiva }: ProfileSectionProps) {
-  const [status, setStatus] = useState<StatusEstudiante>(estudiante.status || estudiante.estado || 'activo');
+  const statusInicial = getEstudianteStatus(estudiante) || estudiante.estado || 'activo';
+  const [status, setStatus] = useState<StatusEstudiante>(statusInicial as StatusEstudiante);
 
-  // Sincroniza el estado local si cambia el prop estudiante.status o estudiante.estado
+  // Sincroniza el estado local si cambia el prop estudiante
   useEffect(() => {
-    setStatus(estudiante.status || estudiante.estado || 'activo');
-  }, [estudiante.status, estudiante.estado]);
+    const nuevoStatus = getEstudianteStatus(estudiante) || estudiante.estado || 'activo';
+    setStatus(nuevoStatus as StatusEstudiante);
+  }, [estudiante]);
 
   // Si seccionActiva está presente, sincroniza el status cada vez que se vuelve a la pestaña de perfil
   useEffect(() => {
     if (seccionActiva === 'perfil') {
-      setStatus(estudiante.status || estudiante.estado || 'activo');
+      const nuevoStatus = getEstudianteStatus(estudiante) || estudiante.estado || 'activo';
+      setStatus(nuevoStatus as StatusEstudiante);
     }
-  }, [seccionActiva, estudiante.status, estudiante.estado]);
+  }, [seccionActiva, estudiante]);
   const [loading, setLoading] = useState(false);
   const statusOptions: { value: StatusEstudiante; label: string }[] = [
     { value: 'activo', label: 'Activo' },
@@ -52,10 +60,12 @@ export function ProfileSection({ estudiante, seccionActiva }: ProfileSectionProp
     setLoading(true);
     const estudianteId = (estudiante.id_estudiante ?? estudiante.id) ? String(estudiante.id_estudiante ?? estudiante.id) : '';
     try {
-      await estudianteService.update(estudianteId, { status: newStatus });
+      // TODO: Actualizar usando estado-academico.service.ts en lugar de estudiante.service
+      await estudianteService.update(estudianteId, { estado: newStatus } as any);
     } catch {
       alert('No se pudo actualizar el estado.');
-      setStatus(estudiante.status || estudiante.estado || 'activo');
+      const statusFallback = getEstudianteStatus(estudiante) || estudiante.estado || 'activo';
+      setStatus(statusFallback as StatusEstudiante);
     } finally {
       setLoading(false);
     }
@@ -64,8 +74,8 @@ export function ProfileSection({ estudiante, seccionActiva }: ProfileSectionProp
   const infoFields = [
     { label: 'Nombre Completo', value: estudiante.nombre },
     { label: 'RUT', value: estudiante.rut },
-    { label: 'Correo Electrónico', value: estudiante.email },
-    { label: 'Teléfono', value: estudiante.telefono },
+    { label: 'Correo Electrónico', value: getEstudianteEmail(estudiante) },
+    { label: 'Teléfono', value: getEstudianteTelefono(estudiante) },
     { label: 'Universidad', value: estudiante.institucion?.nombre || estudiante.universidad },
     { label: 'Carrera', value: estudiante.institucion?.carrera_especialidad || estudiante.carrera },
     { label: 'Generación', value: estudiante.generacion || estudiante.año_generacion },
@@ -168,7 +178,7 @@ export function ProfileSection({ estudiante, seccionActiva }: ProfileSectionProp
           <StatCard
             icon="✅"
             label="Estado Académico"
-            value={estudiante.status || estudiante.estado || 'N/A'}
+            value={getEstudianteStatus(estudiante) || estudiante.estado || 'N/A'}
             accentColor="#ff9800"
           />
         </Box>

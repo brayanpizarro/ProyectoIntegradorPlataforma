@@ -1,14 +1,14 @@
 import { useState, useCallback } from 'react';
 import { familiaService } from '../../../../services';
 import { logger } from '../../../../config';
-import type { Estudiante, Familia } from '../../../../types';
+import type { Estudiante } from '../../../../types';
 
 interface UseFamiliaEditingProps {
     estudiante: Estudiante | null;
 }
 
 export const useFamiliaEditing = ({ estudiante }: UseFamiliaEditingProps) => {
-    const [datosFamiliaEditados, setDatosFamiliaEditados] = useState<Partial<Familia>>({});
+    const [datosFamiliaEditados, setDatosFamiliaEditados] = useState<Record<string, any>>({});
 
     const handleFamiliaChange = useCallback((campo: string, valor: any) => {
         setDatosFamiliaEditados(prev => ({
