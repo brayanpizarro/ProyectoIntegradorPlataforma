@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Put,
   ParseIntPipe,
 } from '@nestjs/common';
 import { InformacionContactoService } from './informacion-contacto.service';
@@ -33,6 +34,14 @@ export class InformacionContactoController {
   @Get('estudiante/:estudianteId')
   findByEstudiante(@Param('estudianteId') estudianteId: string) {
     return this.informacionContactoService.findByEstudiante(estudianteId);
+  }
+
+  @Put('estudiante/:estudianteId')
+  upsertByEstudiante(
+    @Param('estudianteId') estudianteId: string,
+    @Body() updateDto: UpdateInformacionContactoDto,
+  ) {
+    return this.informacionContactoService.upsertByEstudiante(estudianteId, updateDto);
   }
 
   @Patch(':id')

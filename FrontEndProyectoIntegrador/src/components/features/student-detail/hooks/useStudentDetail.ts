@@ -33,6 +33,7 @@ export const useStudentDetail = () => {
   const interviews = useStudentInterviews();
 
   // Combinar datos del estudiante con ediciones temporales
+  // Calcular directamente en cada render para asegurar actualización
   const estudianteConEdiciones = editing.getDatosCombinadosParaVista();
 
   return {

@@ -66,6 +66,53 @@ export class InformacionContactoService {
     return contacto;
   }
 
+  async upsertByEstudiante(
+    estudianteId: string,
+    updateDto: UpdateInformacionContactoDto,
+  ): Promise<InformacionContacto> {
+    // Buscar si ya existe información de contacto para este estudiante
+    let contacto = await this.informacionContactoRepository.findOne({
+      where: { estudiante_id: estudianteId },
+    });
+
+    if (contacto) {
+      // Si existe, actualizar
+      // Verificar email duplicado si se está cambiando
+      if (updateDto.email && updateDto.email !== contacto.email) {
+        const emailExiste = await this.informacionContactoRepository.findOne({
+          where: { email: updateDto.email },
+        });
+
+        if (emailExiste && emailExiste.id !== contacto.id) {
+          throw new ConflictException('El email ya está registrado');
+        }
+      }
+
+      Object.assign(contacto, updateDto);
+      return await this.informacionContactoRepository.save(contacto);
+    } else {
+      // Si no existe, crear nuevo
+      const createDto: CreateInformacionContactoDto = {
+        estudiante_id: estudianteId,
+        ...updateDto,
+      };
+
+      // Verificar email duplicado
+      if (createDto.email) {
+        const emailExiste = await this.informacionContactoRepository.findOne({
+          where: { email: createDto.email },
+        });
+
+        if (emailExiste) {
+          throw new ConflictException('El email ya está registrado');
+        }
+      }
+
+      contacto = this.informacionContactoRepository.create(createDto);
+      return await this.informacionContactoRepository.save(contacto);
+    }
+  }
+
   async update(id: number, updateDto: UpdateInformacionContactoDto): Promise<InformacionContacto> {
     const contacto = await this.findOne(id);
 

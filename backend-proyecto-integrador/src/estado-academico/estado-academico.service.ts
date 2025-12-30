@@ -77,6 +77,26 @@ export class EstadoAcademicoService {
     return await this.estadoAcademicoRepository.save(estado);
   }
 
+  async upsertByEstudiante(estudianteId: string, updateDto: UpdateEstadoAcademicoDto): Promise<EstadoAcademico> {
+    // Intentar encontrar estado existente
+    let estado = await this.estadoAcademicoRepository.findOne({
+      where: { estudiante_id: estudianteId },
+    });
+
+    if (estado) {
+      // Si existe, actualizar
+      Object.assign(estado, updateDto);
+      return await this.estadoAcademicoRepository.save(estado);
+    } else {
+      // Si no existe, crear nuevo
+      const nuevoEstado = this.estadoAcademicoRepository.create({
+        estudiante_id: estudianteId,
+        ...updateDto,
+      });
+      return await this.estadoAcademicoRepository.save(nuevoEstado);
+    }
+  }
+
   async remove(id: number): Promise<void> {
     const estado = await this.findOne(id);
     await this.estadoAcademicoRepository.remove(estado);

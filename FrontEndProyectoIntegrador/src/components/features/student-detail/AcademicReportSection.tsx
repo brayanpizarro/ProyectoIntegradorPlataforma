@@ -48,6 +48,22 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
   const [errorGlobal, setErrorGlobal] = useState<string>('');
   const [mensajeResumen, setMensajeResumen] = useState<string>('');
 
+  // Helper functions para calcular estadísticas académicas
+  const historialAcademico: HistorialAcademico[] = (historialesExternos && historialesExternos.length > 0)
+    ? historialesExternos
+    : (estudiante.historialesAcademicos || []);
+  const ramosCursados = estudiante.ramosCursados || [];
+  
+  // Calcular totales de ramos
+  const calcularTotalRamos = () => {
+    const aprobados = ramosCursados.filter(r => r.estado === 'aprobado' || r.estado === 'A').length;
+    const reprobados = ramosCursados.filter(r => r.estado === 'reprobado' || r.estado === 'R').length;
+    const eliminados = ramosCursados.filter(r => r.estado === 'eliminado' || r.estado === 'E').length;
+    const total = aprobados + reprobados + eliminados;
+    
+    return { aprobados, reprobados, eliminados, total };
+  };
+
   // Estado para resumen editable (manual)
   const construirResumenBase = () => {
     const resumenApi = (estudiante.informacionAcademica as any)?.resumen_semestres;
@@ -73,22 +89,6 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
   };
 
   const [resumenManual, setResumenManual] = useState<Record<string, any>>(construirResumenBase());
-
-  // Helper functions para calcular estadísticas académicas
-  const historialAcademico: HistorialAcademico[] = (historialesExternos && historialesExternos.length > 0)
-    ? historialesExternos
-    : (estudiante.historialesAcademicos || []);
-  const ramosCursados = estudiante.ramosCursados || [];
-  
-  // Calcular totales de ramos
-  const calcularTotalRamos = () => {
-    const aprobados = ramosCursados.filter(r => r.estado === 'aprobado' || r.estado === 'A').length;
-    const reprobados = ramosCursados.filter(r => r.estado === 'reprobado' || r.estado === 'R').length;
-    const eliminados = ramosCursados.filter(r => r.estado === 'eliminado' || r.estado === 'E').length;
-    const total = aprobados + reprobados + eliminados;
-    
-    return { aprobados, reprobados, eliminados, total };
-  };
   
   // Calcular semestres finalizados
   

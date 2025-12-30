@@ -47,4 +47,17 @@ export class CreateEstudianteDto {
   @IsOptional()
   @IsString()
   observaciones?: string;
+
+  // CAMPOS DE CONTACTO (opcionales, se crearán en informacion_contacto)
+  @IsOptional()
+  @IsString()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  telefono?: string;
+
+  @IsOptional()
+  @IsString()
+  direccion?: string;
 }

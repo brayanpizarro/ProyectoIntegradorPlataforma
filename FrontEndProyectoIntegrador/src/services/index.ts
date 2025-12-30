@@ -16,3 +16,7 @@ export { informacionContactoService } from './informacion-contacto.service';
 export { estadoAcademicoService } from './estado-academico.service';
 export { familiarService } from './familiar.service';
 export { periodoAcademicoService } from './periodo-academico.service';
+
+// Servicios para nuevas entidades
+export { beneficiosService } from './beneficios.service';
+export { informacionAdmisionService } from './informacion-admision.service';

@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Put,
   ParseIntPipe,
   Query,
 } from '@nestjs/common';
@@ -48,6 +49,14 @@ export class EstadoAcademicoController {
     @Body() updateDto: UpdateEstadoAcademicoDto,
   ) {
     return this.estadoAcademicoService.update(id, updateDto);
+  }
+
+  @Put('estudiante/:estudianteId')
+  upsertByEstudiante(
+    @Param('estudianteId') estudianteId: string,
+    @Body() updateDto: UpdateEstadoAcademicoDto,
+  ) {
+    return this.estadoAcademicoService.upsertByEstudiante(estudianteId, updateDto);
   }
 
   @Delete(':id')

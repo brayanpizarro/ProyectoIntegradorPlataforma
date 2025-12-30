@@ -9,6 +9,8 @@ import { InformacionAcademicaService } from '../informacion_academica/informacio
 import { HistorialAcademicoService } from '../historial_academico/historial_academico.service';
 import { InstitucionService } from '../institucion/institucion.service';
 import { EntrevistasService } from '../entrevistas/entrevistas.service';
+import { InformacionContactoService } from '../informacion-contacto/informacion-contacto.service';
+import { EstadoAcademicoService } from '../estado-academico/estado-academico.service';
 
 @Injectable()
 export class EstudianteService {
@@ -19,13 +21,45 @@ export class EstudianteService {
     private readonly informacionAcademicaService: InformacionAcademicaService,
     private readonly historialAcademicoService: HistorialAcademicoService,
     private readonly institucionService: InstitucionService,
+    private readonly informacionContactoService: InformacionContactoService,
+    private readonly estadoAcademicoService: EstadoAcademicoService,
     @Inject(forwardRef(() => EntrevistasService))
     private readonly entrevistasService: EntrevistasService,
   ) {}
 
   async create(createEstudianteDto: CreateEstudianteDto) {
-    const estudiante = this.estudianteRepository.create(createEstudianteDto);
+    // Extraer campos de contacto antes de crear estudiante
+    const { email, telefono, direccion, ...estudianteData } = createEstudianteDto;
+
+    // Crear estudiante sin campos de contacto
+    const estudiante = this.estudianteRepository.create(estudianteData);
     const estudianteGuardado = await this.estudianteRepository.save(estudiante);
+
+    // Crear información de contacto si se proporcionaron datos
+    if (email || telefono || direccion) {
+      try {
+        await this.informacionContactoService.create({
+          estudiante_id: estudianteGuardado.id_estudiante,
+          email: email || undefined,
+          telefono: telefono || undefined,
+          direccion: direccion || undefined,
+        });
+      } catch (error) {
+        // Si falla, continuar - el contacto se puede agregar después
+        console.warn('No se pudo crear información de contacto:', error.message);
+      }
+    }
+
+    // Crear estado académico por defecto (activo)
+    try {
+      await this.estadoAcademicoService.create({
+        estudiante_id: estudianteGuardado.id_estudiante,
+        status: 'activo' as any,
+        status_detalle: 'Estudiante recién ingresado',
+      });
+    } catch (error) {
+      console.warn('No se pudo crear estado académico:', error.message);
+    }
 
     await this.familiaService.create({
       id_estudiante: estudianteGuardado.id_estudiante,
@@ -68,10 +102,11 @@ export class EstudianteService {
   async findStadistics() {
     const gensInfo = await this.estudianteRepository
       .createQueryBuilder('estudiante')
+      .leftJoin('estado_academico', 'estado', 'estado.estudiante_id = estudiante.id_estudiante')
       .select('estudiante.generacion', 'generacion')
       .addSelect('COUNT(estudiante.id_estudiante)', 'total')
       .addSelect(
-        "SUM(CASE WHEN estudiante.status = 'activo' THEN 1 ELSE 0 END)",
+        "SUM(CASE WHEN estado.status = 'activo' THEN 1 ELSE 0 END)",
         'activos',
       )
       .groupBy('estudiante.generacion')
@@ -95,12 +130,24 @@ export class EstudianteService {
     };
   }
 
-  findByGeneration(generation: string) {
-    return this.estudianteRepository.find({
+  async findByGeneration(generation: string) {
+    const estudiantes = await this.estudianteRepository.find({
       where: { generacion: generation },
-      relations: ['institucion', 'informacionAcademica', 'familia'],
+      relations: ['institucion', 'informacionAcademica'],
       order: { nombre: 'ASC' },
     });
+
+    // Cargar el estado académico para cada estudiante
+    const estadosPromises = estudiantes.map(async (estudiante) => {
+      try {
+        const estado = await this.estadoAcademicoService.findByEstudiante(estudiante.id_estudiante);
+        return { ...estudiante, estado: estado?.status || 'Activo' };
+      } catch {
+        return { ...estudiante, estado: 'Activo' };
+      }
+    });
+
+    return await Promise.all(estadosPromises);
   }
 
 async findOne(id: string) {
@@ -109,7 +156,6 @@ async findOne(id: string) {
     relations: [
       'institucion',             
       'informacionAcademica',     
-      'familia',                 
       'historialesAcademicos',    
       'ramosCursados',         
       'entrevistas',              

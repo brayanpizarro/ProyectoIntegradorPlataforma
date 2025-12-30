@@ -15,25 +15,25 @@
 import type { Estudiante, Familia, RamosCursados, HistorialAcademico, InformacionAcademica } from '../types';
 
 // === INFORMACIÓN DE CONTACTO ===
-export const getEstudianteEmail = (_estudiante: Estudiante): string => {
-  // TODO: Llamar al servicio informacion-contacto.service.ts
-  return 'No especificado';
+export const getEstudianteEmail = (estudiante: Estudiante): string => {
+  // Verificar si existe el campo email en el objeto (cargado desde informacion_contacto)
+  return (estudiante as any).email || '';
 };
 
-export const getEstudianteTelefono = (_estudiante: Estudiante): string => {
-  // TODO: Llamar al servicio informacion-contacto.service.ts
-  return 'No especificado';
+export const getEstudianteTelefono = (estudiante: Estudiante): string => {
+  // Verificar si existe el campo telefono en el objeto (cargado desde informacion_contacto)
+  return (estudiante as any).telefono || '';
 };
 
-export const getEstudianteDireccion = (_estudiante: Estudiante): string => {
-  // TODO: Llamar al servicio informacion-contacto.service.ts
-  return 'No especificada';
+export const getEstudianteDireccion = (estudiante: Estudiante): string => {
+  // Verificar si existe el campo direccion en el objeto (cargado desde informacion_contacto)
+  return (estudiante as any).direccion || '';
 };
 
 // === ESTADO ACADÉMICO ===
-export const getEstudianteStatus = (_estudiante: Estudiante): string => {
-  // TODO: Llamar al servicio estado-academico.service.ts
-  return 'No especificado';
+export const getEstudianteStatus = (estudiante: Estudiante): string => {
+  // Verificar si existe el campo status en el objeto (cargado desde estado_academico)
+  return (estudiante as any).status || 'Activo';
 };
 
 export const getEstudianteSemestre = (_estudiante: Estudiante): number | undefined => {

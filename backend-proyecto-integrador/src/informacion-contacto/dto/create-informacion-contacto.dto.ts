@@ -10,8 +10,8 @@ export class CreateInformacionContactoDto {
   telefono?: string;
 
   @IsEmail()
-  @IsNotEmpty()
-  email: string;
+  @IsOptional()
+  email?: string;
 
   @IsString()
   @IsOptional()

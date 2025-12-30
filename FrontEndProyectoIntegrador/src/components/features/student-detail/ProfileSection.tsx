@@ -19,7 +19,7 @@ const estadoColorMap: Record<string, string> = {
 };
 import { useState, useEffect } from 'react';
 import type { SelectChangeEvent } from '@mui/material';
-import { estudianteService } from '../../../services/estudiante.service';
+import { estadoAcademicoService } from '../../../services';
 import type { Estudiante, StatusEstudiante } from '../../../types';
 import type { SeccionActiva } from './TabNavigation';
 
@@ -60,9 +60,13 @@ export function ProfileSection({ estudiante, seccionActiva }: ProfileSectionProp
     setLoading(true);
     const estudianteId = (estudiante.id_estudiante ?? estudiante.id) ? String(estudiante.id_estudiante ?? estudiante.id) : '';
     try {
-      // TODO: Actualizar usando estado-academico.service.ts en lugar de estudiante.service
-      await estudianteService.update(estudianteId, { estado: newStatus } as any);
-    } catch {
+      // Actualizar usando estado-academico.service.ts (upsert crea o actualiza)
+      await estadoAcademicoService.upsertByEstudiante(estudianteId, { status: newStatus });
+      
+      // Actualizar el objeto estudiante local para reflejar el cambio
+      (estudiante as any).status = newStatus;
+    } catch (error) {
+      console.error('Error al actualizar estado:', error);
       alert('No se pudo actualizar el estado.');
       const statusFallback = getEstudianteStatus(estudiante) || estudiante.estado || 'activo';
       setStatus(statusFallback as StatusEstudiante);

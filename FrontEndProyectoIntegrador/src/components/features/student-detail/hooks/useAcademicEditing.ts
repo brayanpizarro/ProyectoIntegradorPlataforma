@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { informacionAcademicaService } from '../../../../services';
 import { logger } from '../../../../config';
 import type { Estudiante, InformacionAcademica } from '../../../../types';
 
@@ -32,8 +33,8 @@ export const useAcademicEditing = ({ estudiante }: UseAcademicEditingProps) => {
 
     // Guardar cambios académicos
     const guardarCambios = async (): Promise<void> => {
-        const infoAcademicaId = estudiante?.informacionAcademica?.id_info_academico;
-        if (!infoAcademicaId || Object.keys(datosAcademicosEditados).length === 0) return;
+        const estudianteId = estudiante?.id_estudiante || (estudiante as any)?.id;
+        if (!estudianteId || Object.keys(datosAcademicosEditados).length === 0) return;
 
         const datosInfoAcademica: any = {};
 
@@ -68,17 +69,8 @@ export const useAcademicEditing = ({ estudiante }: UseAcademicEditingProps) => {
             delete datosInfoAcademica.puntajes_paes;
         }
 
-        // Llamar al backend
-        const response = await fetch(`http://localhost:3000/informacion-academica/${infoAcademicaId}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(datosInfoAcademica)
-        });
-
-        if (!response.ok) {
-            throw new Error('Error al actualizar información académica');
-        }
-
+        // Usar el servicio para actualizar
+        await informacionAcademicaService.upsertByEstudiante(estudianteId, datosInfoAcademica);
         logger.log('✅ Información académica actualizada');
     };
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { historialAcademicoService, authService } from '../../../../services';
 import type { Estudiante } from '../../../../types';
 import { logger } from '../../../../config';
@@ -235,7 +235,7 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
   // ============================================
   // DATOS COMBINADOS - Originales + Ediciones
   // ============================================
-  const getDatosCombinadosParaVista = () => {
+  const getDatosCombinadosParaVista = useCallback(() => {
     if (!estudiante) return null;
 
     // Combinar datos de todos los dominios
@@ -244,13 +244,24 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
     const academicoCombinado = academicEditing.getDatosCombinados();
     const institucionCombinada = institucionEditing.getDatosCombinados();
 
-    return {
+    const datosFinales = {
       ...estudianteCombinado,
       familia: familiaCombinada || estudiante.familia,
       informacionAcademica: academicoCombinado || estudiante.informacionAcademica,
       institucion: institucionCombinada || estudiante.institucion
     };
-  };
+
+    // Log para debug
+    logger.log('🔍 getDatosCombinadosParaVista:', {
+      email: (datosFinales as any).email,
+      telefono: (datosFinales as any).telefono,
+      direccion: (datosFinales as any).direccion,
+      colegio: datosFinales.informacionAcademica?.colegio,
+      carrera: datosFinales.institucion?.carrera_especialidad
+    });
+
+    return datosFinales;
+  }, [estudiante, estudianteEditing, familiaEditing, academicEditing, institucionEditing]);
 
   return {
     modoEdicion,

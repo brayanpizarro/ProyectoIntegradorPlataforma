@@ -8,6 +8,8 @@ import { InformacionAcademicaModule } from '../informacion_academica/informacion
 import { HistorialAcademicoModule } from '../historial_academico/historial_academico.module';
 import { InstitucionModule } from '../institucion/institucion.module';
 import { EntrevistasModule } from '../entrevistas/entrevistas.module';
+import { InformacionContactoModule } from '../informacion-contacto/informacion-contacto.module';
+import { EstadoAcademicoModule } from '../estado-academico/estado-academico.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { EntrevistasModule } from '../entrevistas/entrevistas.module';
     InformacionAcademicaModule,
     HistorialAcademicoModule,
     InstitucionModule,
+    InformacionContactoModule,
+    EstadoAcademicoModule,
     forwardRef(() => EntrevistasModule),
   ],
   controllers: [EstudianteController],

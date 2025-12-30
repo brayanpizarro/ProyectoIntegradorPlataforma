@@ -3,7 +3,12 @@ import { Box, Table, TableBody, TableContainer, Paper } from '@mui/material';
 import type { Estudiante } from '../../../types';
 import { SectionDivider, EditableField, EditableTextarea } from './components';
 import { personalDataConfig, type FieldConfig } from './config/personalDataFields';
-import { getInformacionAcademicaPuntajesAdmision } from '../../../utils/migration-helpers';
+import { 
+  getInformacionAcademicaPuntajesAdmision,
+  getEstudianteEmail,
+  getEstudianteTelefono,
+  getEstudianteDireccion
+} from '../../../utils/migration-helpers';
 
 interface PersonalDataSectionProps {
   estudiante: Estudiante;
@@ -19,7 +24,14 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
   const getFieldValue = (field: FieldConfig): string => {
     let value: any = '';
     
-    if (field.source === 'root') {
+    // Campos especiales de informacion_contacto (migrados)
+    if (field.key === 'email') {
+      value = getEstudianteEmail(estudiante);
+    } else if (field.key === 'telefono') {
+      value = getEstudianteTelefono(estudiante);
+    } else if (field.key === 'direccion') {
+      value = getEstudianteDireccion(estudiante);
+    } else if (field.source === 'root') {
       value = estudiante[field.key as keyof Estudiante];
     } else if (field.source === 'informacionAcademica') {
       value = estudiante.informacionAcademica?.[field.key as keyof typeof estudiante.informacionAcademica];
