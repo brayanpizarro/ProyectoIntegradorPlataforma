@@ -35,5 +35,13 @@ export class CreateFamiliaDto {
   otros_familiares?: any[];
 
   @IsOptional()
+  @IsString()
+  observaciones_hermanos?: string;
+
+  @IsOptional()
+  @IsString()
+  observaciones_otros_familiares?: string;
+
+  @IsOptional()
   observaciones?: any;
 }

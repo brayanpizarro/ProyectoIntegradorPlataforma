@@ -125,6 +125,14 @@ export interface Familia {
   // hermanos -> familiar con tipo_familiar_id = HERMANO
   // otros_familiares -> familiar con tipo_familiar_id = OTRO
   
+  nombre_madre?: string;
+  descripcion_madre?: string[];
+  nombre_padre?: string;
+  descripcion_padre?: string[];
+  hermanos?: any[];
+  observaciones_hermanos?: string;
+  otros_familiares?: any[];
+  observaciones_otros_familiares?: string;
   observaciones?: any;
   estudiante?: Estudiante;
   created_at?: Date;

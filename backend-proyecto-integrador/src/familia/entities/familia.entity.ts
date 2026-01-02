@@ -15,13 +15,30 @@ export class Familia {
   @PrimaryGeneratedColumn()
   id_familia: number;
 
-  // === CAMPOS LEGACY ELIMINADOS ===
-  // Los siguientes campos fueron migrados a la tabla normalizada 'familiar':
-  // - nombre_madre, descripcion_madre
-  // - nombre_padre, descripcion_padre
-  // - hermanos, observaciones_hermanos
-  // - otros_familiares, observaciones_otros_familiares
-  // Ahora cada familiar es un registro individual relacionado mediante tipo_familiar
+  // Campos básicos solicitados por el frontend actual
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  nombre_madre?: string;
+
+  @Column({ type: 'json', nullable: true, default: () => "'[]'" })
+  descripcion_madre?: string[];
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  nombre_padre?: string;
+
+  @Column({ type: 'json', nullable: true, default: () => "'[]'" })
+  descripcion_padre?: string[];
+
+  @Column({ type: 'json', nullable: true, default: () => "'[]'" })
+  hermanos?: any[];
+
+  @Column({ type: 'text', nullable: true })
+  observaciones_hermanos?: string;
+
+  @Column({ type: 'json', nullable: true, default: () => "'[]'" })
+  otros_familiares?: any[];
+
+  @Column({ type: 'text', nullable: true })
+  observaciones_otros_familiares?: string;
 
   @Column({ type: 'json', nullable: true , default: { madre: [], padre: [], hermanos: [], general: [] } })
   observaciones: ObservacionesFamiliares;

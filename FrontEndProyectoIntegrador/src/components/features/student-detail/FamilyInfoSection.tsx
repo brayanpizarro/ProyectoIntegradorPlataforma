@@ -10,17 +10,6 @@ import {
 } from '@mui/material';
 import { FamilyMemberRow } from './components';
 import type { Estudiante } from '../../../types';
-import {
-  getFamiliaNombreMadre,
-  getFamiliaNombrePadre,
-  getFamiliaDescripcionMadre,
-  getFamiliaDescripcionPadre,
-  getFamiliaHermanos,
-  getFamiliaOtrosFamiliares,
-  getFamiliaObservacionesHermanos,
-  getFamiliaObservacionesOtrosFamiliares,
-  getFamiliaObservacionesGenerales
-} from '../../../utils/migration-helpers';
 
 interface FamilyInfoSectionProps {
   estudiante: Estudiante;
@@ -47,37 +36,42 @@ export function FamilyInfoSection({
   
   // Formatear hermanos para mostrar
   const formatearHermanos = () => {
-    const hermanos = getFamiliaHermanos(familia);
+    const hermanos = familia?.hermanos;
     if (!hermanos || hermanos.length === 0) return '';
     return hermanos.map(h => (typeof h === 'object' && h !== null && 'nombre' in h) ? (h as any).nombre : String(h)).join('; ');
   };
   
   // Formatear otros familiares
   const formatearOtrosFamiliares = () => {
-    const otrosFamiliares = getFamiliaOtrosFamiliares(familia);
+    const otrosFamiliares = familia?.otros_familiares;
     if (!otrosFamiliares || otrosFamiliares.length === 0) return '';
     return otrosFamiliares.map(f => (typeof f === 'object' && f !== null && 'nombre' in f) ? (f as any).nombre : String(f)).join('; ');
   };
 
   // Helper para obtener observaciones de forma segura
   const getObservacionesHermanos = () => {
-    const obs = getFamiliaObservacionesHermanos(familia);
+    const obs = familia?.observaciones_hermanos;
     if (!obs) return '';
     if (typeof obs === 'string') return obs;
     return '';
   };
 
   const getObservacionesOtrosFamiliares = () => {
-    const obs = getFamiliaObservacionesOtrosFamiliares(familia);
+    const obs = familia?.observaciones_otros_familiares;
     if (!obs) return '';
     if (typeof obs === 'string') return obs;
     return '';
   };
 
   const getObservacionesGenerales = () => {
-    const obs = getFamiliaObservacionesGenerales(familia);
+    const obs = familia?.observaciones;
     if (!obs) return '';
     if (typeof obs === 'string') return obs;
+    if (typeof obs === 'object' && 'general' in (obs as any)) {
+      const general = (obs as any).general;
+      if (Array.isArray(general)) return general.join('\n');
+      if (typeof general === 'string') return general;
+    }
     return '';
   };
   return (
@@ -128,8 +122,8 @@ export function FamilyInfoSection({
           <TableBody>
             <FamilyMemberRow
               label="Mamá"
-              nombreValue={getFamiliaNombreMadre(familia) || ''}
-              observacionesValue={formatearDescripciones(getFamiliaDescripcionMadre(familia))}
+              nombreValue={familia?.nombre_madre || ''}
+              observacionesValue={formatearDescripciones(familia?.descripcion_madre)}
               modoEdicion={modoEdicion}
               nombrePlaceholder="Nombre de la madre"
               observacionesPlaceholder="Observaciones sobre la madre..."
@@ -140,8 +134,8 @@ export function FamilyInfoSection({
 
             <FamilyMemberRow
               label="Papá"
-              nombreValue={getFamiliaNombrePadre(familia) || ''}
-              observacionesValue={formatearDescripciones(getFamiliaDescripcionPadre(familia))}
+              nombreValue={familia?.nombre_padre || ''}
+              observacionesValue={formatearDescripciones(familia?.descripcion_padre)}
               modoEdicion={modoEdicion}
               nombrePlaceholder="Nombre del padre"
               observacionesPlaceholder="Observaciones sobre el padre..."

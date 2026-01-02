@@ -8,12 +8,14 @@ import {
   UpdateDateColumn,
   OneToMany,
   BeforeInsert,
+  OneToOne,
 } from 'typeorm';
 import { Institucion } from '../../institucion/entities/institucion.entity';
 import { RamosCursados } from '../../ramos_cursados/entities/ramos_cursado.entity';
 import { HistorialAcademico } from '../../historial_academico/entities/historial_academico.entity';
 import { InformacionAcademica } from '../../informacion_academica/entities/informacion_academica.entity';
 import { Entrevista } from '../../entrevistas/entities/entrevista.entity';
+import { Familia } from '../../familia/entities/familia.entity';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum TipoEstudiante {
@@ -93,6 +95,11 @@ export class Estudiante {
     nullable: true,
   })
   informacionAcademica: InformacionAcademica[];
+
+  @OneToOne(() => Familia, (familia: Familia) => familia.estudiante, {
+    nullable: true,
+  })
+  familia?: Familia;
 
   @OneToMany(() => Entrevista, (entrevista) => entrevista.estudiante)
   entrevistas: Entrevista[];

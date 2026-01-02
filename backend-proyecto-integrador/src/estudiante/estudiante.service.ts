@@ -158,7 +158,8 @@ async findOne(id: string) {
       'informacionAcademica',     
       'historialesAcademicos',    
       'ramosCursados',         
-      'entrevistas',              
+        'entrevistas',              
+        'familia',
     ],
   });
   
