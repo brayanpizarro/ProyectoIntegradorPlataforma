@@ -42,6 +42,10 @@ export class CreateInformacionAcademicaDto {
   comuna_colegio?: string;
 
   @IsOptional()
+  @IsString()
+  trayectoria_academica?: string;
+
+  @IsOptional()
   puntajes_admision?: any;
 
   @IsOptional()

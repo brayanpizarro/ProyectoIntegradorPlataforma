@@ -41,6 +41,13 @@ export class InformacionAcademica {
   @Column({ nullable: true, default: null })
   comuna_colegio: string;
 
+  @Column({ type: 'text', nullable: true })
+  trayectoria_academica: string;
+
+  // Puntajes de admisión (PAES) almacenados como JSON flexible o texto
+  @Column({ type: 'jsonb', nullable: true })
+  puntajes_admision: any;
+
   // === CAMPOS LEGACY ELIMINADOS ===
   // puntajes_admision migrado a informacion_admision (normalizado con puntajes específicos)
   // ensayos_paes migrado a ensayo_paes (entidad separada 1:N)

@@ -89,7 +89,7 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
     ];
 
     const camposInstitucion = [
-      'carrera_especialidad', 'duracion', 'nombre', 'tipo_institucion',
+      'carrera_especialidad', 'duracion', 'nombre', 'institucion_nombre', 'tipo_institucion',
       'nivel_educativo', 'anio_de_ingreso', 'anio_de_egreso'
     ];
 
@@ -97,15 +97,17 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
       'año_ingreso_beca', 'colegio', 'especialidad_colegio',
       'comuna_colegio', 'via_acceso', 'beneficios',
       'promedio_1', 'promedio_2', 'promedio_3', 'promedio_4',
-      'puntajes_paes'
+       'puntajes_paes', 'puntajes_admision', 'trayectoria_academica'
     ];
 
-    if (camposEstudiante.includes(campo)) {
-      estudianteEditing.handleCampoChange(campo, valor);
-    } else if (camposInstitucion.includes(campo)) {
-      institucionEditing.handleInstitucionChange(campo, valor);
+    if (camposInstitucion.includes(campo)) {
+      // Alias: institucion_nombre debe mapear a nombre de institución
+      const campoMap = campo === 'institucion_nombre' ? 'nombre' : campo;
+      institucionEditing.handleInstitucionChange(campoMap, valor);
     } else if (camposAcademicos.includes(campo)) {
       academicEditing.handleCampoChange(campo, valor);
+    } else if (camposEstudiante.includes(campo)) {
+      estudianteEditing.handleCampoChange(campo, valor);
     }
   };
 

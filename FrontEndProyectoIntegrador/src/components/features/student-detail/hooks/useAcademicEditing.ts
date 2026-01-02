@@ -19,7 +19,7 @@ export const useAcademicEditing = ({ estudiante }: UseAcademicEditingProps) => {
         'año_ingreso_beca', 'colegio', 'especialidad_colegio',
         'comuna_colegio', 'via_acceso', 'beneficios',
         'promedio_1', 'promedio_2', 'promedio_3', 'promedio_4',
-        'puntajes_paes', 'puntajes_admision', 'ensayos_paes'
+        'puntajes_paes', 'puntajes_admision', 'ensayos_paes', 'trayectoria_academica'
     ];
 
     // Handler para cambios en campos académicos
@@ -81,7 +81,10 @@ export const useAcademicEditing = ({ estudiante }: UseAcademicEditingProps) => {
 
     // Obtener datos combinados (originales + ediciones)
     const getDatosCombinados = () => {
-        if (!estudiante?.informacionAcademica) return null;
+        // Permitir mostrar ediciones aunque no exista registro previo en informacionAcademica
+        const base = Array.isArray(estudiante?.informacionAcademica)
+            ? estudiante?.informacionAcademica[0]
+            : estudiante?.informacionAcademica;
 
         const cambiosAcademicos: any = {};
         Object.keys(datosAcademicosEditados).forEach(campo => {
@@ -90,8 +93,12 @@ export const useAcademicEditing = ({ estudiante }: UseAcademicEditingProps) => {
             }
         });
 
+        if (!base && Object.keys(cambiosAcademicos).length === 0) {
+            return null;
+        }
+
         return {
-            ...estudiante.informacionAcademica,
+            ...(base || {}),
             ...cambiosAcademicos
         };
     };

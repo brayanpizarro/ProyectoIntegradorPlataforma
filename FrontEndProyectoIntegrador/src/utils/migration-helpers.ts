@@ -119,8 +119,25 @@ export const getHistorialAño = (_historial: HistorialAcademico): number | undef
 };
 
 // === INFORMACIÓN ACADÉMICA ===
-export const getInformacionAcademicaPuntajesAdmision = (_infoAcademica: InformacionAcademica | undefined): Record<string, number> | undefined => {
-  // TODO: Llamar al servicio informacion-admision.service.ts
+export const getInformacionAcademicaPuntajesAdmision = (
+  _infoAcademica: InformacionAcademica | InformacionAcademica[] | undefined,
+): Record<string, any> | undefined => {
+  const infoAcademica = Array.isArray(_infoAcademica) ? _infoAcademica[0] : _infoAcademica;
+  if (!infoAcademica) return undefined;
+
+  // Soportar distintas fuentes: objeto json, string plano o campos específicos
+  const puntajes = (infoAcademica as any).puntajes_admision || (infoAcademica as any).puntajes_paes;
+
+  if (!puntajes) return undefined;
+
+  if (typeof puntajes === 'string') {
+    return { PAES: puntajes };
+  }
+
+  if (typeof puntajes === 'object') {
+    return puntajes as Record<string, any>;
+  }
+
   return undefined;
 };
 

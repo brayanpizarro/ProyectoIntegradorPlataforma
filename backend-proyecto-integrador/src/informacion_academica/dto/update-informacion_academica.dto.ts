@@ -37,6 +37,10 @@ export class UpdateInformacionAcademicaDto {
   @IsOptional()
   comuna_colegio?: string;
 
+  @IsString()
+  @IsOptional()
+  trayectoria_academica?: string;
+
   @IsOptional()
   puntajes_admision?: any; // JSONB flexible
 

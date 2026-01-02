@@ -170,7 +170,93 @@ async findOne(id: string) {
 }
 
   update(id: string, updateEstudianteDto: UpdateEstudianteDto) {
-    return this.estudianteRepository.update(id, updateEstudianteDto);
+    return this.actualizarEstudianteYDominios(id, updateEstudianteDto);
+  }
+
+  private async actualizarEstudianteYDominios(
+    id: string,
+    updateEstudianteDto: UpdateEstudianteDto,
+  ) {
+    const estudiante = await this.estudianteRepository.findOne({
+      where: { id_estudiante: id },
+    });
+
+    if (!estudiante) {
+      throw new NotFoundException(`Estudiante con ID ${id} no encontrado`);
+    }
+
+    const {
+      // Campos que pertenecen a informacion_contacto
+      email,
+      telefono,
+      direccion,
+
+      // Campos que pertenecen a estado_academico
+      status_detalle,
+      semestres_suspendidos,
+      semestres_total_carrera,
+
+      // Resto de campos para la tabla estudiante
+      ...restoCampos
+    } = updateEstudianteDto;
+
+    // === Actualizar tabla estudiante (solo columnas existentes) ===
+    const camposPermitidos: Array<keyof UpdateEstudianteDto> = [
+      'nombre',
+      'rut',
+      'fecha_de_nacimiento',
+      'genero',
+      'tipo_de_estudiante',
+      'generacion',
+      'numero_carrera',
+      'observaciones',
+      'institucionId',
+      'id_institucion',
+    ];
+
+    const payloadEstudiante: Record<string, any> = {};
+
+    for (const campo of camposPermitidos) {
+      if (restoCampos[campo] !== undefined) {
+        // Soportar institucionId (camelCase) mapeado a id_institucion (columna)
+        if (campo === 'institucionId') {
+          payloadEstudiante['id_institucion'] = restoCampos[campo];
+        } else {
+          payloadEstudiante[campo] = restoCampos[campo];
+        }
+      }
+    }
+
+    if (Object.keys(payloadEstudiante).length > 0) {
+      await this.estudianteRepository.update(id, payloadEstudiante);
+    }
+
+    // === Actualizar/crear informacion_contacto ===
+    if (email !== undefined || telefono !== undefined || direccion !== undefined) {
+      await this.informacionContactoService.upsertByEstudiante(id, {
+        email,
+        telefono,
+        direccion,
+      });
+    }
+
+    // === Actualizar/crear estado_academico ===
+    const payloadEstado: Record<string, any> = {};
+    if (status_detalle !== undefined) payloadEstado.status_detalle = status_detalle;
+    if (semestres_suspendidos !== undefined) {
+      payloadEstado.semestres_suspendidos = semestres_suspendidos;
+    }
+    if (semestres_total_carrera !== undefined) {
+      // En la entidad el campo se llama semestres_totales_carrera
+      payloadEstado.semestres_totales_carrera = semestres_total_carrera;
+    }
+
+    if (Object.keys(payloadEstado).length > 0) {
+      await this.estadoAcademicoService.upsertByEstudiante(id, payloadEstado as any);
+    }
+
+    // Devolver el estudiante actualizado con sus relaciones principales
+    return this.findOne(id);
   }
 
   remove(id: string) {

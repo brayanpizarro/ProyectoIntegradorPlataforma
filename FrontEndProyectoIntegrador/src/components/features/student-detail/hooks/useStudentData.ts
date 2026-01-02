@@ -62,6 +62,17 @@ export const useStudentData = () => {
         } catch (err) {
           logger.warn('⚠️ No se pudo cargar información de contacto:', err);
         }
+
+        // Cargar información académica siempre para asegurar datos frescos
+        try {
+          const infoAcademica = await informacionAcademicaService.getByEstudiante(id);
+          if (infoAcademica) {
+            (data as any).informacionAcademica = infoAcademica;
+          }
+        } catch (err) {
+          // Si falla (ej. NotFound), conservar cualquier infoAcademica que ya viniera en el payload
+          logger.warn('⚠️ No se pudo cargar información académica:', err);
+        }
         
         setEstudiante(data);
         
@@ -125,17 +136,15 @@ export const useStudentData = () => {
         logger.warn('⚠️ No se pudo recargar información de contacto:', err);
       }
       
-      // Forzar recarga de relaciones (informacionAcademica e institucion)
-      // ya vienen en el getById, pero si no están, intentar cargar explícitamente
-      if (!dataActualizada.informacionAcademica && dataActualizada.id_info_academico) {
-        try {
-          const infoAcademica = await informacionAcademicaService.getByEstudiante(id);
-          if (infoAcademica) {
-            dataActualizada.informacionAcademica = infoAcademica;
-          }
-        } catch (err) {
-          logger.warn('⚠️ No se pudo recargar información académica:', err);
+      // Forzar recarga de información académica (siempre para obtener últimos datos)
+      try {
+        const infoAcademica = await informacionAcademicaService.getByEstudiante(id);
+        if (infoAcademica) {
+          dataActualizada.informacionAcademica = infoAcademica;
         }
+      } catch (err) {
+        // Si falla, no sobrescribir lo que ya teníamos en memoria
+        logger.warn('⚠️ No se pudo recargar información académica:', err);
       }
       
       setEstudiante(dataActualizada);
