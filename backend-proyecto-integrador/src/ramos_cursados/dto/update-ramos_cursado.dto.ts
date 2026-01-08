@@ -51,4 +51,9 @@ export class UpdateRamosCursadosDto {
   @IsNumber()
   @IsOptional()
   oportunidad?: number;
+
+  @Expose()
+  @IsNumber()
+  @IsOptional()
+  periodo_academico_estudiante_id?: number;
 }

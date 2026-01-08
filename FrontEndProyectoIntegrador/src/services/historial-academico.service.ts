@@ -8,7 +8,8 @@ class HistorialAcademicoService extends BaseHttpClient {
   
   async create(data: {
     id_estudiante: string;
-    // año, semestre eliminados
+    año?: number;
+    semestre?: number;
     nivel_educativo?: string;
     ramos_aprobados?: number;
     ramos_reprobados?: number;
@@ -16,6 +17,9 @@ class HistorialAcademicoService extends BaseHttpClient {
     promedio_semestre?: number;
     trayectoria_academica?: string[];
     observaciones?: string;
+    comentarios_generales?: string;
+    dificultades?: string;
+    aprendizajes?: string;
     ultima_actualizacion_por?: string;
   }) {
     return await this.request('/historial-academico', {
@@ -33,7 +37,8 @@ class HistorialAcademicoService extends BaseHttpClient {
   }
 
   async update(id: number, data: Partial<{
-    // año, semestre eliminados
+    año: number;
+    semestre: number;
     nivel_educativo: string;
     ramos_aprobados: number;
     ramos_reprobados: number;
@@ -41,6 +46,9 @@ class HistorialAcademicoService extends BaseHttpClient {
     promedio_semestre: number;
     trayectoria_academica: string[];
     observaciones: string;
+    comentarios_generales: string;
+    dificultades: string;
+    aprendizajes: string;
     ultima_actualizacion_por: string;
   }>) {
     return await this.request(`/historial-academico/${id}`, {
@@ -60,6 +68,9 @@ class HistorialAcademicoService extends BaseHttpClient {
     promedio_semestre?: number;
     trayectoria_academica?: string[];
     observaciones?: string;
+    comentarios_generales?: string;
+    dificultades?: string;
+    aprendizajes?: string;
     ultima_actualizacion_por?: string;
   }) {
     return this.create(data as any);

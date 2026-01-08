@@ -14,30 +14,32 @@ class RamosCursadosService extends BaseHttpClient {
     return await this.request<any>(`/ramos-cursados/${id}`);
   }
 
-  async getByEstudiante(estudianteId: string, año?: number, semestre?: number): Promise<any[]> {
+  async getByEstudiante(estudianteId: string, periodoAcademicoEstudianteId?: number): Promise<any[]> {
     let url = `/ramos-cursados/estudiante/${estudianteId}`;
     const params = new URLSearchParams();
-    
-    if (año) params.append('año', año.toString());
-    if (semestre) params.append('semestre', semestre.toString());
-    
+
+    if (periodoAcademicoEstudianteId) {
+      params.append('periodo_academico_estudiante_id', periodoAcademicoEstudianteId.toString());
+    }
+
     if (params.toString()) {
       url += `?${params.toString()}`;
     }
-    
+
     return await this.request<any[]>(url);
   }
 
   async create(data: {
-    estudiante_id: string;
-    codigo: string;
-    nombre: string;
-    creditos: number;
-    // año, semestre eliminados - usar periodo_academico_estudiante_id
+    id_estudiante: string;
     periodo_academico_estudiante_id?: number;
-    nota_final?: number;
+    codigo_ramo?: string;
+    nombre_ramo?: string;
+    nivel_educativo?: string;
+    notas_parciales?: any;
+    promedio_final?: number | null;
     estado?: string;
     oportunidad?: number;
+    comentarios?: string;
   }): Promise<any> {
     return this.request<any>('/ramos-cursados', {
       method: 'POST',
@@ -46,14 +48,12 @@ class RamosCursadosService extends BaseHttpClient {
   }
 
   async update(id: string, data: Partial<{
-    codigo: string;
-    nombre: string;
-    creditos: number;
-    // año, semestre eliminados
-    periodo_academico_estudiante_id: number;
-    nota_final: number;
+    codigo_ramo: string;
+    nombre_ramo: string;
+    promedio_final: number;
     estado: string;
     oportunidad: number;
+    periodo_academico_estudiante_id: number;
   }>): Promise<any> {
     return this.request<any>(`/ramos-cursados/${id}`, {
       method: 'PATCH',

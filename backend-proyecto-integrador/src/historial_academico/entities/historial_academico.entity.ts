@@ -21,6 +21,12 @@ export class HistorialAcademico {
   @Column({ nullable: true, default: null })
   nivel_educativo: string;
 
+  @Column({ nullable: true, type: 'int' })
+  año: number;
+
+  @Column({ nullable: true, type: 'int' })
+  semestre: number;
+
   @Column({ nullable: true, default: null })
   ramos_aprobados: number;
 
@@ -38,6 +44,15 @@ export class HistorialAcademico {
 
   @Column({ type: 'text', nullable: true, default: null })
   observaciones: string;
+
+  @Column({ type: 'text', nullable: true, default: null })
+  comentarios_generales: string;
+
+  @Column({ type: 'text', nullable: true, default: null })
+  dificultades: string;
+
+  @Column({ type: 'text', nullable: true, default: null })
+  aprendizajes: string;
 
   @Column({ nullable: true, default: null })
   ultima_actualizacion_por: string;

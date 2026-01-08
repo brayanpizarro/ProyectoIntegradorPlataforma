@@ -50,5 +50,20 @@ export class UpdateHistorialAcademicoDto {
   @Expose()
   @IsString()
   @IsOptional()
+  comentarios_generales?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  dificultades?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  aprendizajes?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
   ultima_actualizacion_por?: string;
 }

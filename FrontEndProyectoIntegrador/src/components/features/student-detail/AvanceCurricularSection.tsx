@@ -3,7 +3,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import type { Estudiante } from '../../../types';
-import { ramosCursadosService } from '../../../services';
+import { ramosCursadosService, periodoAcademicoService } from '../../../services';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import type { DropResult } from '@hello-pangea/dnd';
 import Box from '@mui/material/Box';
@@ -26,12 +26,70 @@ import {
   CreateSemesterModal 
 } from '../avance-curricular';
 
+const parsePeriodoTexto = (periodo?: string, numeroSemestre?: number) => {
+  let año = new Date().getFullYear();
+  let semestre = numeroSemestre || 1;
+
+  if (periodo) {
+    const match = periodo.match(/^(\d{4})-(\d+)/);
+    if (match) {
+      año = parseInt(match[1], 10);
+      semestre = parseInt(match[2], 10);
+    }
+  }
+
+  return { año, semestre };
+};
+
+const asignarSemestreFallback = (nombreRamo: string, index: number) => {
+  const nombre = nombreRamo?.toLowerCase() || '';
+
+  if (nombre.includes('calculo2') || nombre.includes('cálculo2') || nombre.includes('calculo 2')) {
+    return { año: 2025, semestre: 1 };
+  }
+  if (nombre.includes('calculo3') || nombre.includes('cálculo3') || nombre.includes('calculo 3')) {
+    return { año: 2025, semestre: 2 };
+  }
+  if (nombre.includes('calculo1') || nombre.includes('cálculo1') || nombre.includes('calculo 1')) {
+    return { año: 2024, semestre: 2 };
+  }
+  if (nombre.includes('matemática') || nombre.includes('álgebra')) {
+    return { año: 2024, semestre: 1 };
+  }
+  if (nombre.includes('física') || nombre.includes('química')) {
+    return { año: 2024, semestre: 2 };
+  }
+  if (nombre.includes('programación') || nombre.includes('informática')) {
+    return { año: 2025, semestre: 1 };
+  }
+
+  return { año: 2025, semestre: (index % 2) + 1 };
+};
+
+const obtenerSemestreRamo = (ramo: any, index: number) => {
+  const periodo = ramo?.periodo_academico_estudiante?.periodo_academico;
+
+  if (periodo?.año && periodo?.semestre) {
+    return { año: Number(periodo.año), semestre: Number(periodo.semestre) };
+  }
+
+  if (ramo?.año && ramo?.semestre) {
+    return { año: Number(ramo.año), semestre: Number(ramo.semestre) };
+  }
+
+  return asignarSemestreFallback(ramo?.nombre_ramo, index);
+};
+
 // Interfaces para avance curricular
 interface MallaCurricular {
   semestre: number;
+  año?: number;
   fechaInicio?: string;
   fechaFin?: string;
   periodo?: string;
+  periodoKey?: string;
+  periodoEstudianteId?: number;
+  periodoId?: number;
   ramos: {
     id?: number;
     codigo: string;
@@ -56,10 +114,12 @@ interface ProgresoCurricular {
 
 interface AvanceCurricularSectionProps {
   estudiante: Estudiante;
+  modoEdicion?: boolean;
 }
 
 export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = ({ 
-  estudiante 
+  estudiante,
+  modoEdicion = false
 }) => {
   // Usamos any para relajar la validación de props del Grid en este layout complejo
   const Grid = GridBase as any;
@@ -72,16 +132,50 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
   // const [vistaActiva, setVistaActiva] = useState<'malla' | 'progreso' | 'estadisticas'>('malla');
   
   // Estados para funcionalidad de edición
-  const [isEditMode, setIsEditMode] = useState(false);
   const [editingSubject, setEditingSubject] = useState<MallaCurricular['ramos'][0] | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [selectedSemestre, setSelectedSemestre] = useState<number>(1);
+  const [selectedSemestre, setSelectedSemestre] = useState<string>('');
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [isSemesterModalOpen, setIsSemesterModalOpen] = useState(false);
   const [editingSemester, setEditingSemester] = useState<MallaCurricular | null>(null);
   const [isCreateSemesterModalOpen, setIsCreateSemesterModalOpen] = useState(false);
+
+  const asegurarPeriodoParaSemestre = async (periodoTexto?: string, numeroSemestre?: number) => {
+    const { año, semestre } = parsePeriodoTexto(periodoTexto, numeroSemestre);
+
+    let periodo = null;
+    try {
+      periodo = await periodoAcademicoService.buscarPeriodo(año, semestre);
+    } catch (err) {
+      // Si no existe, crearlo
+      periodo = await periodoAcademicoService.createPeriodo({ año, semestre });
+    }
+
+    let periodoEstudianteId: number | undefined;
+    try {
+      const registros = await periodoAcademicoService.getByEstudiante(estudiante.id_estudiante.toString());
+      const existente = registros.find(
+        (r: any) => r.periodo_academico_id === periodo.id || r.periodo_academico?.id === periodo.id
+      );
+      if (existente) {
+        periodoEstudianteId = existente.id;
+      }
+    } catch (err) {
+      // Ignorar y crear si no se pudo obtener
+    }
+
+    if (!periodoEstudianteId) {
+      const creado = await periodoAcademicoService.create({
+        estudiante_id: estudiante.id_estudiante.toString(),
+        periodo_academico_id: periodo.id,
+      } as any);
+      periodoEstudianteId = (creado as any).id;
+    }
+
+    return { periodoEstudianteId, periodoId: periodo.id, año, semestre };
+  };
 
   // Cargar datos reales desde el backend
   const cargarDatosReales = async () => {
@@ -93,17 +187,26 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
       
       if (ramosReales && ramosReales.length > 0) {
         // Agrupar ramos por semestre
-        const semestreMap: { [key: number]: MallaCurricular } = {};
+        const semestreMap: { [key: string]: MallaCurricular } = {};
         
-        ramosReales.forEach((ramo: any) => {
+        ramosReales.forEach((ramo: any, index: number) => {
           console.log('🔄 Procesando ramo del backend:', ramo);
-          
-          const semestre = ramo.semestre || 1;
-          
-          if (!semestreMap[semestre]) {
-            semestreMap[semestre] = {
-              semestre,
-              periodo: `${ramo.año || new Date().getFullYear()}-${semestre}`,
+
+          const { año: añoPeriodo, semestre: semestrePeriodo } = obtenerSemestreRamo(ramo, index);
+          const periodoBackend = ramo.periodo_academico_estudiante?.periodo_academico;
+          const periodoKey = `${añoPeriodo}-${semestrePeriodo}`;
+
+          const periodoEstudianteId = ramo.periodo_academico_estudiante_id || ramo.periodo_academico_estudiante?.id;
+          const periodoId = periodoBackend?.id || ramo.periodo_academico_id;
+
+          if (!semestreMap[periodoKey]) {
+            semestreMap[periodoKey] = {
+              semestre: semestrePeriodo,
+              año: añoPeriodo,
+              periodo: `${añoPeriodo}-${semestrePeriodo}`,
+              periodoKey,
+              periodoEstudianteId,
+              periodoId,
               ramos: []
             };
           }
@@ -117,20 +220,28 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
             estado: ramo.estado || 'pendiente',
             nota: ramo.promedio_final || undefined,
             oportunidad: ramo.oportunidad || 1,
+            semestre: semestrePeriodo,
+            año: añoPeriodo,
             // Guardar referencia al ID original del backend
             backendId: ramo.id_ramo
           };
           
           console.log('✅ Ramo mapeado:', ramoMapeado);
           
-          semestreMap[semestre].ramos.push(ramoMapeado);
+          semestreMap[periodoKey].ramos.push(ramoMapeado);
         });
         
         // Convertir a array y ordenar
         const mallaCurricularReal = Object.values(semestreMap)
-          .sort((a, b) => a.semestre - b.semestre);
+          .sort((a, b) => {
+            if ((a.año ?? 0) !== (b.año ?? 0)) return (a.año ?? 0) - (b.año ?? 0);
+            return a.semestre - b.semestre;
+          });
         
         setMallaCurricular(mallaCurricularReal);
+        if (mallaCurricularReal.length > 0) {
+          setSelectedSemestre(mallaCurricularReal[0].periodoKey || mallaCurricularReal[0].periodo || '');
+        }
         return mallaCurricularReal;
       } else {
         // Si no hay ramos, crear estructura vacía
@@ -228,6 +339,8 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
 
   // Funciones de manejo de datos
   const handleDragEnd = async (result: DropResult) => {
+    if (!modoEdicion) return;
+
     const { destination, source, draggableId } = result;
 
     // Si no hay destino, no hacer nada
@@ -245,13 +358,16 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
 
     try {
       // Encontrar el ramo que se está moviendo
-      const sourceSeemestre = parseInt(source.droppableId.replace('semestre-', ''));
-      const destSemestre = parseInt(destination.droppableId.replace('semestre-', ''));
+      const sourceKey = source.droppableId.replace('semestre-', '');
+      const destKey = destination.droppableId.replace('semestre-', '');
+      const [destAñoStr, destSemStr] = destKey.split('-');
+      const destAño = Number(destAñoStr) || new Date().getFullYear();
+      const destSemestreNum = Number(destSemStr) || 1;
       
       let ramoMovido: any = null;
       
       // Buscar el ramo en el semestre origen
-      const semestreOrigen = mallaCurricular.find(s => s.semestre === sourceSeemestre);
+      const semestreOrigen = mallaCurricular.find(s => s.periodoKey === sourceKey || s.periodo === sourceKey);
       if (semestreOrigen) {
         ramoMovido = semestreOrigen.ramos.find(r => String(r.backendId) === draggableId || r.codigo === draggableId);
       }
@@ -263,8 +379,8 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
 
       console.log('🔄 Moviendo ramo:', {
         ramo: ramoMovido.nombre,
-        desde: sourceSeemestre,
-        hacia: destSemestre,
+        desde: sourceKey,
+        hacia: destKey,
         backendId: ramoMovido.backendId
       });
 
@@ -273,17 +389,18 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
         const newMalla = [...prev];
         
         // Remover del semestre origen
-        const sourceIndex = newMalla.findIndex(s => s.semestre === sourceSeemestre);
+        const sourceIndex = newMalla.findIndex(s => s.periodoKey === sourceKey || s.periodo === sourceKey);
         if (sourceIndex !== -1) {
-          newMalla[sourceIndex].ramos = newMalla[sourceIndex].ramos.filter(
-            r => String(r.backendId) !== draggableId && r.codigo !== draggableId
-          );
+          newMalla[sourceIndex].ramos = newMalla[sourceIndex].ramos.filter((r) => {
+            const rId = String(r.backendId ?? r.id ?? r.codigo);
+            return rId !== draggableId;
+          });
         }
         
         // Agregar al semestre destino
-        const destIndex = newMalla.findIndex(s => s.semestre === destSemestre);
+        const destIndex = newMalla.findIndex(s => s.periodoKey === destKey || s.periodo === destKey);
         if (destIndex !== -1) {
-          const ramoActualizado = { ...ramoMovido };
+          const ramoActualizado = { ...ramoMovido, semestre: destSemestreNum, año: destAño };
           newMalla[destIndex].ramos.splice(destination.index, 0, ramoActualizado);
         }
         
@@ -292,11 +409,19 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
 
       // Actualizar en el backend si tiene backendId
       if (ramoMovido.backendId) {
+        // Obtener/asegurar periodo para el semestre destino
+        const semestreDestinoData = mallaCurricular.find(s => s.periodoKey === destKey || s.periodo === destKey);
+        const periodoTextoDestino = semestreDestinoData?.periodo || `${destAño}-${destSemestreNum}`;
+        const { periodoEstudianteId } = await asegurarPeriodoParaSemestre(
+          periodoTextoDestino,
+          destSemestreNum
+        );
+
         const ramoData = {
-          semestre: destSemestre,
           estado: ramoMovido.estado,
           promedio_final: ramoMovido.nota || null,
-          oportunidad: ramoMovido.oportunidad || 1
+          oportunidad: ramoMovido.oportunidad || 1,
+          periodo_academico_estudiante_id: periodoEstudianteId
         };
 
         console.log('📤 Actualizando ramo en backend:', {
@@ -308,10 +433,10 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
         
         // Recargar datos para mantener sincronización
         await cargarDatosReales();
-        showSnackbar(`${ramoMovido.nombre} movido al semestre ${destSemestre}`);
+        showSnackbar(`${ramoMovido.nombre} movido al semestre ${destKey}`);
       } else {
         console.log('⚠️ Ramo sin backendId, solo actualización local');
-        showSnackbar(`${ramoMovido.nombre} movido al semestre ${destSemestre} (local)`);
+        showSnackbar(`${ramoMovido.nombre} movido al semestre ${destKey} (local)`);
       }
 
     } catch (error) {
@@ -322,8 +447,8 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
     }
   };
 
-  const handleAddSubject = (semestreId: number) => {
-    setSelectedSemestre(semestreId);
+  const handleAddSubject = (semestreKey: string) => {
+    setSelectedSemestre(semestreKey);
     setIsAddModalOpen(true);
   };
 
@@ -342,15 +467,28 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
     periodo?: string;
   }) => {
     try {
+      const numeroSemestre = mallaCurricular.length + 1;
+      const periodoTexto = newSemesterData.periodo || `${new Date().getFullYear()}-${numeroSemestre}`;
+
+      // Asegurar período académico y vínculo con el estudiante
+      const { periodoEstudianteId, periodoId, año, semestre } = await asegurarPeriodoParaSemestre(periodoTexto, numeroSemestre);
+
       const nuevoSemestre: MallaCurricular = {
-        semestre: mallaCurricular.length + 1,
-        periodo: newSemesterData.periodo || `2024-${mallaCurricular.length + 1}`,
+        semestre: numeroSemestre,
+        año,
+        periodo: periodoTexto,
+        periodoKey: `${año}-${semestre}`,
         fechaInicio: newSemesterData.fechaInicio,
         fechaFin: newSemesterData.fechaFin,
+        periodoEstudianteId,
+        periodoId,
         ramos: []
       };
 
-      setMallaCurricular(prev => [...prev, nuevoSemestre].sort((a, b) => a.semestre - b.semestre));
+      setMallaCurricular(prev => [...prev, nuevoSemestre].sort((a, b) => {
+        if ((a.año ?? 0) !== (b.año ?? 0)) return (a.año ?? 0) - (b.año ?? 0);
+        return a.semestre - b.semestre;
+      }));
       showSnackbar(`Semestre ${nuevoSemestre.semestre} creado correctamente`);
       setIsCreateSemesterModalOpen(false);
     } catch (error) {
@@ -367,37 +505,26 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
     nota?: number;
   }) => {
     try {
-      // Obtener el periodo del semestre seleccionado para extraer año y semestre
-      const semestreSeleccionado = mallaCurricular.find(s => s.semestre === selectedSemestre);
-      const periodo = semestreSeleccionado?.periodo;
-      
-      // Parsear periodo en formato "2025-1" o "2025-2"
-      let año: number | undefined;
-      let semestreNumero: number = selectedSemestre;
-      
-      if (periodo) {
-        const match = periodo.match(/^(\d{4})-(\d+)$/);
-        if (match) {
-          año = parseInt(match[1]);
-          semestreNumero = parseInt(match[2]);
-          console.log('📊 [AvanceCurricular] Periodo parseado:', { periodo, año, semestre: semestreNumero });
-        } else {
-          console.warn('⚠️ [AvanceCurricular] Formato de periodo no reconocido:', periodo);
-        }
-      } else {
-        console.warn('⚠️ [AvanceCurricular] Semestre sin periodo definido');
+      // Resolver periodo académico del semestre seleccionado
+      const semestreSeleccionado = mallaCurricular.find(s => s.periodoKey === selectedSemestre || s.periodo === selectedSemestre);
+      if (!semestreSeleccionado) {
+        throw new Error('No se pudo determinar el semestre seleccionado');
       }
+      const { periodoEstudianteId, periodoId, año, semestre } = await asegurarPeriodoParaSemestre(
+        semestreSeleccionado?.periodo,
+        semestreSeleccionado?.semestre
+      );
 
-      // Crear el ramo en el backend
       const ramoData = {
         id_estudiante: estudiante.id_estudiante,
-        año: año, // Año extraído del periodo
-        semestre: semestreNumero, // Semestre extraído del periodo
-        nivel_educativo: 'Universitario',
+        periodo_academico_estudiante_id: periodoEstudianteId,
+        codigo_ramo: `RAMO-${Date.now()}`,
         nombre_ramo: nuevoRamo.nombre,
+        nivel_educativo: 'Universitario',
         notas_parciales: {},
-        promedio_final: nuevoRamo.nota || null,
-        estado: nuevoRamo.estado
+        promedio_final: nuevoRamo.nota ?? null,
+        estado: nuevoRamo.estado,
+        oportunidad: 1,
       };
       
       console.log('📤 [AvanceCurricular] Enviando ramo al backend:', ramoData);
@@ -408,9 +535,12 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
         
         // Actualizar estado local con el ramo creado
         setMallaCurricular(prev => prev.map(semestre => {
-          if (semestre.semestre === selectedSemestre) {
+          if (semestre.periodoKey === selectedSemestre || semestre.periodo === selectedSemestre) {
             return {
               ...semestre,
+              periodoEstudianteId: periodoEstudianteId || semestre.periodoEstudianteId,
+              periodoId: periodoId || semestre.periodoId,
+              periodo: semestre.periodo || `${año}-${semestre}`,
               ramos: [...semestre.ramos, {
                 id: ramoCreado.id_ramo || Date.now(),
                 codigo: ramoCreado.codigo_ramo || `RAMO-${Date.now()}`,
@@ -419,7 +549,9 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
                 prerequisitos: nuevoRamo.prerequisitos || [],
                 estado: nuevoRamo.estado,
                 nota: nuevoRamo.nota,
-                backendId: ramoCreado.id_ramo
+                backendId: ramoCreado.id_ramo,
+                semestre,
+                año,
               }]
             };
           }
@@ -428,9 +560,12 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
       } catch (backendError) {
         // Si falla el backend, agregar localmente
         setMallaCurricular(prev => prev.map(semestre => {
-          if (semestre.semestre === selectedSemestre) {
+          if (semestre.periodoKey === selectedSemestre || semestre.periodo === selectedSemestre) {
             return {
               ...semestre,
+              periodoEstudianteId: semestre.periodoEstudianteId || periodoEstudianteId,
+              periodoId: semestre.periodoId || periodoId,
+              periodo: semestre.periodo || `${año}-${semestre}`,
               ramos: [...semestre.ramos, {
                 id: Date.now(),
                 codigo: `LOCAL-${Date.now()}`,
@@ -438,7 +573,9 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
                 creditos: nuevoRamo.creditos,
                 prerequisitos: nuevoRamo.prerequisitos || [],
                 estado: nuevoRamo.estado,
-                nota: nuevoRamo.nota
+                nota: nuevoRamo.nota,
+                semestre,
+                año
               }]
             };
           }
@@ -465,8 +602,16 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
       return null;
     }
 
+    const dragId = String(ramo.backendId ?? ramo.id ?? ramo.codigo ?? `ramo-${ramo.nombre}-${index}`);
+    const dragKey = dragId;
+
     return (
-      <Draggable key={ramo.backendId || ramo.codigo} draggableId={String(ramo.backendId || ramo.codigo)} index={index}>
+      <Draggable
+        key={dragKey}
+        draggableId={dragId}
+        index={index}
+        isDragDisabled={!modoEdicion}
+      >
         {(provided, snapshot) => (
           <div
             ref={provided.innerRef}
@@ -501,7 +646,7 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
                 </div>
               )}
               
-              {isEditMode && (
+              {modoEdicion && (
                 <IconButton
                   className="edit-button"
                   size="small"
@@ -557,17 +702,7 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-gray-900">Avance Curricular</h2>
             <div className="flex gap-2">
-              <button
-                onClick={() => setIsEditMode(!isEditMode)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  isEditMode 
-                    ? 'bg-red-100 text-red-700 hover:bg-red-200' 
-                    : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
-                }`}
-              >
-                {isEditMode ? '🔒 Salir de edición' : '✏️ Editar'}
-              </button>
-              {isEditMode && (
+              {modoEdicion && (
                 <button
                   onClick={handleCreateSemester}
                   className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
@@ -636,14 +771,16 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
         <Box sx={{ p: 3 }}>
           <DragDropContext onDragEnd={handleDragEnd}>
             <Grid container spacing={3}>
-              {mallaCurricular.map((semestre) => (
-                <Grid xs={12} md={6} lg={4} key={semestre.semestre}>
+              {mallaCurricular.map((semestre) => {
+                const key = semestre.periodoKey || semestre.periodo || `sem-${semestre.semestre}`;
+                return (
+                <Grid xs={12} md={6} lg={4} key={key}>
                   <SemesterCard>
                     <div className="semester-header">
                       <Typography className="semester-title" variant="h6">
-                        Semestre {semestre.semestre}
+                        Semestre {semestre.año ? `${semestre.año}/${semestre.semestre}S` : semestre.semestre}
                       </Typography>
-                      {isEditMode && (
+                      {modoEdicion && (
                         <IconButton
                           className="semester-config-button"
                           size="small"
@@ -663,7 +800,7 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
                       </Typography>
                     )}
 
-                    <Droppable droppableId={`semestre-${semestre.semestre}`}>
+                    <Droppable droppableId={`semestre-${key}`}>
                       {(provided) => (
                         <div
                           {...provided.droppableProps}
@@ -676,11 +813,11 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
                       )}
                     </Droppable>
 
-                    {isEditMode && (
+                    {modoEdicion && (
                       <Fab
                         size="small"
                         color="primary"
-                        onClick={() => handleAddSubject(semestre.semestre)}
+                        onClick={() => handleAddSubject(key)}
                         sx={{
                           position: 'absolute',
                           bottom: 16,
@@ -692,7 +829,8 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
                     )}
                   </SemesterCard>
                 </Grid>
-              ))}
+              );
+              })}
               
               {mallaCurricular.length === 0 && (
                 <Grid xs={12}>
@@ -708,14 +846,20 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
                     <Typography variant="body2" sx={{ mb: 3 }}>
                       Agrega semestres y ramos para comenzar a gestionar el avance curricular
                     </Typography>
-                    <Button
-                      variant="contained"
-                      startIcon={<AddIcon />}
-                      onClick={handleCreateSemester}
-                      sx={{ bgcolor: 'success.main', '&:hover': { bgcolor: 'success.dark' } }}
-                    >
-                      Crear Primer Semestre
-                    </Button>
+                    {modoEdicion ? (
+                      <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={handleCreateSemester}
+                        sx={{ bgcolor: 'success.main', '&:hover': { bgcolor: 'success.dark' } }}
+                      >
+                        Crear Primer Semestre
+                      </Button>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        Activa el modo edición para crear el primer semestre
+                      </Typography>
+                    )}
                   </Box>
                 </Grid>
               )}

@@ -11,7 +11,7 @@ export interface PeriodoAcademico {
 
 export interface PeriodoAcademicoEstudiante {
   id: number;
-  id_estudiante: string;
+  estudiante_id: string;
   periodo_academico_id: number;
   periodo_academico?: PeriodoAcademico;
   fecha_inicio?: Date;
@@ -29,7 +29,7 @@ export interface CreatePeriodoAcademicoDto {
 }
 
 export interface CreatePeriodoAcademicoEstudianteDto {
-  id_estudiante: string;
+  estudiante_id: string;
   periodo_academico_id: number;
   fecha_inicio?: Date;
   fecha_termino?: Date;

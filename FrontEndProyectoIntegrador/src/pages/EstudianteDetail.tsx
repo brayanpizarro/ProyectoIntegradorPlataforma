@@ -49,7 +49,8 @@ export default function EstudianteDetail() {
     setMostrarModalNuevoSemestre,
     nuevoSemestreData,
     setNuevoSemestreData,
-    handleCrearNuevoSemestre
+    handleCrearNuevoSemestre,
+    registrarCambioSemestre
   } = useStudentDetail();
 
 
@@ -132,12 +133,16 @@ export default function EstudianteDetail() {
           <SemesterPerformanceSection
             estudiante={estudiante}
             modoEdicion={modoEdicion && canEdit}
+            onCambioDesempeno={registrarCambioSemestre}
           />
         )}
 
         {/* Avance Curricular */}
         {seccionActiva === 'avance' && (
-          <AvanceCurricularSection estudiante={estudianteConEdiciones} />
+          <AvanceCurricularSection
+            estudiante={estudianteConEdiciones}
+            modoEdicion={modoEdicion && canEdit}
+          />
         )}
 
         {/* Entrevistas - Solo para administradores */}

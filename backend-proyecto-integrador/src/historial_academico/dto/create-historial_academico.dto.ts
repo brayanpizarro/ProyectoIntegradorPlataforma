@@ -8,6 +8,13 @@ export class CreateHistorialAcademicoDto {
   // === CAMPOS MIGRADOS A PERIODO_ACADEMICO ===
   // año y semestre fueron eliminados
   // Usar PeriodoAcademicoEstudiante para relacionar con períodos
+  @IsOptional()
+  @IsNumber()
+  año?: number;
+
+  @IsOptional()
+  @IsNumber()
+  semestre?: number;
 
   @IsOptional()
   @IsString()
@@ -35,6 +42,18 @@ export class CreateHistorialAcademicoDto {
   @IsOptional()
   @IsString()
   observaciones?: string;
+
+  @IsOptional()
+  @IsString()
+  comentarios_generales?: string;
+
+  @IsOptional()
+  @IsString()
+  dificultades?: string;
+
+  @IsOptional()
+  @IsString()
+  aprendizajes?: string;
 
   @IsOptional()
   @IsString()

@@ -13,9 +13,11 @@ interface UseStudentEditingProps {
   estudiante: Estudiante | null;
   reloadStudentData: () => Promise<void>;
   setInformesGuardados: (fn: (prev: any[]) => any[]) => void;
+  hayCambiosExternos?: boolean;
+  limpiarCambiosExternos?: () => void;
 }
 
-export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInformesGuardados }: UseStudentEditingProps) => {
+export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInformesGuardados, hayCambiosExternos = false, limpiarCambiosExternos }: UseStudentEditingProps) => {
   const [modoEdicion, setModoEdicion] = useState(false);
   const [isGuardando, setIsGuardando] = useState(false);
   const [mensajeExito, setMensajeExito] = useState<string>('');
@@ -43,11 +45,13 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
   });
 
   // Verificar si hay cambios pendientes en cualquier dominio
-  const hayCambiosPendientes =
+  const hayCambiosInternos =
     estudianteEditing.hayCambios ||
     familiaEditing.hayCambios ||
     academicEditing.hayCambios ||
     institucionEditing.hayCambios;
+
+  const hayCambiosPendientes = hayCambiosInternos || hayCambiosExternos;
 
 
   useEffect(() => {
@@ -134,21 +138,11 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
       // Guardar en paralelo todos los dominios que tienen cambios
       const promesas: Promise<void>[] = [];
 
-      if (estudianteEditing.hayCambios) {
-        promesas.push(estudianteEditing.guardarCambios());
-      }
-
-      if (familiaEditing.hayCambios) {
-        promesas.push(familiaEditing.guardarCambios());
-      }
-
-      if (academicEditing.hayCambios) {
-        promesas.push(academicEditing.guardarCambios());
-      }
-
-      if (institucionEditing.hayCambios) {
-        promesas.push(institucionEditing.guardarCambios());
-      }
+      if (estudianteEditing.hayCambios) promesas.push(estudianteEditing.guardarCambios());
+      if (familiaEditing.hayCambios) promesas.push(familiaEditing.guardarCambios());
+      if (academicEditing.hayCambios) promesas.push(academicEditing.guardarCambios());
+      if (institucionEditing.hayCambios) promesas.push(institucionEditing.guardarCambios());
+      if (hayCambiosExternos && limpiarCambiosExternos) promesas.push(Promise.resolve().then(() => limpiarCambiosExternos()));
 
       // Ejecutar todos los guardados en paralelo
       await Promise.all(promesas);
@@ -161,6 +155,7 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
       familiaEditing.limpiarCambios();
       academicEditing.limpiarCambios();
       institucionEditing.limpiarCambios();
+      if (hayCambiosExternos && limpiarCambiosExternos) limpiarCambiosExternos();
 
       setModoEdicion(false);
 

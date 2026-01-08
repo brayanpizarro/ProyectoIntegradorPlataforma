@@ -39,7 +39,7 @@ export class RamosCursadosService {
     
     return await this.ramosCursadosRepository.find({
       where: whereCondition,
-      relations: ['estudiante', 'periodo_academico_estudiante'],
+      relations: ['estudiante', 'periodo_academico_estudiante', 'periodo_academico_estudiante.periodo_academico'],
       order: { nombre_ramo: 'ASC' }
     });
   }
