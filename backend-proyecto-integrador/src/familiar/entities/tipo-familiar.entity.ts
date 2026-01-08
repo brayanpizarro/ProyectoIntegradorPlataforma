@@ -1,8 +1,10 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
+  BeforeInsert,
 } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 
 export enum TipoFamiliarCodigo {
   MADRE = 'MADRE',
@@ -15,8 +17,13 @@ export enum TipoFamiliarCodigo {
 
 @Entity('tipo_familiar')
 export class TipoFamiliar {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryColumn('uuid')
+  id_tipo_familiar: string;
+
+  @BeforeInsert()
+  generateId() {
+    this.id_tipo_familiar = uuidv4();
+  }
 
   @Column({ unique: true })
   nombre: string;

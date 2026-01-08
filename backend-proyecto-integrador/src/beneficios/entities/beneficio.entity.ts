@@ -1,8 +1,10 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
+  BeforeInsert,
 } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 
 export enum TipoBeneficio {
   BECA = 'BECA',
@@ -13,8 +15,13 @@ export enum TipoBeneficio {
 
 @Entity('beneficio')
 export class Beneficio {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryColumn('uuid')
+  id_beneficio: string;
+
+  @BeforeInsert()
+  generateId() {
+    this.id_beneficio = uuidv4();
+  }
 
   @Column({ unique: true })
   nombre: string;

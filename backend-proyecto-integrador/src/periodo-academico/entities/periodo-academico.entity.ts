@@ -1,15 +1,22 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   Index,
+  BeforeInsert,
 } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 
 @Entity('periodo_academico')
 @Index(['año', 'semestre'], { unique: true })
 export class PeriodoAcademico {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryColumn('uuid')
+  id_periodo_academico: string;
+
+  @BeforeInsert()
+  generateId() {
+    this.id_periodo_academico = uuidv4();
+  }
 
   @Column({ type: 'int' })
   año: number;

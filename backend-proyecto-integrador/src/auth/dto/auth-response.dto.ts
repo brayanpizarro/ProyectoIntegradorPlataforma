@@ -5,7 +5,7 @@ export class AuthResponseDto {
 }
 
 export class UserResponseDto {
-  id: number;
+  id: string;
   username: string;
   email: string;
   nombre: string;
@@ -21,7 +21,7 @@ export class TokensResponseDto {
 export class ValidateTokenResponseDto {
   valid: boolean;
   user: {
-    id: number;
+    id: string;
     username: string;
     email: string;
     rol: string;

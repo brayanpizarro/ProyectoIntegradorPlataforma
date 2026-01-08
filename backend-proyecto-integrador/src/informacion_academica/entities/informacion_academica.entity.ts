@@ -1,18 +1,25 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
   OneToOne,
   JoinColumn,
+  BeforeInsert,
 } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 import { Estudiante } from '../../estudiante/entities/estudiante.entity';
 
 @Entity('informacion_academica')
 export class InformacionAcademica {
-  @PrimaryGeneratedColumn()
-  id_info_academico: number;
+  @PrimaryColumn('uuid')
+  id_info_academico: string;
+
+  @BeforeInsert()
+  generateId() {
+    this.id_info_academico = uuidv4();
+  }
 
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   promedio_1: number;

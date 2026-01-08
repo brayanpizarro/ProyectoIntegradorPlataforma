@@ -1,19 +1,26 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  BeforeInsert,
 } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 import { Estudiante } from '../../estudiante/entities/estudiante.entity';
 import { TipoFamiliar } from './tipo-familiar.entity';
 
 @Entity('familiar')
 export class Familiar {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryColumn('uuid')
+  id_familiar: string;
+
+  @BeforeInsert()
+  generateId() {
+    this.id_familiar = uuidv4();
+  }
 
   @Column({ type: 'uuid' })
   estudiante_id: string;
@@ -22,8 +29,8 @@ export class Familiar {
   @JoinColumn({ name: 'estudiante_id' })
   estudiante: Estudiante;
 
-  @Column({ type: 'int' })
-  tipo_familiar_id: number;
+  @Column({ type: 'uuid' })
+  tipo_familiar_id: string;
 
   @ManyToOne(() => TipoFamiliar)
   @JoinColumn({ name: 'tipo_familiar_id' })

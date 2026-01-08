@@ -53,7 +53,7 @@ export class TokenService {
     });
   }
 
-  storeRefreshToken(token: string, userId: number, tokenId: string): void {
+  storeRefreshToken(token: string, userId: string, tokenId: string): void {
     this.refreshTokens.set(token, { userId, tokenId });
   }
 

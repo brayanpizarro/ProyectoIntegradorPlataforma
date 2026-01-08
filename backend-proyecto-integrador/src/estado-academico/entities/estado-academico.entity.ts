@@ -1,11 +1,13 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   OneToOne,
   JoinColumn,
   UpdateDateColumn,
+  BeforeInsert,
 } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 import { Estudiante } from '../../estudiante/entities/estudiante.entity';
 
 export enum StatusEstudiante {
@@ -17,8 +19,13 @@ export enum StatusEstudiante {
 
 @Entity('estado_academico')
 export class EstadoAcademico {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryColumn('uuid')
+  id_estado_academico: string;
+
+  @BeforeInsert()
+  generateId() {
+    this.id_estado_academico = uuidv4();
+  }
 
   @Column({ type: 'uuid', unique: true })
   estudiante_id: string;

@@ -143,13 +143,13 @@ export class AuthService {
     return user;
   }
 
-  private async updateLastLogin(userId: number): Promise<void> {
+  private async updateLastLogin(userId: string): Promise<void> {
     await this.usersRepository.update(userId, {
       ultimo_login: new Date(),
     });
   }
 
-  private async findActiveUser(userId: number): Promise<User> {
+  private async findActiveUser(userId: string): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { id: userId, activo: true },
     });
@@ -162,8 +162,8 @@ export class AuthService {
   }
 
   private validateStoredToken(
-    storedToken: { userId: number; tokenId: string } | undefined,
-    payload: { sub: number; tokenId: string },
+    storedToken: { userId: string; tokenId: string } | undefined,
+    payload: { sub: string; tokenId: string },
   ): void {
     if (
       !storedToken ||

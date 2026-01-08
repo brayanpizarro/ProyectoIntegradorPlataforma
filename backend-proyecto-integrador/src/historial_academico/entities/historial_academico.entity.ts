@@ -1,18 +1,25 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  BeforeInsert,
 } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 import { Estudiante } from '../../estudiante/entities/estudiante.entity';
 
 @Entity('historial_academico')
 export class HistorialAcademico {
-  @PrimaryGeneratedColumn()
-  id_historial_academico: number;
+  @PrimaryColumn('uuid')
+  id_historial_academico: string;
+
+  @BeforeInsert()
+  generateId() {
+    this.id_historial_academico = uuidv4();
+  }
 
   // === CAMPOS LEGACY ELIMINADOS ===
   // año y semestre fueron migrados a periodo_academico (centralizado)

@@ -69,7 +69,7 @@ export class UsersService {
     });
   }
 
-  async findOne(id: number): Promise<User> {
+  async findOne(id: string): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { id },
       select: [
@@ -101,7 +101,7 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { username } });
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { id } });
 
     if (!user) {
@@ -131,20 +131,20 @@ export class UsersService {
     return this.findOne(id);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     const result = await this.usersRepository.delete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
     }
   }
 
-  async updateLastLogin(id: number): Promise<void> {
+  async updateLastLogin(id: string): Promise<void> {
     await this.usersRepository.update(id, {
       ultimo_login: new Date(),
     });
   }
 
-  async updateRefreshToken(id: number, refreshToken: string | null): Promise<void> {
+  async updateRefreshToken(id: string, refreshToken: string | null): Promise<void> {
     await this.usersRepository.update(id, {
       refreshToken: refreshToken || undefined,
     });
@@ -158,7 +158,7 @@ export class UsersService {
     return null;
   }
 
-  async changePassword(userId: number, newPassword: string): Promise<void> {
+  async changePassword(userId: string, newPassword: string): Promise<void> {
     const user = await this.usersRepository.findOne({ where: { id: userId } });
     
     if (!user) {
@@ -173,7 +173,7 @@ export class UsersService {
     });
   }
 
-  async changeOwnPassword(userId: number, currentPassword: string, newPassword: string): Promise<void> {
+  async changeOwnPassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
     const user = await this.usersRepository.findOne({ where: { id: userId } });
     
     if (!user) {

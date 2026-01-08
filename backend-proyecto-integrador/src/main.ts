@@ -8,6 +8,7 @@ async function bootstrap() {
   // Configuración de CORS para producción
   const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [
     'https://entrevistas.fundacioncarmengoudie.cl',
+    'https://api.cloudinary.com',
     'http://localhost:5173', // Para desarrollo local
   ];
 

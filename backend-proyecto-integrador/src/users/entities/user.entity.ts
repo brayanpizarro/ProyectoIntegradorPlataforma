@@ -1,11 +1,13 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
   Unique,
+  BeforeInsert,
 } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -16,8 +18,13 @@ export enum UserRole {
 @Entity('users')
 @Unique(['email', 'username'])
 export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryColumn('uuid')
+  id: string;
+
+  @BeforeInsert()
+  generateId() {
+    this.id = uuidv4();
+  }
 
   @Column({ length: 50, unique: true })
   username: string;

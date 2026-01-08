@@ -1,18 +1,25 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
+  BeforeInsert,
 } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 import { Estudiante } from '../../estudiante/entities/estudiante.entity';
 import { InformacionAdmision } from './informacion-admision.entity';
 
 @Entity('ensayo_paes')
 export class EnsayoPaes {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryColumn('uuid')
+  id_ensayo_paes: string;
+
+  @BeforeInsert()
+  generateId() {
+    this.id_ensayo_paes = uuidv4();
+  }
 
   @Column({ type: 'uuid' })
   estudiante_id: string;
@@ -21,8 +28,8 @@ export class EnsayoPaes {
   @JoinColumn({ name: 'estudiante_id' })
   estudiante: Estudiante;
 
-  @Column({ type: 'int', nullable: true })
-  admision_id: number;
+  @Column({ type: 'uuid', nullable: true })
+  admision_id: string;
 
   @ManyToOne(() => InformacionAdmision, (admision) => admision.ensayos_paes)
   @JoinColumn({ name: 'admision_id' })

@@ -1,23 +1,30 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  BeforeInsert,
 } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 import { Estudiante } from '../../estudiante/entities/estudiante.entity';
 import { PeriodoAcademicoEstudiante } from '../../periodo-academico/entities/periodo-academico-estudiante.entity';
 
 @Entity('ramos_cursados')
 export class RamosCursados {
-  @PrimaryGeneratedColumn()
-  id_ramo: number;
+  @PrimaryColumn('uuid')
+  id_ramo: string;
+
+  @BeforeInsert()
+  generateId() {
+    this.id_ramo = uuidv4();
+  }
 
   // === PERIODO ACADÉMICO (normalizado) ===
-  @Column({ type: 'int', nullable: true })
-  periodo_academico_estudiante_id: number;
+  @Column({ type: 'uuid', nullable: true })
+  periodo_academico_estudiante_id: string;
 
   @ManyToOne(() => PeriodoAcademicoEstudiante, { nullable: true })
   @JoinColumn({ name: 'periodo_academico_estudiante_id' })

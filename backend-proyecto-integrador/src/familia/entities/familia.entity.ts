@@ -1,19 +1,26 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
   OneToOne,
   JoinColumn,
+  BeforeInsert,
 } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 import { Estudiante } from '../../estudiante/entities/estudiante.entity';
 import type { ObservacionesFamiliares } from '../../common/index';
 
 @Entity('familias')
 export class Familia {
-  @PrimaryGeneratedColumn()
-  id_familia: number;
+  @PrimaryColumn('uuid')
+  id_familia: string;
+
+  @BeforeInsert()
+  generateId() {
+    this.id_familia = uuidv4();
+  }
 
   // Campos básicos solicitados por el frontend actual
   @Column({ type: 'varchar', length: 255, nullable: true })
