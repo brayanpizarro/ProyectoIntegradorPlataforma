@@ -109,13 +109,13 @@ export const getRamoAño = (_ramo: RamosCursados): number | undefined => {
 };
 
 export const getHistorialSemestre = (_historial: HistorialAcademico): number | undefined => {
-  // TODO: Llamar al servicio periodo-academico.service.ts
-  return undefined;
+  // Usa el campo legacy directamente hasta migrar a periodo_academico
+  return (_historial as any)?.semestre ?? undefined;
 };
 
 export const getHistorialAño = (_historial: HistorialAcademico): number | undefined => {
-  // TODO: Llamar al servicio periodo-academico.service.ts
-  return undefined;
+  // Usa el campo legacy directamente hasta migrar a periodo_academico
+  return (_historial as any)?.año ?? undefined;
 };
 
 // === INFORMACIÓN ACADÉMICA ===

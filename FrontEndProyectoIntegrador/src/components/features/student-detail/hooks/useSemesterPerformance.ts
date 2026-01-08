@@ -193,6 +193,7 @@ export const useSemesterPerformanceData = (
 export const useSemesterStats = (ramosSemestre: any[], historialSemestre: any) => {
   return useMemo(() => {
     if (historialSemestre) {
+      const promedioHist = Number(historialSemestre.promedio_semestre);
       return {
         total:
           (historialSemestre.ramos_aprobados || 0) +
@@ -201,7 +202,7 @@ export const useSemesterStats = (ramosSemestre: any[], historialSemestre: any) =
         aprobados: historialSemestre.ramos_aprobados || 0,
         reprobados: historialSemestre.ramos_reprobados || 0,
         eliminados: historialSemestre.ramos_eliminados || 0,
-        promedio: historialSemestre.promedio_semestre || null,
+        promedio: Number.isFinite(promedioHist) ? promedioHist : null,
       };
     }
 
@@ -213,11 +214,15 @@ export const useSemesterStats = (ramosSemestre: any[], historialSemestre: any) =
     const ramosConNota = ramosSemestre.filter(
       (r) => r.promedio_final && !isNaN(parseFloat(r.promedio_final))
     );
-    const promedio =
+    const promedioCalculado =
       ramosConNota.length > 0
         ? ramosConNota.reduce((sum, r) => sum + parseFloat(r.promedio_final), 0) /
           ramosConNota.length
         : null;
+
+    const promedio = Number.isFinite(promedioCalculado as number)
+      ? Number(promedioCalculado)
+      : null;
 
     return { total, aprobados, reprobados, eliminados, promedio };
   }, [ramosSemestre, historialSemestre]);
