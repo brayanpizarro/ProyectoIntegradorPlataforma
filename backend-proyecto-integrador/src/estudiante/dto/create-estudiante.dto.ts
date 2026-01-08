@@ -60,4 +60,8 @@ export class CreateEstudianteDto {
   @IsOptional()
   @IsString()
   direccion?: string;
+
+  @IsOptional()
+  @IsString()
+  foto_url?: string;
 }

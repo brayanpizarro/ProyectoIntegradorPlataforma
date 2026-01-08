@@ -213,6 +213,7 @@ async findOne(id: string) {
       'observaciones',
       'institucionId',
       'id_institucion',
+      'foto_url',
     ];
 
     const payloadEstudiante: Record<string, any> = {};

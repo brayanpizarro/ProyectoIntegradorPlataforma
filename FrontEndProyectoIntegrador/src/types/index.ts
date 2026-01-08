@@ -56,6 +56,8 @@ export interface Estudiante {
   // === CAMPOS MIGRADOS (usar servicios específicos) ===
   // telefono, email, direccion -> informacionContactoService
   // status, status_detalle, semestres_suspendidos, semestres_total_carrera -> estadoAcademicoService
+
+  foto_url?: string;
   
   // Relaciones
   institucion?: Institucion;

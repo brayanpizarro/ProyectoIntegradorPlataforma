@@ -66,6 +66,9 @@ export class Estudiante {
   @Column({ type: 'text', nullable: true })
   observaciones: string;
 
+  @Column({ type: 'text', nullable: true })
+  foto_url?: string;
+
   // === RELACIÓN CON INSTITUCIÓN ACTUAL ===
   @Column({ type: 'uuid', nullable: true })
   id_institucion?: string;

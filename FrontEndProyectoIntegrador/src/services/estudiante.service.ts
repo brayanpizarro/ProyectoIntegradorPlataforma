@@ -38,6 +38,7 @@ export interface UpdateEstudianteDto {
   id_institucion?: string;
   numero_carrera?: number;
   observaciones?: string;
+  foto_url?: string;
 }
 
 class EstudianteService extends BaseHttpClient {

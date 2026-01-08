@@ -90,4 +90,9 @@ export class UpdateEstudianteDto extends PartialType(CreateEstudianteDto) {
   @IsOptional()
   @IsNumber()
   semestres_total_carrera?: number;
+
+  @Expose()
+  @IsOptional()
+  @IsString()
+  foto_url?: string;
 }
