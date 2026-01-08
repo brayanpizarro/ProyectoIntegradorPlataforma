@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Box, TextField, Button, Alert, Link, CircularProgress, Typography } from '@mui/material';
+import { VpnKey as KeyIcon } from '@mui/icons-material';
 import { authService } from '../../../../services/authService';
+import { logger } from '../../../../config';
+import { LoginFormContainer } from '../shared';
 
 export const VerificarCodigo: React.FC = () => {
   const [codigo, setCodigo] = useState('');
@@ -28,16 +32,18 @@ export const VerificarCodigo: React.FC = () => {
     setError('');
 
     try {
+      logger.log('🔑 Verificando código para:', email);
       const isValid = await authService.verifyResetCode(email, codigo);
       
       if (isValid) {
+        logger.log('✅ Código válido, redirigiendo a nueva contraseña');
         navigate('/nueva-password', { state: { email, codigo } });
       } else {
         setError('Código inválido o expirado');
       }
       
     } catch (error: any) {
-      console.error('Error verificando código:', error);
+      logger.error('❌ Error verificando código:', error);
       setError('Error al verificar el código. Intenta de nuevo.');
     } finally {
       setLoading(false);
@@ -45,56 +51,114 @@ export const VerificarCodigo: React.FC = () => {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <div className="login-header">
-          <h1>Verificar Código</h1>
-          <p>Ingresa el código que recibiste en tu email</p>
-          {email && <p className="email-info">Email: {email}</p>}
-        </div>
-        
-        <form onSubmit={handleSubmit} className="login-form">
-          <div className="form-group">
-            <label htmlFor="codigo">Código de Verificación</label>
-            <input
-              type="text"
-              id="codigo"
-              value={codigo}
-              onChange={(e) => setCodigo(e.target.value)}
-              placeholder="123456"
-              disabled={loading}
-              required
-              maxLength={6}
-            />
-          </div>
-          
-          {error && (
-            <div className="error-message">
-              {error}
-            </div>
-          )}
-          
-          <button
-            type="submit"
-            className="login-button"
-            disabled={loading}
+    <LoginFormContainer
+      title="Verificar Código"
+      subtitle="Ingresa el código que recibiste en tu email"
+      icon={<KeyIcon sx={{ fontSize: 64, color: '#667eea' }} />}
+    >
+      <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+        {email && (
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              textAlign: 'center', 
+              color: '#667eea',
+              fontWeight: 500,
+              mb: 1
+            }}
           >
-            {loading ? 'Verificando...' : 'Verificar Código'}
-          </button>
-        </form>
-        
-        <div className="login-footer">
-          <p>
-            <button
-              type="button"
-              className="link-button"
-              onClick={() => navigate('/solicitar-recuperacion')}
-            >
-              ← Solicitar nuevo código
-            </button>
-          </p>
-        </div>
-      </div>
-    </div>
+            Código enviado a: <strong>{email}</strong>
+          </Typography>
+        )}
+
+        <TextField
+          fullWidth
+          type="text"
+          id="codigo"
+          name="codigo"
+          label="Código de Verificación"
+          value={codigo}
+          onChange={(e) => setCodigo(e.target.value.slice(0, 6))}
+          placeholder="123456"
+          disabled={loading}
+          required
+          inputProps={{ maxLength: 6 }}
+          variant="outlined"
+          error={!!error}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              backgroundColor: '#f8f9fa',
+              letterSpacing: '0.5em',
+              textAlign: 'center',
+              fontSize: '1.5rem',
+              fontWeight: 600,
+              '&:hover': {
+                backgroundColor: '#fff'
+              },
+              '&.Mui-focused': {
+                backgroundColor: '#fff'
+              }
+            }
+          }}
+        />
+
+        {error && (
+          <Alert severity="error" sx={{ mt: 1 }}>
+            {error}
+          </Alert>
+        )}
+
+        <Button
+          fullWidth
+          type="submit"
+          variant="contained"
+          size="large"
+          disabled={loading}
+          startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
+          sx={{
+            mt: 1,
+            py: 1.5,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            fontWeight: 600,
+            fontSize: '1rem',
+            textTransform: 'none',
+            borderRadius: 2,
+            boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 8px 20px rgba(102, 126, 234, 0.4)',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+            },
+            '&:disabled': {
+              background: 'rgba(0, 0, 0, 0.12)',
+              transform: 'none'
+            }
+          }}
+        >
+          {loading ? 'Verificando...' : 'Verificar Código'}
+        </Button>
+
+        <Link
+          component="button"
+          type="button"
+          variant="body2"
+          onClick={() => navigate('/solicitar-recuperacion')}
+          sx={{
+            mt: 2,
+            textAlign: 'center',
+            color: '#667eea',
+            textDecoration: 'underline',
+            cursor: 'pointer',
+            transition: 'color 0.3s ease',
+            '&:hover': {
+              color: '#764ba2'
+            }
+          }}
+        >
+          ← Solicitar nuevo código
+        </Link>
+      </Box>
+    </LoginFormContainer>
   );
 };

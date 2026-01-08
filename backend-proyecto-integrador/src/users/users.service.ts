@@ -43,8 +43,17 @@ export class UsersService {
   }
 
   async findAll(filters: Partial<User> = {}): Promise<User[]> {
+    // Limpiar campos nulos del filtro para evitar problemas con TypeORM
+    const cleanFilters: any = {};
+    Object.keys(filters).forEach((key) => {
+      const value = filters[key as keyof User];
+      if (value !== null && value !== undefined) {
+        cleanFilters[key] = value;
+      }
+    });
+
     return this.usersRepository.find({
-      where: filters,
+      where: cleanFilters,
       select: [
         'id',
         'username',

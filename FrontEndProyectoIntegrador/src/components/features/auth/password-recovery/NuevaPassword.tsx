@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Box, TextField, Button, Alert, CircularProgress, InputAdornment, IconButton } from '@mui/material';
+import { LockReset as LockIcon, Visibility, VisibilityOff } from '@mui/icons-material';
 import { authService } from '../../../../services/authService';
+import { logger } from '../../../../config';
+import { LoginFormContainer } from '../shared';
 
 export const NuevaPassword: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
 
@@ -32,7 +38,8 @@ export const NuevaPassword: React.FC = () => {
     }
 
     if (!email || !codigo) {
-      setError('Datos de verificación no encontrados');
+      setError('Datos de verificación no encontrados. Vuelve a solicitar la recuperación.');
+      navigate('/solicitar-recuperacion');
       return;
     }
 
@@ -40,84 +47,151 @@ export const NuevaPassword: React.FC = () => {
     setError('');
 
     try {
+      logger.log('🔒 Restableciendo contraseña para:', email);
       await authService.resetPassword(email, codigo, password);
       
-      // Mostrar mensaje de éxito y redirigir
-      alert('Contraseña actualizada exitosamente');
-      navigate('/');
+      logger.log('✅ Contraseña actualizada exitosamente');
+      // Usar Alert de MUI en lugar de alert nativo
+      setTimeout(() => {
+        navigate('/', { state: { message: 'Contraseña actualizada exitosamente' } });
+      }, 2000);
       
     } catch (error: any) {
-      console.error('Error restableciendo contraseña:', error);
-      setError('Error al restablecer la contraseña. Intenta de nuevo.');
+      logger.error('❌ Error restableciendo contraseña:', error);
+      setError('Error al restablecer la contraseña. El código puede haber expirado.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <div className="login-header">
-          <h1>Nueva Contraseña</h1>
-          <p>Ingresa tu nueva contraseña</p>
-        </div>
-        
-        <form onSubmit={handleSubmit} className="login-form">
-          <div className="form-group">
-            <label htmlFor="password">Nueva Contraseña</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Nueva contraseña"
-              disabled={loading}
-              required
-              minLength={6}
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="confirmPassword">Confirmar Contraseña</label>
-            <input
-              type="password"
-              id="confirmPassword"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirma tu contraseña"
-              disabled={loading}
-              required
-              minLength={6}
-            />
-          </div>
-          
-          {error && (
-            <div className="error-message">
-              {error}
-            </div>
-          )}
-          
-          <button
-            type="submit"
-            className="login-button"
-            disabled={loading}
-          >
-            {loading ? 'Actualizando...' : 'Actualizar Contraseña'}
-          </button>
-        </form>
-        
-        <div className="login-footer">
-          <p>
-            <button
-              type="button"
-              className="link-button"
-              onClick={() => navigate('/')}
-            >
-              ← Volver al login
-            </button>
-          </p>
-        </div>
-      </div>
-    </div>
+    <LoginFormContainer
+      title="Nueva Contraseña"
+      subtitle="Ingresa tu nueva contraseña"
+      icon={<LockIcon sx={{ fontSize: 64, color: '#667eea' }} />}
+    >
+      <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+        <TextField
+          fullWidth
+          type={showPassword ? 'text' : 'password'}
+          id="password"
+          name="password"
+          label="Nueva Contraseña"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Mínimo 6 caracteres"
+          disabled={loading}
+          required
+          variant="outlined"
+          error={!!error}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  onClick={() => setShowPassword(!showPassword)}
+                  edge="end"
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              backgroundColor: '#f8f9fa',
+              '&:hover': {
+                backgroundColor: '#fff'
+              },
+              '&.Mui-focused': {
+                backgroundColor: '#fff'
+              }
+            }
+          }}
+        />
+
+        <TextField
+          fullWidth
+          type={showConfirmPassword ? 'text' : 'password'}
+          id="confirmPassword"
+          name="confirmPassword"
+          label="Confirmar Contraseña"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          placeholder="Repite la contraseña"
+          disabled={loading}
+          required
+          variant="outlined"
+          error={!!error && password !== confirmPassword}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle confirm password visibility"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  edge="end"
+                >
+                  {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              backgroundColor: '#f8f9fa',
+              '&:hover': {
+                backgroundColor: '#fff'
+              },
+              '&.Mui-focused': {
+                backgroundColor: '#fff'
+              }
+            }
+          }}
+        />
+
+        {error && (
+          <Alert severity="error" sx={{ mt: 1 }}>
+            {error}
+          </Alert>
+        )}
+
+        {!error && password && confirmPassword && password === confirmPassword && (
+          <Alert severity="success" sx={{ mt: 1 }}>
+            Las contraseñas coinciden ✓
+          </Alert>
+        )}
+
+        <Button
+          fullWidth
+          type="submit"
+          variant="contained"
+          size="large"
+          disabled={loading}
+          startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
+          sx={{
+            mt: 1,
+            py: 1.5,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            fontWeight: 600,
+            fontSize: '1rem',
+            textTransform: 'none',
+            borderRadius: 2,
+            boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 8px 20px rgba(102, 126, 234, 0.4)',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+            },
+            '&:disabled': {
+              background: 'rgba(0, 0, 0, 0.12)',
+              transform: 'none'
+            }
+          }}
+        >
+          {loading ? 'Actualizando...' : 'Actualizar Contraseña'}
+        </Button>
+      </Box>
+    </LoginFormContainer>
   );
 };

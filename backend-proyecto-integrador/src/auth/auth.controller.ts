@@ -10,6 +10,11 @@ import {
 import { AuthService } from './auth.service';
 import { LoginDto, RefreshTokenDto, RegisterDto } from './dto/create-auth.dto';
 import {
+  RequestPasswordResetDto,
+  VerifyResetCodeDto,
+  ResetPasswordDto,
+} from './dto/password-reset.dto';
+import {
   AuthResponseDto,
   TokensResponseDto,
   LogoutResponseDto,
@@ -84,6 +89,57 @@ export class AuthController {
         email: user.email,
         rol: user.rol,
       },
+    };
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // ENDPOINTS DE RECUPERACIÓN DE CONTRASEÑA
+  // ════════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Solicita recuperación de contraseña
+   * Envía un código de 6 dígitos al email del usuario
+   * @param dto Email del usuario
+   * @returns Mensaje de confirmación
+   */
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async requestPasswordReset(
+    @Body() dto: RequestPasswordResetDto,
+  ): Promise<{ message: string }> {
+    await this.authService.requestPasswordReset(dto.email);
+    return {
+      message: 'Si el email existe en nuestro sistema, recibirás un código de recuperación',
+    };
+  }
+
+  /**
+   * Verifica si un código de recuperación es válido
+   * @param dto Email y código del usuario
+   * @returns Indica si el código es válido
+   */
+  @Post('verify-reset-code')
+  @HttpCode(HttpStatus.OK)
+  async verifyResetCode(
+    @Body() dto: VerifyResetCodeDto,
+  ): Promise<{ valid: boolean }> {
+    const valid = await this.authService.verifyResetCode(dto.email, dto.code);
+    return { valid };
+  }
+
+  /**
+   * Restablece la contraseña del usuario
+   * @param dto Email, código y nueva contraseña
+   * @returns Mensaje de confirmación
+   */
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(
+    @Body() dto: ResetPasswordDto,
+  ): Promise<{ message: string }> {
+    await this.authService.resetPassword(dto.email, dto.code, dto.newPassword);
+    return {
+      message: 'Contraseña actualizada exitosamente',
     };
   }
 }

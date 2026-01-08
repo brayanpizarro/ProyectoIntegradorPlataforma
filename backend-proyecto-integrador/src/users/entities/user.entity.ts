@@ -44,11 +44,17 @@ export class User {
   })
   rol: UserRole;
 
-  @Column({ nullable: true })
-  ultimo_login: Date;
+  @Column({ nullable: true, type: 'timestamp' })
+  ultimo_login: Date | null;
 
   @Column({ nullable: true, type: 'text' })
-  refreshToken: string;
+  refreshToken: string | null;
+
+  @Column({ nullable: true, type: 'varchar', length: 6 })
+  resetPasswordCode: string | null;
+
+  @Column({ nullable: true, type: 'timestamp' })
+  resetPasswordExpires: Date | null;
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
