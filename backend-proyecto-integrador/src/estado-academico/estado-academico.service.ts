@@ -31,9 +31,9 @@ export class EstadoAcademicoService {
     });
   }
 
-  async findOne(id: number): Promise<EstadoAcademico> {
+  async findOne(id: string): Promise<EstadoAcademico> {
     const estado = await this.estadoAcademicoRepository.findOne({
-      where: { id },
+      where: { id_estado_academico: id },
       relations: ['estudiante'],
     });
 
@@ -71,7 +71,7 @@ export class EstadoAcademicoService {
     });
   }
 
-  async update(id: number, updateDto: UpdateEstadoAcademicoDto): Promise<EstadoAcademico> {
+  async update(id: string, updateDto: UpdateEstadoAcademicoDto): Promise<EstadoAcademico> {
     const estado = await this.findOne(id);
     Object.assign(estado, updateDto);
     return await this.estadoAcademicoRepository.save(estado);
@@ -97,7 +97,7 @@ export class EstadoAcademicoService {
     }
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     const estado = await this.findOne(id);
     await this.estadoAcademicoRepository.remove(estado);
   }

@@ -40,9 +40,9 @@ export class InformacionContactoService {
     });
   }
 
-  async findOne(id: number): Promise<InformacionContacto> {
+  async findOne(id: string): Promise<InformacionContacto> {
     const contacto = await this.informacionContactoRepository.findOne({
-      where: { id },
+      where: { id_informacion_contacto: id },
       relations: ['estudiante'],
     });
 
@@ -83,7 +83,7 @@ export class InformacionContactoService {
           where: { email: updateDto.email },
         });
 
-        if (emailExiste && emailExiste.id !== contacto.id) {
+        if (emailExiste && emailExiste.id_informacion_contacto !== contacto.id_informacion_contacto) {
           throw new ConflictException('El email ya está registrado');
         }
       }
@@ -113,7 +113,7 @@ export class InformacionContactoService {
     }
   }
 
-  async update(id: number, updateDto: UpdateInformacionContactoDto): Promise<InformacionContacto> {
+  async update(id: string, updateDto: UpdateInformacionContactoDto): Promise<InformacionContacto> {
     const contacto = await this.findOne(id);
 
     // Si se está actualizando el email, verificar que no esté duplicado
@@ -131,7 +131,7 @@ export class InformacionContactoService {
     return await this.informacionContactoRepository.save(contacto);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     const contacto = await this.findOne(id);
     await this.informacionContactoRepository.remove(contacto);
   }

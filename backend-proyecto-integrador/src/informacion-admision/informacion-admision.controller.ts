@@ -33,7 +33,7 @@ export class InformacionAdmisionController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id') id: string) {
     return this.admisionService.findOne(id);
   }
 
@@ -44,14 +44,14 @@ export class InformacionAdmisionController {
 
   @Patch(':id')
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateDto: UpdateInformacionAdmisionDto,
   ) {
     return this.admisionService.update(id, updateDto);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(@Param('id') id: string) {
     return this.admisionService.remove(id);
   }
 
@@ -68,7 +68,7 @@ export class InformacionAdmisionController {
   }
 
   @Get('ensayos/:id')
-  findEnsayo(@Param('id', ParseIntPipe) id: number) {
+  findEnsayo(@Param('id') id: string) {
     return this.admisionService.findEnsayo(id);
   }
 
@@ -79,14 +79,14 @@ export class InformacionAdmisionController {
 
   @Patch('ensayos/:id')
   updateEnsayo(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateDto: UpdateEnsayoPaesDto,
   ) {
     return this.admisionService.updateEnsayo(id, updateDto);
   }
 
   @Delete('ensayos/:id')
-  removeEnsayo(@Param('id', ParseIntPipe) id: number) {
+  removeEnsayo(@Param('id') id: string) {
     return this.admisionService.removeEnsayo(id);
   }
 }

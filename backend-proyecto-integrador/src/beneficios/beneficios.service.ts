@@ -46,8 +46,8 @@ export class BeneficiosService {
     return await this.beneficioRepository.find();
   }
 
-  async findBeneficio(id: number): Promise<Beneficio> {
-    const beneficio = await this.beneficioRepository.findOne({ where: { id } });
+  async findBeneficio(id: string): Promise<Beneficio> {
+    const beneficio = await this.beneficioRepository.findOne({ where: { id_beneficio: id } });
 
     if (!beneficio) {
       throw new NotFoundException(`Beneficio con ID ${id} no encontrado`);
@@ -62,13 +62,13 @@ export class BeneficiosService {
     });
   }
 
-  async updateBeneficio(id: number, updateDto: UpdateBeneficioDto): Promise<Beneficio> {
+  async updateBeneficio(id: string, updateDto: UpdateBeneficioDto): Promise<Beneficio> {
     const beneficio = await this.findBeneficio(id);
     Object.assign(beneficio, updateDto);
     return await this.beneficioRepository.save(beneficio);
   }
 
-  async removeBeneficio(id: number): Promise<void> {
+  async removeBeneficio(id: string): Promise<void> {
     const beneficio = await this.findBeneficio(id);
     await this.beneficioRepository.remove(beneficio);
   }
@@ -87,9 +87,9 @@ export class BeneficiosService {
     });
   }
 
-  async findOne(id: number): Promise<BeneficioEstudiante> {
+  async findOne(id: string): Promise<BeneficioEstudiante> {
     const beneficioEstudiante = await this.beneficioEstudianteRepository.findOne({
-      where: { id },
+      where: { id_beneficio_estudiante: id },
       relations: ['estudiante', 'beneficio'],
     });
 
@@ -116,13 +116,13 @@ export class BeneficiosService {
     });
   }
 
-  async update(id: number, updateDto: UpdateBeneficioEstudianteDto): Promise<BeneficioEstudiante> {
+  async update(id: string, updateDto: UpdateBeneficioEstudianteDto): Promise<BeneficioEstudiante> {
     const beneficioEstudiante = await this.findOne(id);
     Object.assign(beneficioEstudiante, updateDto);
     return await this.beneficioEstudianteRepository.save(beneficioEstudiante);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     const beneficioEstudiante = await this.findOne(id);
     await this.beneficioEstudianteRepository.remove(beneficioEstudiante);
   }

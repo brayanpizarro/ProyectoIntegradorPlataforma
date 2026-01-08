@@ -41,7 +41,7 @@ export class FamiliaService {
     });
   }
 
-  async findOne(id: number): Promise<Familia> {
+  async findOne(id: string): Promise<Familia> {
     const familia = await this.familiaRepository.findOne({
       where: { id_familia: id },
       relations: ['estudiante'],
@@ -61,7 +61,7 @@ export class FamiliaService {
     });
   }
 
-  async update(id: number, updateFamiliaDto: UpdateFamiliaDto): Promise<Familia> {
+  async update(id: string, updateFamiliaDto: UpdateFamiliaDto): Promise<Familia> {
     const familia = await this.findOne(id);
     
     // Merge de los nuevos datos
@@ -75,7 +75,7 @@ export class FamiliaService {
   // fueron migrados a la tabla normalizada 'familiar'
   // Usar FamiliarService para gestionar familiares individuales
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     const familia = await this.findOne(id);
     await this.familiaRepository.remove(familia);
   }

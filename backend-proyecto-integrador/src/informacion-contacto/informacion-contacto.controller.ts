@@ -27,7 +27,7 @@ export class InformacionContactoController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id') id: string) {
     return this.informacionContactoService.findOne(id);
   }
 
@@ -46,14 +46,14 @@ export class InformacionContactoController {
 
   @Patch(':id')
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateDto: UpdateInformacionContactoDto,
   ) {
     return this.informacionContactoService.update(id, updateDto);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(@Param('id') id: string) {
     return this.informacionContactoService.remove(id);
   }
 }

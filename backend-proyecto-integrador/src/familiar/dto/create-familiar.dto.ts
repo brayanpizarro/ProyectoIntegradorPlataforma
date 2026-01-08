@@ -5,9 +5,9 @@ export class CreateFamiliarDto {
   @IsNotEmpty()
   estudiante_id: string;
 
-  @IsInt()
+  @IsUUID()
   @IsNotEmpty()
-  tipo_familiar_id: number;
+  tipo_familiar_id: string;
 
   @IsString()
   @IsOptional()

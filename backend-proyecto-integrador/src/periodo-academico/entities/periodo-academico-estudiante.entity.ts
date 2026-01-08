@@ -38,8 +38,8 @@ export class PeriodoAcademicoEstudiante {
   @JoinColumn({ name: 'periodo_academico_id' })
   periodo_academico: PeriodoAcademico;
 
-  @Column({ type: 'int', nullable: true })
-  institucion_id: number;
+  @Column({ type: 'uuid', nullable: true })
+  institucion_id: string;
 
   @ManyToOne(() => Institucion, { nullable: true })
   @JoinColumn({ name: 'institucion_id' })

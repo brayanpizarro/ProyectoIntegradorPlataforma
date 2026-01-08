@@ -48,8 +48,8 @@ export class FamiliarService {
     });
   }
 
-  async findOneTipo(id: number): Promise<TipoFamiliar> {
-    const tipo = await this.tipoFamiliarRepository.findOne({ where: { id } });
+  async findOneTipo(id: string): Promise<TipoFamiliar> {
+    const tipo = await this.tipoFamiliarRepository.findOne({ where: { id_tipo_familiar: id } });
 
     if (!tipo) {
       throw new NotFoundException(`Tipo familiar con ID ${id} no encontrado`);
@@ -58,13 +58,13 @@ export class FamiliarService {
     return tipo;
   }
 
-  async updateTipo(id: number, updateDto: UpdateTipoFamiliarDto): Promise<TipoFamiliar> {
+  async updateTipo(id: string, updateDto: UpdateTipoFamiliarDto): Promise<TipoFamiliar> {
     const tipo = await this.findOneTipo(id);
     Object.assign(tipo, updateDto);
     return await this.tipoFamiliarRepository.save(tipo);
   }
 
-  async removeTipo(id: number): Promise<void> {
+  async removeTipo(id: string): Promise<void> {
     const tipo = await this.findOneTipo(id);
     await this.tipoFamiliarRepository.remove(tipo);
   }
@@ -104,9 +104,9 @@ export class FamiliarService {
     });
   }
 
-  async findOne(id: number): Promise<Familiar> {
+  async findOne(id: string): Promise<Familiar> {
     const familiar = await this.familiarRepository.findOne({
-      where: { id },
+      where: { id_familiar: id },
       relations: ['estudiante', 'tipo_familiar'],
     });
 
@@ -125,13 +125,13 @@ export class FamiliarService {
     });
   }
 
-  async update(id: number, updateDto: UpdateFamiliarDto): Promise<Familiar> {
+  async update(id: string, updateDto: UpdateFamiliarDto): Promise<Familiar> {
     const familiar = await this.findOne(id);
     Object.assign(familiar, updateDto);
     return await this.familiarRepository.save(familiar);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     const familiar = await this.findOne(id);
     await this.familiarRepository.remove(familiar);
   }

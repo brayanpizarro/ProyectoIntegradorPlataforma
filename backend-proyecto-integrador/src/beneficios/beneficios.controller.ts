@@ -38,20 +38,20 @@ export class BeneficiosController {
   }
 
   @Get('catalogo/:id')
-  findBeneficio(@Param('id', ParseIntPipe) id: number) {
+  findBeneficio(@Param('id') id: string) {
     return this.beneficiosService.findBeneficio(id);
   }
 
   @Patch('catalogo/:id')
   updateBeneficio(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateDto: UpdateBeneficioDto,
   ) {
     return this.beneficiosService.updateBeneficio(id, updateDto);
   }
 
   @Delete('catalogo/:id')
-  removeBeneficio(@Param('id', ParseIntPipe) id: number) {
+  removeBeneficio(@Param('id') id: string) {
     return this.beneficiosService.removeBeneficio(id);
   }
 
@@ -73,7 +73,7 @@ export class BeneficiosController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id') id: string) {
     return this.beneficiosService.findOne(id);
   }
 
@@ -84,14 +84,14 @@ export class BeneficiosController {
 
   @Patch(':id')
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateDto: UpdateBeneficioEstudianteDto,
   ) {
     return this.beneficiosService.update(id, updateDto);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(@Param('id') id: string) {
     return this.beneficiosService.remove(id);
   }
 }

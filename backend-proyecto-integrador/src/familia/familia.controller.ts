@@ -30,7 +30,7 @@ export class FamiliaController {
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return await this.familiaService.findOne(+id);
+    return await this.familiaService.findOne(id);
   }
 
   @Get('estudiante/:estudianteId')
@@ -40,7 +40,7 @@ export class FamiliaController {
 
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateFamiliaDto: UpdateFamiliaDto) {
-    return await this.familiaService.update(+id, updateFamiliaDto);
+    return await this.familiaService.update(id, updateFamiliaDto);
   }
 
   // === ENDPOINTS DE DESCRIPCIÓN ELIMINADOS ===
@@ -52,6 +52,6 @@ export class FamiliaController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: string) {
-    await this.familiaService.remove(+id);
+    await this.familiaService.remove(id);
   }
 }

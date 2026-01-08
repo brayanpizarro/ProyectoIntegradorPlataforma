@@ -32,13 +32,13 @@ export class HistorialAcademicoController {
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   async findOne(@Param('id') id: string) {
-    return await this.historialAcademicoService.findOne(+id);
+    return await this.historialAcademicoService.findOne(id);
   }
 
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
   async update(@Param('id') id: string, @Body() updateHistorialAcademicoDto: UpdateHistorialAcademicoDto) {
-    return await this.historialAcademicoService.update(+id, updateHistorialAcademicoDto);
+    return await this.historialAcademicoService.update(id, updateHistorialAcademicoDto);
   }
 
   @Post(':id/trayectoria')
@@ -47,7 +47,7 @@ export class HistorialAcademicoController {
     @Param('id') id: string,
     @Body() body: { trayectoria: string },
   ) {
-    return await this.historialAcademicoService.addTrayectoria(+id, body.trayectoria);
+    return await this.historialAcademicoService.addTrayectoria(id, body.trayectoria);
   }
 
   @Patch(':id/trayectoria/:index')
@@ -57,7 +57,7 @@ export class HistorialAcademicoController {
     @Param('index') index: string,
     @Body() body: { trayectoria: string },
   ) {
-    return await this.historialAcademicoService.updateTrayectoria(+id, +index, body.trayectoria);
+    return await this.historialAcademicoService.updateTrayectoria(id, +index, body.trayectoria);
   }
 
   @Delete(':id/trayectoria/:index')
@@ -66,13 +66,13 @@ export class HistorialAcademicoController {
     @Param('id') id: string,
     @Param('index') index: string,
   ) {
-    return await this.historialAcademicoService.deleteTrayectoria(+id, +index);
+    return await this.historialAcademicoService.deleteTrayectoria(id, +index);
   }
 
   @Delete(':id')
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: string) {
-    await this.historialAcademicoService.remove(+id);
+    await this.historialAcademicoService.remove(id);
   }
 }

@@ -21,14 +21,14 @@ export class RamosCursadosService {
     });
   }
 
-  async findOne(id: number): Promise<RamosCursados | null> {
+  async findOne(id: string): Promise<RamosCursados | null> {
     return await this.ramosCursadosRepository.findOne({
       where: { id_ramo: id },
       relations: ['estudiante']
     });
   }
 
-  async findByEstudiante(estudianteId: string, filtros?: { periodo_academico_estudiante_id?: number }): Promise<RamosCursados[]> {
+  async findByEstudiante(estudianteId: string, filtros?: { periodo_academico_estudiante_id?: string }): Promise<RamosCursados[]> {
     const whereCondition: any = { estudiante: { id_estudiante: estudianteId } };
     
     if (filtros?.periodo_academico_estudiante_id) {
@@ -44,7 +44,7 @@ export class RamosCursadosService {
     });
   }
 
-  async update(id: number, updateRamosCursadosDto: UpdateRamosCursadosDto): Promise<RamosCursados | null> {
+  async update(id: string, updateRamosCursadosDto: UpdateRamosCursadosDto): Promise<RamosCursados | null> {
     await this.ramosCursadosRepository.update({ id_ramo: id }, updateRamosCursadosDto);
     return this.findOne(id);
   }
@@ -53,7 +53,7 @@ export class RamosCursadosService {
   // Los campos año/semestre fueron migrados a periodo_academico
   // Usar PeriodoAcademicoService para gestionar períodos académicos
 
-  async remove(id: number): Promise<void> {
-    await this.ramosCursadosRepository.delete(id);
+  async remove(id: string): Promise<void> {
+    await this.ramosCursadosRepository.delete({ id_ramo: id });
   }
 }

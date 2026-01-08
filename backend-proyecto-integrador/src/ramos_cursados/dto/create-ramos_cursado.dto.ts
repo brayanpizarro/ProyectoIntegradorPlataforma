@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, IsOptional, IsUUID } from 'class-validator';
 
 export class CreateRamosCursadosDto {
   @IsString()
@@ -8,8 +8,8 @@ export class CreateRamosCursadosDto {
   // === CAMPOS MIGRADOS A PERIODO_ACADEMICO ===
   // año y semestre fueron eliminados, usar periodo_academico_estudiante_id
   @IsOptional()
-  @IsNumber()
-  periodo_academico_estudiante_id?: number;
+  @IsUUID()
+  periodo_academico_estudiante_id?: string;
 
   @IsOptional()
   @IsNumber()

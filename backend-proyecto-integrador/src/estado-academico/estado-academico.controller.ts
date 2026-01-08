@@ -34,7 +34,7 @@ export class EstadoAcademicoController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id') id: string) {
     return this.estadoAcademicoService.findOne(id);
   }
 
@@ -45,7 +45,7 @@ export class EstadoAcademicoController {
 
   @Patch(':id')
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateDto: UpdateEstadoAcademicoDto,
   ) {
     return this.estadoAcademicoService.update(id, updateDto);
@@ -60,7 +60,7 @@ export class EstadoAcademicoController {
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(@Param('id') id: string) {
     return this.estadoAcademicoService.remove(id);
   }
 }

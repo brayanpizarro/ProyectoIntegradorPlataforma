@@ -40,27 +40,27 @@ export class PeriodoAcademicoController {
 
   @Get('periodos/buscar')
   findByAñoSemestre(
-    @Query('año', ParseIntPipe) año: number,
-    @Query('semestre', ParseIntPipe) semestre: number,
+    @Query('año') año: string,
+    @Query('semestre') semestre: string,
   ) {
     return this.periodoAcademicoService.findByAñoSemestre(año, semestre);
   }
 
   @Get('periodos/:id')
-  findPeriodo(@Param('id', ParseIntPipe) id: number) {
+  findPeriodo(@Param('id') id: string) {
     return this.periodoAcademicoService.findPeriodo(id);
   }
 
   @Patch('periodos/:id')
   updatePeriodo(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateDto: UpdatePeriodoAcademicoDto,
   ) {
     return this.periodoAcademicoService.updatePeriodo(id, updateDto);
   }
 
   @Delete('periodos/:id')
-  removePeriodo(@Param('id', ParseIntPipe) id: number) {
+  removePeriodo(@Param('id') id: string) {
     return this.periodoAcademicoService.removePeriodo(id);
   }
 
@@ -77,7 +77,7 @@ export class PeriodoAcademicoController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id') id: string) {
     return this.periodoAcademicoService.findOne(id);
   }
 
@@ -87,20 +87,20 @@ export class PeriodoAcademicoController {
   }
 
   @Get('periodo/:periodoId')
-  findByPeriodo(@Param('periodoId', ParseIntPipe) periodoId: number) {
+  findByPeriodo(@Param('periodoId') periodoId: string) {
     return this.periodoAcademicoService.findByPeriodo(periodoId);
   }
 
   @Patch(':id')
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateDto: UpdatePeriodoAcademicoEstudianteDto,
   ) {
     return this.periodoAcademicoService.update(id, updateDto);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(@Param('id') id: string) {
     return this.periodoAcademicoService.remove(id);
   }
 }

@@ -5,9 +5,9 @@ export class CreateBeneficioEstudianteDto {
   @IsNotEmpty()
   estudiante_id: string;
 
-  @IsInt()
+  @IsUUID()
   @IsNotEmpty()
-  beneficio_id: number;
+  beneficio_id: string;
 
   @IsInt()
   @Min(1900)

@@ -5,9 +5,9 @@ export class CreateEnsayoPaesDto {
   @IsNotEmpty()
   estudiante_id: string;
 
-  @IsInt()
+  @IsUUID()
   @IsOptional()
-  admision_id?: number;
+  admision_id?: string;
 
   @IsInt()
   @Min(2000)

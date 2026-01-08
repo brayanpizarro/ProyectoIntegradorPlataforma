@@ -33,20 +33,20 @@ export class FamiliarController {
   }
 
   @Get('tipos/:id')
-  findOneTipo(@Param('id', ParseIntPipe) id: number) {
+  findOneTipo(@Param('id') id: string) {
     return this.familiarService.findOneTipo(id);
   }
 
   @Patch('tipos/:id')
   updateTipo(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateDto: UpdateTipoFamiliarDto,
   ) {
     return this.familiarService.updateTipo(id, updateDto);
   }
 
   @Delete('tipos/:id')
-  removeTipo(@Param('id', ParseIntPipe) id: number) {
+  removeTipo(@Param('id') id: string) {
     return this.familiarService.removeTipo(id);
   }
 
@@ -68,7 +68,7 @@ export class FamiliarController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id') id: string) {
     return this.familiarService.findOne(id);
   }
 
@@ -79,14 +79,14 @@ export class FamiliarController {
 
   @Patch(':id')
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateDto: UpdateFamiliarDto,
   ) {
     return this.familiarService.update(id, updateDto);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(@Param('id') id: string) {
     return this.familiarService.remove(id);
   }
 }

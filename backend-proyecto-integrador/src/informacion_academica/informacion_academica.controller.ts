@@ -37,13 +37,13 @@ export class InformacionAcademicaController {
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   async findOne(@Param('id') id: string) {
-    return await this.informacionAcademicaService.findOne(+id);
+    return await this.informacionAcademicaService.findOne(id);
   }
 
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
   async update(@Param('id') id: string, @Body() updateInformacionAcademicaDto: UpdateInformacionAcademicaDto) {
-    return await this.informacionAcademicaService.update(+id, updateInformacionAcademicaDto);
+    return await this.informacionAcademicaService.update(id, updateInformacionAcademicaDto);
   }
 
   @Patch(':id/promedio/:nivel')
@@ -53,7 +53,7 @@ export class InformacionAcademicaController {
     @Param('nivel') nivel: '1' | '2' | '3' | '4',
     @Body() body: { promedio: number },
   ) {
-    return await this.informacionAcademicaService.updatePromedio(+id, nivel, body.promedio);
+    return await this.informacionAcademicaService.updatePromedio(id, nivel, body.promedio);
   }
 
   // === ENDPOINTS DE ENSAYO PAES ELIMINADOS ===
@@ -64,6 +64,6 @@ export class InformacionAcademicaController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.informacionAcademicaService.remove(+id);
+    return this.informacionAcademicaService.remove(id);
   }
 }

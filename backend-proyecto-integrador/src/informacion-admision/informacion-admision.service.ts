@@ -40,9 +40,9 @@ export class InformacionAdmisionService {
     });
   }
 
-  async findOne(id: number): Promise<InformacionAdmision> {
+  async findOne(id: string): Promise<InformacionAdmision> {
     const admision = await this.admisionRepository.findOne({
-      where: { id },
+      where: { id_informacion_admision: id },
       relations: ['estudiante', 'ensayos_paes'],
     });
 
@@ -66,13 +66,13 @@ export class InformacionAdmisionService {
     return admision;
   }
 
-  async update(id: number, updateDto: UpdateInformacionAdmisionDto): Promise<InformacionAdmision> {
+  async update(id: string, updateDto: UpdateInformacionAdmisionDto): Promise<InformacionAdmision> {
     const admision = await this.findOne(id);
     Object.assign(admision, updateDto);
     return await this.admisionRepository.save(admision);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     const admision = await this.findOne(id);
     await this.admisionRepository.remove(admision);
   }
@@ -90,9 +90,9 @@ export class InformacionAdmisionService {
     });
   }
 
-  async findEnsayo(id: number): Promise<EnsayoPaes> {
+  async findEnsayo(id: string): Promise<EnsayoPaes> {
     const ensayo = await this.ensayoRepository.findOne({
-      where: { id },
+      where: { id_ensayo_paes: id },
       relations: ['estudiante', 'admision'],
     });
 
@@ -111,13 +111,13 @@ export class InformacionAdmisionService {
     });
   }
 
-  async updateEnsayo(id: number, updateDto: UpdateEnsayoPaesDto): Promise<EnsayoPaes> {
+  async updateEnsayo(id: string, updateDto: UpdateEnsayoPaesDto): Promise<EnsayoPaes> {
     const ensayo = await this.findEnsayo(id);
     Object.assign(ensayo, updateDto);
     return await this.ensayoRepository.save(ensayo);
   }
 
-  async removeEnsayo(id: number): Promise<void> {
+  async removeEnsayo(id: string): Promise<void> {
     const ensayo = await this.findEnsayo(id);
     await this.ensayoRepository.remove(ensayo);
   }

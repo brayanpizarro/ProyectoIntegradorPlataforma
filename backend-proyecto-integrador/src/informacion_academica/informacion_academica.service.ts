@@ -39,7 +39,7 @@ export class InformacionAcademicaService {
     });
   }
 
-  async findOne(id: number): Promise<InformacionAcademica> {
+  async findOne(id: string): Promise<InformacionAcademica> {
     const informacionAcademica = await this.informacionAcademicaRepository.findOne({
       where: { id_info_academico: id },
       relations: ['estudiante'],
@@ -89,7 +89,7 @@ export class InformacionAcademicaService {
     return await this.informacionAcademicaRepository.save(informacionAcademica);
   }
 
-  async update(id: number, updateInformacionAcademicaDto: UpdateInformacionAcademicaDto): Promise<InformacionAcademica> {
+  async update(id: string, updateInformacionAcademicaDto: UpdateInformacionAcademicaDto): Promise<InformacionAcademica> {
     const informacionAcademica = await this.findOne(id);
     
     Object.assign(informacionAcademica, updateInformacionAcademicaDto);
@@ -97,7 +97,7 @@ export class InformacionAcademicaService {
     return await this.informacionAcademicaRepository.save(informacionAcademica);
   }
 
-  async updatePromedio(id: number, nivel: '1' | '2' | '3' | '4', promedio: number): Promise<InformacionAcademica> {
+  async updatePromedio(id: string, nivel: '1' | '2' | '3' | '4', promedio: number): Promise<InformacionAcademica> {
     const informacionAcademica = await this.findOne(id);
     
     const campo = `promedio_${nivel}` as keyof InformacionAcademica;
@@ -110,7 +110,7 @@ export class InformacionAcademicaService {
   // Los ensayos PAES ahora se gestionan mediante el módulo informacion-admision/ensayo-paes
   // Usar EnsayoPaesService en su lugar
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     const informacionAcademica = await this.findOne(id);
     await this.informacionAcademicaRepository.remove(informacionAcademica);
   }

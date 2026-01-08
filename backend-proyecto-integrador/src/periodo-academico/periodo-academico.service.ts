@@ -48,8 +48,8 @@ export class PeriodoAcademicoService {
     });
   }
 
-  async findPeriodo(id: number): Promise<PeriodoAcademico> {
-    const periodo = await this.periodoRepository.findOne({ where: { id } });
+  async findPeriodo(id: string): Promise<PeriodoAcademico> {
+    const periodo = await this.periodoRepository.findOne({ where: { id_periodo_academico: id } });
 
     if (!periodo) {
       throw new NotFoundException(`Período académico con ID ${id} no encontrado`);
@@ -70,9 +70,12 @@ export class PeriodoAcademicoService {
     return periodo;
   }
 
-  async findByAñoSemestre(año: number, semestre: number): Promise<PeriodoAcademico> {
+  async findByAñoSemestre(año: string | number, semestre: string | number): Promise<PeriodoAcademico> {
+    const añoNum = typeof año === 'string' ? parseInt(año, 10) : año;
+    const semestreNum = typeof semestre === 'string' ? parseInt(semestre, 10) : semestre;
+    
     const periodo = await this.periodoRepository.findOne({
-      where: { año, semestre },
+      where: { año: añoNum, semestre: semestreNum },
     });
 
     if (!periodo) {
@@ -82,7 +85,7 @@ export class PeriodoAcademicoService {
     return periodo;
   }
 
-  async updatePeriodo(id: number, updateDto: UpdatePeriodoAcademicoDto): Promise<PeriodoAcademico> {
+  async updatePeriodo(id: string, updateDto: UpdatePeriodoAcademicoDto): Promise<PeriodoAcademico> {
     const periodo = await this.findPeriodo(id);
 
     // Si se marca como actual, desmarcar otros
@@ -94,7 +97,7 @@ export class PeriodoAcademicoService {
     return await this.periodoRepository.save(periodo);
   }
 
-  async removePeriodo(id: number): Promise<void> {
+  async removePeriodo(id: string): Promise<void> {
     const periodo = await this.findPeriodo(id);
     await this.periodoRepository.remove(periodo);
   }
@@ -124,9 +127,9 @@ export class PeriodoAcademicoService {
     });
   }
 
-  async findOne(id: number): Promise<PeriodoAcademicoEstudiante> {
+  async findOne(id: string): Promise<PeriodoAcademicoEstudiante> {
     const periodoEstudiante = await this.periodoEstudianteRepository.findOne({
-      where: { id },
+      where: { id_periodo_academico_estudiante: id },
       relations: ['estudiante', 'periodo_academico', 'institucion'],
     });
 
@@ -147,20 +150,20 @@ export class PeriodoAcademicoService {
     });
   }
 
-  async findByPeriodo(periodoId: number): Promise<PeriodoAcademicoEstudiante[]> {
+  async findByPeriodo(periodoId: string): Promise<PeriodoAcademicoEstudiante[]> {
     return await this.periodoEstudianteRepository.find({
       where: { periodo_academico_id: periodoId },
       relations: ['estudiante', 'institucion'],
     });
   }
 
-  async update(id: number, updateDto: UpdatePeriodoAcademicoEstudianteDto): Promise<PeriodoAcademicoEstudiante> {
+  async update(id: string, updateDto: UpdatePeriodoAcademicoEstudianteDto): Promise<PeriodoAcademicoEstudiante> {
     const periodoEstudiante = await this.findOne(id);
     Object.assign(periodoEstudiante, updateDto);
     return await this.periodoEstudianteRepository.save(periodoEstudiante);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     const periodoEstudiante = await this.findOne(id);
     await this.periodoEstudianteRepository.remove(periodoEstudiante);
   }

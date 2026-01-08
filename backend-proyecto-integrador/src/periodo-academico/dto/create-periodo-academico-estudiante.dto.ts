@@ -5,13 +5,13 @@ export class CreatePeriodoAcademicoEstudianteDto {
   @IsNotEmpty()
   estudiante_id: string;
 
-  @IsInt()
+  @IsUUID()
   @IsNotEmpty()
-  periodo_academico_id: number;
+  periodo_academico_id: string;
 
-  @IsInt()
+  @IsUUID()
   @IsOptional()
-  institucion_id?: number;
+  institucion_id?: string;
 
   @IsNumber()
   @Min(1.0)

@@ -23,19 +23,19 @@ export class RamosCursadosController {
     @Query('periodo_academico_estudiante_id') periodoId?: string
   ) {
     const filtros = periodoId ? {
-      periodo_academico_estudiante_id: parseInt(periodoId)
+      periodo_academico_estudiante_id: periodoId
     } : undefined;
     return this.ramosCursadosService.findByEstudiante(estudianteId, filtros);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.ramosCursadosService.findOne(+id);
+    return this.ramosCursadosService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateRamosCursadosDto: UpdateRamosCursadosDto) {
-    return this.ramosCursadosService.update(+id, updateRamosCursadosDto);
+    return this.ramosCursadosService.update(id, updateRamosCursadosDto);
   }
 
   // === ENDPOINT fixSemestres ELIMINADO ===
@@ -43,6 +43,6 @@ export class RamosCursadosController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.ramosCursadosService.remove(+id);
+    return this.ramosCursadosService.remove(id);
   }
 }
