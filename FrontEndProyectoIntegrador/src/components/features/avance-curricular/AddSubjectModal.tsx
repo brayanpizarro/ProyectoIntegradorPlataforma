@@ -27,7 +27,7 @@ interface AddSubjectModalProps {
   open: boolean;
   onClose: () => void;
   onSave: (nuevoRamo: Ramo) => void;
-  semestre: number;
+  semestre: number | string;
 }
 
 export const AddSubjectModal: React.FC<AddSubjectModalProps> = ({

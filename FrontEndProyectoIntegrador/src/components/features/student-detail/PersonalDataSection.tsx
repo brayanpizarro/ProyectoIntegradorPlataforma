@@ -4,7 +4,6 @@ import type { Estudiante } from '../../../types';
 import { SectionDivider, EditableField, EditableTextarea } from './components';
 import { personalDataConfig, type FieldConfig } from './config/personalDataFields';
 import { 
-  getInformacionAcademicaPuntajesAdmision,
   getEstudianteEmail,
   getEstudianteTelefono,
   getEstudianteDireccion

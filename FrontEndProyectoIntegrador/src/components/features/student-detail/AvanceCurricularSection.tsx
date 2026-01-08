@@ -471,13 +471,13 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
       const periodoTexto = newSemesterData.periodo || `${new Date().getFullYear()}-${numeroSemestre}`;
 
       // Asegurar período académico y vínculo con el estudiante
-      const { periodoEstudianteId, periodoId, año, semestre } = await asegurarPeriodoParaSemestre(periodoTexto, numeroSemestre);
+      const { periodoEstudianteId, periodoId, año, semestre: semestreAsegurado } = await asegurarPeriodoParaSemestre(periodoTexto, numeroSemestre);
 
       const nuevoSemestre: MallaCurricular = {
         semestre: numeroSemestre,
         año,
         periodo: periodoTexto,
-        periodoKey: `${año}-${semestre}`,
+        periodoKey: `${año}-${semestreAsegurado ?? numeroSemestre}`,
         fechaInicio: newSemesterData.fechaInicio,
         fechaFin: newSemesterData.fechaFin,
         periodoEstudianteId,
@@ -510,7 +510,7 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
       if (!semestreSeleccionado) {
         throw new Error('No se pudo determinar el semestre seleccionado');
       }
-      const { periodoEstudianteId, periodoId, año, semestre } = await asegurarPeriodoParaSemestre(
+      const { periodoEstudianteId, periodoId, año, semestre: semestreAsegurado } = await asegurarPeriodoParaSemestre(
         semestreSeleccionado?.periodo,
         semestreSeleccionado?.semestre
       );
@@ -534,14 +534,14 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
         const ramoCreado = await ramosCursadosService.create(ramoData as any);
         
         // Actualizar estado local con el ramo creado
-        setMallaCurricular(prev => prev.map(semestre => {
-          if (semestre.periodoKey === selectedSemestre || semestre.periodo === selectedSemestre) {
+        setMallaCurricular(prev => prev.map(semestreItem => {
+          if (semestreItem.periodoKey === selectedSemestre || semestreItem.periodo === selectedSemestre) {
             return {
-              ...semestre,
-              periodoEstudianteId: periodoEstudianteId || semestre.periodoEstudianteId,
-              periodoId: periodoId || semestre.periodoId,
-              periodo: semestre.periodo || `${año}-${semestre}`,
-              ramos: [...semestre.ramos, {
+              ...semestreItem,
+              periodoEstudianteId: periodoEstudianteId || semestreItem.periodoEstudianteId,
+              periodoId: periodoId || semestreItem.periodoId,
+              periodo: semestreItem.periodo || `${año}-${semestreAsegurado ?? semestreItem.semestre}`,
+              ramos: [...semestreItem.ramos, {
                 id: ramoCreado.id_ramo || Date.now(),
                 codigo: ramoCreado.codigo_ramo || `RAMO-${Date.now()}`,
                 nombre: nuevoRamo.nombre,
@@ -550,23 +550,23 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
                 estado: nuevoRamo.estado,
                 nota: nuevoRamo.nota,
                 backendId: ramoCreado.id_ramo,
-                semestre,
+                semestre: semestreAsegurado ?? semestreItem.semestre,
                 año,
               }]
             };
           }
-          return semestre;
+          return semestreItem;
         }));
       } catch (backendError) {
         // Si falla el backend, agregar localmente
-        setMallaCurricular(prev => prev.map(semestre => {
-          if (semestre.periodoKey === selectedSemestre || semestre.periodo === selectedSemestre) {
+        setMallaCurricular(prev => prev.map(semestreItem => {
+          if (semestreItem.periodoKey === selectedSemestre || semestreItem.periodo === selectedSemestre) {
             return {
-              ...semestre,
-              periodoEstudianteId: semestre.periodoEstudianteId || periodoEstudianteId,
-              periodoId: semestre.periodoId || periodoId,
-              periodo: semestre.periodo || `${año}-${semestre}`,
-              ramos: [...semestre.ramos, {
+              ...semestreItem,
+              periodoEstudianteId: semestreItem.periodoEstudianteId || periodoEstudianteId,
+              periodoId: semestreItem.periodoId || periodoId,
+              periodo: semestreItem.periodo || `${año}-${semestreAsegurado ?? semestreItem.semestre}`,
+              ramos: [...semestreItem.ramos, {
                 id: Date.now(),
                 codigo: `LOCAL-${Date.now()}`,
                 nombre: nuevoRamo.nombre,
@@ -574,12 +574,12 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
                 prerequisitos: nuevoRamo.prerequisitos || [],
                 estado: nuevoRamo.estado,
                 nota: nuevoRamo.nota,
-                semestre,
+                semestre: semestreAsegurado ?? semestreItem.semestre,
                 año
               }]
             };
           }
-          return semestre;
+          return semestreItem;
         }));
       }
       
@@ -891,7 +891,7 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
               if (idToUse) {
                 const ramoData = {
                   estado: updatedSubject.estado,
-                  promedio_final: updatedSubject.nota || null,
+                  promedio_final: updatedSubject.nota ?? undefined,
                   oportunidad: updatedSubject.oportunidad || 1
                 };
                 

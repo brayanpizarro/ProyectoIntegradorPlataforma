@@ -15,12 +15,14 @@ export const StatusEstudiante = {
   RETIRADO: 'retirado' as const,
 };
 
-export enum TipoBeneficio {
-  BECA = 'BECA',
-  CREDITO = 'CREDITO',
-  GRATUIDAD = 'GRATUIDAD',
-  BENEFICIO_ESTATAL = 'BENEFICIO_ESTATAL',
-}
+export const TipoBeneficio = {
+  BECA: 'BECA',
+  CREDITO: 'CREDITO',
+  GRATUIDAD: 'GRATUIDAD',
+  BENEFICIO_ESTATAL: 'BENEFICIO_ESTATAL',
+} as const;
+
+export type TipoBeneficio = typeof TipoBeneficio[keyof typeof TipoBeneficio];
 
 // ============================================
 

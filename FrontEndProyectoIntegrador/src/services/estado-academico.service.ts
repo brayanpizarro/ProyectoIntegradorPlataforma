@@ -5,7 +5,8 @@ export const StatusEstudiante = {
   INACTIVO: 'inactivo',
   SUSPENDIDO: 'suspendido',
   ELIMINADO: 'eliminado',
-  EGRESADO: 'egresado'
+  EGRESADO: 'egresado',
+  RETIRADO: 'retirado'
 } as const;
 
 export type StatusEstudiante = typeof StatusEstudiante[keyof typeof StatusEstudiante];
