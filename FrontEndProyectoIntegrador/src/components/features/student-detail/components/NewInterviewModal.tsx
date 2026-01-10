@@ -49,12 +49,16 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
         return typeof n === 'number' ? Math.max(max, n) : max;
       }, 0);
 
+      // Obtener el ID del usuario actual
+      const userId = user.id;
+      console.log('📌 ID Usuario para entrevista:', userId, 'Usuario completo:', user);
+
       // Valores requeridos por el DTO del backend
       const payload = {
         id_estudiante: String(estudianteId),
-        id_usuario: Number((user as any).id || (user as any).userId || 1),
+        id_usuario: userId, // Enviamos el UUID como string
         fecha: new Date(fecha),
-        nombre_tutor: `${(user as any).nombres || ''} ${(user as any).apellidos || ''}`.trim() || user.email || 'Entrevistador',
+        nombre_tutor: `${user.nombres || ''} ${user.apellidos || ''}`.trim() || user.email || 'Entrevistador',
         año: new Date(fecha).getFullYear(),
         numero_entrevista: maxNumero + 1,
         duracion_minutos: duracionMinutos,

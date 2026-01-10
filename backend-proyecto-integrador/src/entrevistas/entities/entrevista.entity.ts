@@ -52,7 +52,7 @@ export class Entrevista {
   usuario: User;
 
   @Column({ name: 'id_usuario' })
-  usuarioId: number;
+  usuarioId: string;
 
   @Column({ type: 'timestamp' })
   fecha: Date;

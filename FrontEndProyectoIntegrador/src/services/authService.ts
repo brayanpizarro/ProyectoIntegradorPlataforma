@@ -161,11 +161,21 @@ class AuthService {
   // ================================
 
   private saveAuthData(authResponse: AuthResponse): void {
-    const userToSave = { ...authResponse.user };
-    const userAny = userToSave as Record<string, unknown>;
-    if (!userToSave.role && userAny.rol) {
-      userToSave.role = userAny.rol as 'admin' | 'tutor' | 'invitado' | 'academico' | 'estudiante';
-    }
+    const userAny = authResponse.user as any;
+    
+    // Mapear campos del backend al formato del frontend
+    const userToSave: Usuario = {
+      id: String(authResponse.user.id || userAny.sub || ''),
+      email: authResponse.user.email,
+      nombres: userAny.nombre || userAny.nombres || '',
+      apellidos: userAny.apellido || userAny.apellidos || '',
+      role: (authResponse.user.role || userAny.rol || 'invitado') as 'admin' | 'tutor' | 'invitado' | 'academico' | 'estudiante',
+      rut: authResponse.user.rut,
+      telefono: authResponse.user.telefono,
+      direccion: authResponse.user.direccion,
+      fecha_nacimiento: authResponse.user.fecha_nacimiento,
+      activo: authResponse.user.activo,
+    };
     
     localStorage.setItem('accesstoken', authResponse.accessToken);
     localStorage.setItem('refreshtoken', authResponse.refreshToken);

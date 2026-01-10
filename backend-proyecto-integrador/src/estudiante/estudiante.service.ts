@@ -76,7 +76,7 @@ export class EstudianteService {
     // Crear entrevista inicial automáticamente
     await this.entrevistasService.create({
       id_estudiante: estudianteGuardado.id_estudiante,
-      id_usuario: 1, // Usuario admin por defecto
+      id_usuario: '1', // Usuario admin por defecto
       fecha: new Date().toISOString(),
       nombre_tutor: 'Tutor Asignado',
       año: new Date().getFullYear(),
