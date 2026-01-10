@@ -29,8 +29,7 @@ export class EmailService {
     // Validar que las credenciales estén configuradas
     if (!emailConfig.auth.user || !emailConfig.auth.pass) {
       this.logger.warn(
-        '⚠️  Las credenciales de email no están configuradas. ' +
-        'Por favor configura EMAIL_USER y EMAIL_PASSWORD en tu archivo .env'
+        'Las credenciales de email no están configuradas. '
       );
     }
 

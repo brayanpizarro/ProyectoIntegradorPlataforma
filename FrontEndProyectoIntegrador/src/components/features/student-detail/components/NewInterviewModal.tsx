@@ -22,12 +22,18 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
   const [duracionMinutos, setDuracionMinutos] = useState<number>(60);
   const [tipoEntrevista, setTipoEntrevista] = useState<'presencial' | 'virtual' | 'mixta'>('presencial');
   const [estadoEntrevista, setEstadoEntrevista] = useState<'programada' | 'completada' | 'cancelada' | 'reprogramada'>('completada');
-  const [submitting, setSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const user = authService.getCurrentUser();
   const nombreEntrevistador = user ? `${user.nombres || ''} ${user.apellidos || ''}`.trim() || user.email || 'Entrevistador' : 'Usuario Actual';
 
   const handleCrearEntrevista = async () => {
-    if (submitting) return;
+    // Prevenir múltiples envíos
+    if (isSubmitting) {
+      console.log('⚠️ Ya se está procesando una solicitud');
+      return;
+    }
+
+    setIsSubmitting(true);
 
     const user = authService.getCurrentUser();
     if (!user) {
@@ -36,8 +42,6 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
     }
 
     try {
-      setSubmitting(true);
-
       // Calcular siguiente número de entrevista del estudiante
       const entrevistasPrevias = await entrevistaService.getByEstudiante(String(estudianteId));
       const maxNumero = entrevistasPrevias.reduce((max, ent) => {
@@ -71,7 +75,7 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
       console.error('Error creando entrevista', err);
       alert('No se pudo crear la entrevista. Revisa los datos e inténtalo nuevamente.');
     } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -165,8 +169,8 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
         <Button onClick={onClose} variant="outlined" color="inherit">
           Cancelar
         </Button>
-        <Button onClick={handleCrearEntrevista} variant="contained" color="primary">
-          Crear y Abrir Entrevista
+        <Button onClick={handleCrearEntrevista} variant="contained" color="primary" disabled={isSubmitting}>
+          {isSubmitting ? 'Creando...' : 'Crear y Abrir Entrevista'}
         </Button>
       </DialogActions>
     </Dialog>
