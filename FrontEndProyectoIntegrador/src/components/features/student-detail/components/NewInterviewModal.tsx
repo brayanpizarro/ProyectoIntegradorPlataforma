@@ -50,14 +50,25 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
       }, 0);
 
       // Obtener el ID del usuario actual
-      const userId = user.id;
-      console.log('📌 ID Usuario para entrevista:', userId, 'Usuario completo:', user);
+      const userId = (user as any)?.id ?? (user as any)?.userId ?? (user as any)?.sub;
+      const userIdStr = userId ? String(userId) : '';
+
+      // Validar UUID simple; si no es válido, avisar y detener
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(userIdStr)) {
+        console.error('❌ id_usuario inválido para entrevista:', userIdStr, user);
+        alert('No se pudo obtener un id de usuario válido (UUID). Cierra sesión y vuelve a entrar para intentar nuevamente.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      console.log('📌 ID Usuario para entrevista:', userIdStr, 'Usuario completo:', user);
 
       // Valores requeridos por el DTO del backend
       const payload = {
         id_estudiante: String(estudianteId),
-        id_usuario: userId, // Enviamos el UUID como string
-        fecha: new Date(fecha),
+        id_usuario: userIdStr,
+        fecha: new Date(fecha).toISOString(),
         nombre_tutor: `${user.nombres || ''} ${user.apellidos || ''}`.trim() || user.email || 'Entrevistador',
         año: new Date(fecha).getFullYear(),
         numero_entrevista: maxNumero + 1,

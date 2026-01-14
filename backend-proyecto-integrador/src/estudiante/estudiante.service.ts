@@ -73,21 +73,7 @@ export class EstudianteService {
       id_estudiante: estudianteGuardado.id_estudiante,
     });
 
-    // Crear entrevista inicial automáticamente
-    await this.entrevistasService.create({
-      id_estudiante: estudianteGuardado.id_estudiante,
-      id_usuario: '1', // Usuario admin por defecto
-      fecha: new Date().toISOString(),
-      nombre_tutor: 'Tutor Asignado',
-      año: new Date().getFullYear(),
-      numero_entrevista: 1,
-      duracion_minutos: 60,
-      tipo_entrevista: 'presencial',
-      estado: 'programada',
-      observaciones: 'Entrevista inicial creada automáticamente',
-      temas_abordados: ['Entrevista inicial', 'Evaluación general'],
-      etiquetas: []
-    });
+    // Ya no se crea entrevista inicial automáticamente; se hace cuando el usuario la registra.
 
     // Si se proporciona id_institucion en el DTO, no se crea institución por defecto
     // El frontend o usuario debe asignar la institución posteriormente si es necesario
