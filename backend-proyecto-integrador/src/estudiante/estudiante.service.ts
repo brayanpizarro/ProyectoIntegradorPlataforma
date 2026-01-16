@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/commo
 import { CreateEstudianteDto } from './dto/create-estudiante.dto';
 import { UpdateEstudianteDto } from './dto/update-estudiante.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Estudiante } from './entities/estudiante.entity';
 import { FamiliaService } from '../familia/familia.service';
 import { InformacionAcademicaService } from '../informacion_academica/informacion_academica.service';
@@ -11,6 +11,18 @@ import { InstitucionService } from '../institucion/institucion.service';
 import { EntrevistasService } from '../entrevistas/entrevistas.service';
 import { InformacionContactoService } from '../informacion-contacto/informacion-contacto.service';
 import { EstadoAcademicoService } from '../estado-academico/estado-academico.service';
+import { HistorialAcademico } from '../historial_academico/entities/historial_academico.entity';
+import { InformacionAcademica } from '../informacion_academica/entities/informacion_academica.entity';
+import { InformacionContacto } from '../informacion-contacto/entities/informacion-contacto.entity';
+import { EstadoAcademico } from '../estado-academico/entities/estado-academico.entity';
+import { BeneficioEstudiante } from '../beneficios/entities/beneficio-estudiante.entity';
+import { Familiar } from '../familiar/entities/familiar.entity';
+import { Familia } from '../familia/entities/familia.entity';
+import { InformacionAdmision } from '../informacion-admision/entities/informacion-admision.entity';
+import { EnsayoPaes } from '../informacion-admision/entities/ensayo-paes.entity';
+import { Entrevista } from '../entrevistas/entities/entrevista.entity';
+import { PeriodoAcademicoEstudiante } from '../periodo-academico/entities/periodo-academico-estudiante.entity';
+import { RamosCursados } from '../ramos_cursados/entities/ramos_cursado.entity';
 
 @Injectable()
 export class EstudianteService {
@@ -247,7 +259,35 @@ async findOne(id: string) {
     return this.findOne(id);
   }
 
-  remove(id: string) {
-    return this.estudianteRepository.delete(id);
+  async remove(id: string) {
+    // Borrado seguro en cascada por ausencia de onDelete en varias FK
+    return this.estudianteRepository.manager.transaction(async (manager) => {
+      // Periodos y ramos asociados
+      const periodos = await manager.find(PeriodoAcademicoEstudiante, {
+        where: { estudiante_id: id },
+      });
+      const periodosIds = periodos.map((p) => p.id_periodo_academico_estudiante);
+      if (periodosIds.length) {
+        await manager.delete(RamosCursados, {
+          periodo_academico_estudiante_id: In(periodosIds),
+        });
+      }
+
+      // Tablas dependientes directas
+      await manager.delete(InformacionContacto, { estudiante_id: id });
+      await manager.delete(EstadoAcademico, { estudiante_id: id });
+      await manager.delete(InformacionAcademica, { estudiante: { id_estudiante: id } as any });
+      await manager.delete(HistorialAcademico, { estudiante: { id_estudiante: id } as any });
+      await manager.delete(BeneficioEstudiante, { estudiante_id: id });
+      await manager.delete(Familiar, { estudiante_id: id });
+      await manager.delete(Familia, { estudiante: { id_estudiante: id } as any });
+      await manager.delete(EnsayoPaes, { estudiante_id: id });
+      await manager.delete(InformacionAdmision, { estudiante_id: id });
+      await manager.delete(Entrevista, { estudianteId: id });
+      await manager.delete(PeriodoAcademicoEstudiante, { estudiante_id: id });
+
+      // Finalmente, el estudiante
+      await manager.delete(Estudiante, { id_estudiante: id });
+    });
   }
 }
