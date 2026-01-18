@@ -1,4 +1,5 @@
-import { Box, Typography, List, ListItemButton, Chip, Paper, Alert } from '@mui/material';
+import { useMemo, useState } from 'react';
+import { Box, Typography, List, ListItemButton, Chip, Paper, Alert, TextField, Button } from '@mui/material';
 
 interface SidebarSection {
   title: string;
@@ -15,14 +16,33 @@ interface SidebarProps {
   onSectionClick: (sectionId: string, sectionTitle: string, type: 'note' | 'data') => void;
   activePanel?: 'left' | 'right';
   splitViewActive?: boolean;
+  customTags?: string[];
+  onAddCustomTag?: (tag: string) => void;
 }
 
 export function Sidebar({ 
   sections, 
   onSectionClick, 
   activePanel = 'left',
-  splitViewActive = false 
+  splitViewActive = false,
+  customTags = [],
+  onAddCustomTag,
 }: SidebarProps) {
+  const [newTag, setNewTag] = useState('');
+
+  const slugifyTag = useMemo(
+    () => (tag: string) => tag.trim().toLowerCase().replace(/[^a-z0-9]+/gi, '-').replace(/(^-|-$)/g, '') || 'etiqueta',
+    []
+  );
+
+  const handleAddTag = () => {
+    const value = newTag.trim();
+    if (!value || !onAddCustomTag) return;
+    onAddCustomTag(value);
+    onSectionClick(slugifyTag(value), value, 'note');
+    setNewTag('');
+  };
+
   return (
     <Box sx={{ width: 280, minWidth: 280, maxWidth: 280, bgcolor: 'white', borderRight: 1, borderColor: 'grey.200', p: 2, overflowY: 'auto', flexShrink: 0 }}>
       {/* TÍTULO DEL SIDEBAR */}
@@ -98,6 +118,86 @@ export function Sidebar({
           </List>
         </Box>
       ))}
+
+      {(customTags.length > 0 || onAddCustomTag) && (
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1, mb: 1.5, display: 'block' }}>
+            Etiquetas personalizadas
+          </Typography>
+
+          {customTags.length > 0 ? (
+            <List sx={{ p: 0 }}>
+              {customTags.map((tag) => (
+                <ListItemButton
+                  key={tag}
+                  onClick={() => onSectionClick(slugifyTag(tag), tag, 'note')}
+                  sx={{ 
+                    borderRadius: 1.5, 
+                    mb: 0.5,
+                    py: 1,
+                    px: 2,
+                    display: 'flex',
+                    gap: 2,
+                    '&:hover': {
+                      bgcolor: 'grey.100',
+                      transform: 'translateX(4px)',
+                      transition: 'all 0.2s'
+                    }
+                  }}
+                >
+                  <Typography sx={{ fontSize: '1.1rem', width: 24, textAlign: 'center' }}>
+                    🏷️
+                  </Typography>
+                  <Typography variant="body2" fontWeight={500} sx={{ flex: 1 }}>
+                    {tag}
+                  </Typography>
+                  <Chip
+                    label="NOTA"
+                    size="small"
+                    sx={{
+                      height: 20,
+                      fontSize: '0.625rem',
+                      fontWeight: 600,
+                      bgcolor: 'info.light',
+                      color: 'info.dark'
+                    }}
+                  />
+                </ListItemButton>
+              ))}
+            </List>
+          ) : (
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+              Aún no tienes etiquetas personalizadas
+            </Typography>
+          )}
+
+          {onAddCustomTag && (
+            <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+              <TextField
+                size="small"
+                placeholder="Nueva etiqueta"
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddTag();
+                  }
+                }}
+                sx={{ flex: 1 }}
+              />
+              <Button
+                variant="contained"
+                onClick={handleAddTag}
+                disabled={!newTag.trim()}
+                size="small"
+              >
+                Agregar
+              </Button>
+            </Box>
+          )}
+        </Box>
+      )}
 
       {/* LEYENDA */}
       <Paper elevation={0} sx={{ mt: 4, p: 2, bgcolor: 'grey.50', border: 1, borderColor: 'grey.200' }}>

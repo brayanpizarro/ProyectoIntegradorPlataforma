@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, forwardRef, ConflictException } from '@nestjs/common';
 import { CreateEstudianteDto } from './dto/create-estudiante.dto';
 import { UpdateEstudianteDto } from './dto/update-estudiante.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -45,7 +45,18 @@ export class EstudianteService {
 
     // Crear estudiante sin campos de contacto
     const estudiante = this.estudianteRepository.create(estudianteData);
-    const estudianteGuardado = await this.estudianteRepository.save(estudiante);
+    let estudianteGuardado: Estudiante;
+
+    try {
+      estudianteGuardado = await this.estudianteRepository.save(estudiante);
+    } catch (error: any) {
+      // Capturar errores de llave única (ej. RUT duplicado)
+      const isDuplicateKey = error?.code === '23505' || (typeof error?.message === 'string' && error.message.includes('duplicate key'));
+      if (isDuplicateKey) {
+        throw new ConflictException('El RUT ya está registrado para otro estudiante');
+      }
+      throw error;
+    }
 
     // Crear información de contacto si se proporcionaron datos
     if (email || telefono || direccion) {

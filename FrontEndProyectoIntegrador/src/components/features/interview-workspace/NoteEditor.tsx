@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { Estudiante } from '../../../types';
 import { entrevistaService } from '../../../services';
 
@@ -23,15 +23,34 @@ export function NoteEditor({
   estudiante,
   entrevistaId
 }: NoteEditorProps) {
+  const draftKey = useMemo(() => {
+    // Clave de almacenamiento local por entrevista y etiqueta
+    const entrevistaKey = entrevistaId || estudiante?.id_estudiante || 'sin-entrevista';
+    return `entrevistaDraft:${entrevistaKey}:${sectionTitle}`;
+  }, [entrevistaId, estudiante?.id_estudiante, sectionTitle]);
+
   // ESTADOS: Gestión de notas y búsqueda
   const [notes, setNotes] = useState<Note[]>([]);
   const [newNote, setNewNote] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [searchDate, setSearchDate] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [draftLoaded, setDraftLoaded] = useState(false);
 
   // CARGAR NOTAS: Cargar desde backend
   useEffect(() => {
+    // Intentar cargar borrador local en cuanto monta
+    if (!draftLoaded) {
+      try {
+        const stored = localStorage.getItem(draftKey);
+        if (stored) setNewNote(stored);
+      } catch {
+        // ignorar errores de storage
+      } finally {
+        setDraftLoaded(true);
+      }
+    }
+
     const loadNotas = async () => {
       if (!entrevistaId && !estudiante?.id_estudiante) return;
       try {
@@ -63,7 +82,21 @@ export function NoteEditor({
       }
     };
     loadNotas();
-  }, [tabId, sectionTitle, entrevistaId, estudiante?.id_estudiante]);
+  }, [tabId, sectionTitle, entrevistaId, estudiante?.id_estudiante, draftKey, draftLoaded]);
+
+  // Persistir borrador localmente mientras se escribe
+  useEffect(() => {
+    if (!draftLoaded) return;
+    try {
+      if (newNote.trim()) {
+        localStorage.setItem(draftKey, newNote);
+      } else {
+        localStorage.removeItem(draftKey);
+      }
+    } catch {
+      // ignorar errores de storage
+    }
+  }, [newNote, draftKey, draftLoaded]);
 
   // FUNCIONES: Gestión de notas
   const handleSaveNote = async () => {
@@ -88,6 +121,11 @@ export function NoteEditor({
       
       setNotes(prev => [note, ...prev]);
       setNewNote('');
+      try {
+        localStorage.removeItem(draftKey);
+      } catch {
+        // ignorar
+      }
     } catch (error) {
       console.error('Error al guardar nota:', error);
       alert('Error al guardar la nota. Inténtalo nuevamente.');
