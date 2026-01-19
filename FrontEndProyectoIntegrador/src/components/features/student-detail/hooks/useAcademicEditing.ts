@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { informacionAcademicaService } from '../../../../services';
 import { logger } from '../../../../config';
 import type { Estudiante, InformacionAcademica } from '../../../../types';
 
@@ -18,7 +19,7 @@ export const useAcademicEditing = ({ estudiante }: UseAcademicEditingProps) => {
         'año_ingreso_beca', 'colegio', 'especialidad_colegio',
         'comuna_colegio', 'via_acceso', 'beneficios',
         'promedio_1', 'promedio_2', 'promedio_3', 'promedio_4',
-        'puntajes_paes', 'puntajes_admision', 'ensayos_paes'
+        'puntajes_paes', 'puntajes_admision', 'ensayos_paes', 'trayectoria_academica'
     ];
 
     // Handler para cambios en campos académicos
@@ -32,8 +33,8 @@ export const useAcademicEditing = ({ estudiante }: UseAcademicEditingProps) => {
 
     // Guardar cambios académicos
     const guardarCambios = async (): Promise<void> => {
-        const infoAcademicaId = estudiante?.informacionAcademica?.id_info_academico;
-        if (!infoAcademicaId || Object.keys(datosAcademicosEditados).length === 0) return;
+        const estudianteId = estudiante?.id_estudiante || (estudiante as any)?.id;
+        if (!estudianteId || Object.keys(datosAcademicosEditados).length === 0) return;
 
         const datosInfoAcademica: any = {};
 
@@ -68,17 +69,8 @@ export const useAcademicEditing = ({ estudiante }: UseAcademicEditingProps) => {
             delete datosInfoAcademica.puntajes_paes;
         }
 
-        // Llamar al backend
-        const response = await fetch(`http://localhost:3000/informacion-academica/${infoAcademicaId}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(datosInfoAcademica)
-        });
-
-        if (!response.ok) {
-            throw new Error('Error al actualizar información académica');
-        }
-
+        // Usar el servicio para actualizar
+        await informacionAcademicaService.upsertByEstudiante(estudianteId, datosInfoAcademica);
         logger.log('✅ Información académica actualizada');
     };
 
@@ -89,7 +81,10 @@ export const useAcademicEditing = ({ estudiante }: UseAcademicEditingProps) => {
 
     // Obtener datos combinados (originales + ediciones)
     const getDatosCombinados = () => {
-        if (!estudiante?.informacionAcademica) return null;
+        // Permitir mostrar ediciones aunque no exista registro previo en informacionAcademica
+        const base = Array.isArray(estudiante?.informacionAcademica)
+            ? estudiante?.informacionAcademica[0]
+            : estudiante?.informacionAcademica;
 
         const cambiosAcademicos: any = {};
         Object.keys(datosAcademicosEditados).forEach(campo => {
@@ -98,8 +93,12 @@ export const useAcademicEditing = ({ estudiante }: UseAcademicEditingProps) => {
             }
         });
 
+        if (!base && Object.keys(cambiosAcademicos).length === 0) {
+            return null;
+        }
+
         return {
-            ...estudiante.informacionAcademica,
+            ...(base || {}),
             ...cambiosAcademicos
         };
     };

@@ -43,10 +43,9 @@ export class CreateEntrevistaDto {
   @IsNotEmpty()
   id_estudiante: string;
 
-  @Type(() => Number)
-  @IsNumber()
+  @IsString()
   @IsNotEmpty()
-  id_usuario: number;
+  id_usuario: string;
 
   @IsDateString()
   @IsNotEmpty()

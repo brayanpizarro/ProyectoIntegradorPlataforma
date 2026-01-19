@@ -41,7 +41,7 @@ export class FamiliaService {
     });
   }
 
-  async findOne(id: number): Promise<Familia> {
+  async findOne(id: string): Promise<Familia> {
     const familia = await this.familiaRepository.findOne({
       where: { id_familia: id },
       relations: ['estudiante'],
@@ -61,7 +61,7 @@ export class FamiliaService {
     });
   }
 
-  async update(id: number, updateFamiliaDto: UpdateFamiliaDto): Promise<Familia> {
+  async update(id: string, updateFamiliaDto: UpdateFamiliaDto): Promise<Familia> {
     const familia = await this.findOne(id);
     
     // Merge de los nuevos datos
@@ -70,67 +70,12 @@ export class FamiliaService {
     return await this.familiaRepository.save(familia);
   }
 
-  async addDescripcionMadre(id: number, nuevaDescripcion: string): Promise<Familia> {
-    const familia = await this.findOne(id);
-    
-    if (!familia.descripcion_madre) {
-      familia.descripcion_madre = [];
-    }
-    
-    familia.descripcion_madre.push(nuevaDescripcion);
-    
-    return await this.familiaRepository.save(familia);
-  }
+  // === MÉTODOS DE DESCRIPCIÓN ELIMINADOS ===
+  // Los campos descripcion_madre, descripcion_padre, hermanos, otros_familiares
+  // fueron migrados a la tabla normalizada 'familiar'
+  // Usar FamiliarService para gestionar familiares individuales
 
-  async addDescripcionPadre(id: number, nuevaDescripcion: string): Promise<Familia> {
-    const familia = await this.findOne(id);
-    
-    if (!familia.descripcion_padre) {
-      familia.descripcion_padre = [];
-    }
-    
-    familia.descripcion_padre.push(nuevaDescripcion);
-    
-    return await this.familiaRepository.save(familia);
-  }
-
-  async updateDescripcionMadre(id: number, index: number, nuevaDescripcion: string): Promise<Familia> {
-    const familia = await this.findOne(id);
-    if (!familia.descripcion_madre || index < 0 || index >= familia.descripcion_madre.length) {
-      throw new NotFoundException(`Descripción de madre en índice ${index} no encontrada`);
-    }
-    familia.descripcion_madre[index] = nuevaDescripcion;
-    return await this.familiaRepository.save(familia);
-  }
-
-  async deleteDescripcionMadre(id: number, index: number): Promise<Familia> {
-    const familia = await this.findOne(id);
-    if (!familia.descripcion_madre || index < 0 || index >= familia.descripcion_madre.length) {
-      throw new NotFoundException(`Descripción de madre en índice ${index} no encontrada`);
-    }
-    familia.descripcion_madre.splice(index, 1);
-    return await this.familiaRepository.save(familia);
-  }
-
-  async updateDescripcionPadre(id: number, index: number, nuevaDescripcion: string): Promise<Familia> {
-    const familia = await this.findOne(id);
-    if (!familia.descripcion_padre || index < 0 || index >= familia.descripcion_padre.length) {
-      throw new NotFoundException(`Descripción de padre en índice ${index} no encontrada`);
-    }
-    familia.descripcion_padre[index] = nuevaDescripcion;
-    return await this.familiaRepository.save(familia);
-  }
-
-  async deleteDescripcionPadre(id: number, index: number): Promise<Familia> {
-    const familia = await this.findOne(id);
-    if (!familia.descripcion_padre || index < 0 || index >= familia.descripcion_padre.length) {
-      throw new NotFoundException(`Descripción de padre en índice ${index} no encontrada`);
-    }
-    familia.descripcion_padre.splice(index, 1);
-    return await this.familiaRepository.save(familia);
-  }
-
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     const familia = await this.findOne(id);
     await this.familiaRepository.remove(familia);
   }

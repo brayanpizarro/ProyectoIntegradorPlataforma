@@ -14,6 +14,7 @@ export const useStudentSemesters = ({ id, estudiante, setInformesGuardados }: Us
   const [mostrarModalDetalleSemestre, setMostrarModalDetalleSemestre] = useState(false);
   const [editandoSemestre, setEditandoSemestre] = useState(false);
   const [datosEditadosSemestre, setDatosEditadosSemestre] = useState<any>({});
+  const [hayCambiosSemestre, setHayCambiosSemestre] = useState(false);
   
   // Estado para nuevo semestre
   const [nuevoSemestreData, setNuevoSemestreData] = useState({
@@ -150,6 +151,7 @@ export const useStudentSemesters = ({ id, estudiante, setInformesGuardados }: Us
         ...prev,
         trayectoria_academica: [...(prev.trayectoria_academica || []), comentarioConFecha]
       }));
+      setHayCambiosSemestre(true);
     }
   };
 
@@ -160,6 +162,7 @@ export const useStudentSemesters = ({ id, estudiante, setInformesGuardados }: Us
         ...prev,
         trayectoria_academica: prev.trayectoria_academica.filter((_: any, i: number) => i !== index)
       }));
+      setHayCambiosSemestre(true);
     }
   };
 
@@ -175,6 +178,9 @@ export const useStudentSemesters = ({ id, estudiante, setInformesGuardados }: Us
     setDatosEditadosSemestre({});
   };
 
+  const registrarCambioSemestre = () => setHayCambiosSemestre(true);
+  const limpiarCambiosSemestre = () => setHayCambiosSemestre(false);
+
   return {
     // Estados
     mostrarModalNuevoSemestre,
@@ -189,6 +195,9 @@ export const useStudentSemesters = ({ id, estudiante, setInformesGuardados }: Us
     setDatosEditadosSemestre,
     nuevoSemestreData,
     setNuevoSemestreData,
+    hayCambiosSemestre,
+    registrarCambioSemestre,
+    limpiarCambiosSemestre,
     
     // Handlers
     handleCrearNuevoSemestre,

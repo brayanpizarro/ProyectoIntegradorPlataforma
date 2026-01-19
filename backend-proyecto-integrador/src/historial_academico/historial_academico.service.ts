@@ -29,23 +29,9 @@ export class HistorialAcademicoService {
       throw new NotFoundException(`Estudiante con ID ${createHistorialAcademicoDto.id_estudiante} no encontrado`);
     }
 
-    // TypeORM where clause does not accept null; use undefined when the field is not provided
-    const año = createHistorialAcademicoDto.año ?? undefined;
-    const semestre = createHistorialAcademicoDto.semestre ?? undefined;
-
-    const existente = await this.historialRepository.findOne({
-      where: {
-        estudiante: { id_estudiante: createHistorialAcademicoDto.id_estudiante },
-        año,
-        semestre,
-      },
-      relations: ['estudiante'],
-    });
-
-    if (existente) {
-      Object.assign(existente, { ...createHistorialAcademicoDto, estudiante });
-      return await this.historialRepository.save(existente);
-    }
+    // === CAMPOS año Y semestre ELIMINADOS ===
+    // Estos campos fueron migrados a periodo_academico
+    // Este método debe ser refactorizado para usar periodo_academico_estudiante_id
 
     const historial = this.historialRepository.create({
       ...createHistorialAcademicoDto,
@@ -58,7 +44,6 @@ export class HistorialAcademicoService {
   async findAll(): Promise<HistorialAcademico[]> {
     return await this.historialRepository.find({
       relations: ['estudiante'],
-      order: { año: 'ASC', semestre: 'ASC' },
     });
   }
 
@@ -66,29 +51,14 @@ export class HistorialAcademicoService {
     return await this.historialRepository.find({
       where: { estudiante: { id_estudiante: idEstudiante } },
       relations: ['estudiante'],
-      order: { año: 'ASC', semestre: 'ASC' },
     });
   }
 
-  async findBySemestre(año: number, semestre: number): Promise<HistorialAcademico[]> {
-    return await this.historialRepository.find({
-      where: { año, semestre },
-      relations: ['estudiante'],
-    });
-  }
+  // === MÉTODOS findBySemestre Y findByEstudianteAndSemestre ELIMINADOS ===
+  // Los campos año/semestre fueron migrados a periodo_academico
+  // Usar PeriodoAcademicoService para consultas por período
 
-  async findByEstudianteAndSemestre(idEstudiante: string, año: number, semestre: number): Promise<HistorialAcademico | null> {
-    return await this.historialRepository.findOne({
-      where: { 
-        estudiante: { id_estudiante: idEstudiante },
-        año,
-        semestre
-      },
-      relations: ['estudiante'],
-    });
-  }
-
-  async findOne(id: number): Promise<HistorialAcademico> {
+  async findOne(id: string): Promise<HistorialAcademico> {
     const historial = await this.historialRepository.findOne({
       where: { id_historial_academico: id },
       relations: ['estudiante'],
@@ -101,7 +71,7 @@ export class HistorialAcademicoService {
     return historial;
   }
 
-  async update(id: number, updateHistorialAcademicoDto: UpdateHistorialAcademicoDto): Promise<HistorialAcademico> {
+  async update(id: string, updateHistorialAcademicoDto: UpdateHistorialAcademicoDto): Promise<HistorialAcademico> {
     const historial = await this.findOne(id);
     
     Object.assign(historial, updateHistorialAcademicoDto);
@@ -109,7 +79,7 @@ export class HistorialAcademicoService {
     return await this.historialRepository.save(historial);
   }
 
-  async addTrayectoria(id: number, nuevaTrayectoria: string): Promise<HistorialAcademico> {
+  async addTrayectoria(id: string, nuevaTrayectoria: string): Promise<HistorialAcademico> {
     const historial = await this.findOne(id);
     
     if (!historial.trayectoria_academica) {
@@ -121,7 +91,7 @@ export class HistorialAcademicoService {
     return await this.historialRepository.save(historial);
   }
 
-  async updateTrayectoria(id: number, index: number, nuevaTrayectoria: string): Promise<HistorialAcademico> {
+  async updateTrayectoria(id: string, index: number, nuevaTrayectoria: string): Promise<HistorialAcademico> {
     const historial = await this.findOne(id);
     
     if (!historial.trayectoria_academica || index < 0 || index >= historial.trayectoria_academica.length) {
@@ -133,7 +103,7 @@ export class HistorialAcademicoService {
     return await this.historialRepository.save(historial);
   }
 
-  async deleteTrayectoria(id: number, index: number): Promise<HistorialAcademico> {
+  async deleteTrayectoria(id: string, index: number): Promise<HistorialAcademico> {
     const historial = await this.findOne(id);
     
     if (!historial.trayectoria_academica || index < 0 || index >= historial.trayectoria_academica.length) {
@@ -145,7 +115,7 @@ export class HistorialAcademicoService {
     return await this.historialRepository.save(historial);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     const historial = await this.findOne(id);
     await this.historialRepository.remove(historial);
   }

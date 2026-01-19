@@ -1,43 +1,51 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
   OneToOne,
   JoinColumn,
+  BeforeInsert,
 } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 import { Estudiante } from '../../estudiante/entities/estudiante.entity';
 import type { ObservacionesFamiliares } from '../../common/index';
 
 @Entity('familias')
 export class Familia {
-  @PrimaryGeneratedColumn()
-  id_familia: number;
+  @PrimaryColumn('uuid')
+  id_familia: string;
 
-  @Column({ nullable: true })
-  nombre_madre: string;
+  @BeforeInsert()
+  generateId() {
+    this.id_familia = uuidv4();
+  }
 
-  @Column({ type: 'json', nullable: true, default: [] })
-  descripcion_madre: string[];
+  // Campos básicos solicitados por el frontend actual
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  nombre_madre?: string;
 
-  @Column({ nullable: true })
-  nombre_padre: string;
+  @Column({ type: 'json', nullable: true, default: () => "'[]'" })
+  descripcion_madre?: string[];
 
-  @Column({ type: 'json', nullable: true, default: [] })
-  descripcion_padre: string[];
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  nombre_padre?: string;
 
-  @Column({ type: 'json', nullable: true })
-  hermanos: any[];
+  @Column({ type: 'json', nullable: true, default: () => "'[]'" })
+  descripcion_padre?: string[];
+
+  @Column({ type: 'json', nullable: true, default: () => "'[]'" })
+  hermanos?: any[];
 
   @Column({ type: 'text', nullable: true })
-  observaciones_hermanos: string;
+  observaciones_hermanos?: string;
 
-  @Column({ type: 'json', nullable: true })
-  otros_familiares: any[];
+  @Column({ type: 'json', nullable: true, default: () => "'[]'" })
+  otros_familiares?: any[];
 
   @Column({ type: 'text', nullable: true })
-  observaciones_otros_familiares: string;
+  observaciones_otros_familiares?: string;
 
   @Column({ type: 'json', nullable: true , default: { madre: [], padre: [], hermanos: [], general: [] } })
   observaciones: ObservacionesFamiliares;
@@ -49,7 +57,7 @@ export class Familia {
   updated_at: Date;
 
   // Relación con Estudiante
-  @OneToOne(() => Estudiante, (estudiante) => estudiante.familia)
+  @OneToOne(() => Estudiante)
   @JoinColumn({ name: 'id_estudiante' })
   estudiante: Estudiante;
 }

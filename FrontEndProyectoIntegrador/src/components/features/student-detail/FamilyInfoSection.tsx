@@ -36,32 +36,42 @@ export function FamilyInfoSection({
   
   // Formatear hermanos para mostrar
   const formatearHermanos = () => {
-    if (!familia?.hermanos || familia.hermanos.length === 0) return '';
-    return familia.hermanos.map(h => h.nombre || h).join('; ');
+    const hermanos = familia?.hermanos;
+    if (!hermanos || hermanos.length === 0) return '';
+    return hermanos.map(h => (typeof h === 'object' && h !== null && 'nombre' in h) ? (h as any).nombre : String(h)).join('; ');
   };
   
   // Formatear otros familiares
   const formatearOtrosFamiliares = () => {
-    if (!familia?.otros_familiares || familia.otros_familiares.length === 0) return '';
-    return familia.otros_familiares.map(f => f.nombre || f).join('; ');
+    const otrosFamiliares = familia?.otros_familiares;
+    if (!otrosFamiliares || otrosFamiliares.length === 0) return '';
+    return otrosFamiliares.map(f => (typeof f === 'object' && f !== null && 'nombre' in f) ? (f as any).nombre : String(f)).join('; ');
   };
 
   // Helper para obtener observaciones de forma segura
   const getObservacionesHermanos = () => {
-    if (!familia?.observaciones_hermanos) return '';
-    if (typeof familia.observaciones_hermanos === 'string') return familia.observaciones_hermanos;
+    const obs = familia?.observaciones_hermanos;
+    if (!obs) return '';
+    if (typeof obs === 'string') return obs;
     return '';
   };
 
   const getObservacionesOtrosFamiliares = () => {
-    if (!familia?.observaciones_otros_familiares) return '';
-    if (typeof familia.observaciones_otros_familiares === 'string') return familia.observaciones_otros_familiares;
+    const obs = familia?.observaciones_otros_familiares;
+    if (!obs) return '';
+    if (typeof obs === 'string') return obs;
     return '';
   };
 
   const getObservacionesGenerales = () => {
-    if (!familia?.observaciones) return '';
-    if (typeof familia.observaciones === 'string') return familia.observaciones;
+    const obs = familia?.observaciones;
+    if (!obs) return '';
+    if (typeof obs === 'string') return obs;
+    if (typeof obs === 'object' && 'general' in (obs as any)) {
+      const general = (obs as any).general;
+      if (Array.isArray(general)) return general.join('\n');
+      if (typeof general === 'string') return general;
+    }
     return '';
   };
   return (

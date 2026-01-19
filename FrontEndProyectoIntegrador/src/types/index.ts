@@ -1,4 +1,4 @@
-// Tipos literales del backend
+﻿// Tipos literales del backend
 export type TipoEstudiante = 'media' | 'universitario';
 
 export const TipoEstudiante = {
@@ -14,6 +14,15 @@ export const StatusEstudiante = {
   EGRESADO: 'egresado' as const,
   RETIRADO: 'retirado' as const,
 };
+
+export const TipoBeneficio = {
+  BECA: 'BECA',
+  CREDITO: 'CREDITO',
+  GRATUIDAD: 'GRATUIDAD',
+  BENEFICIO_ESTATAL: 'BENEFICIO_ESTATAL',
+} as const;
+
+export type TipoBeneficio = typeof TipoBeneficio[keyof typeof TipoBeneficio];
 
 // ============================================
 
@@ -39,19 +48,18 @@ export interface Estudiante {
   id_estudiante: string | number;
   nombre: string;
   rut: string;
-  telefono?: string;
   fecha_de_nacimiento?: Date | string;
-  email?: string;
   genero?: string;
-  direccion?: string;
   tipo_de_estudiante: TipoEstudiante;
   generacion?: string;
   numero_carrera?: number;
-  status: StatusEstudiante;
   observaciones?: string;
-  status_detalle?: string;
-  semestres_suspendidos?: number;
-  semestres_total_carrera?: number;
+  
+  // === CAMPOS MIGRADOS (usar servicios específicos) ===
+  // telefono, email, direccion -> informacionContactoService
+  // status, status_detalle, semestres_suspendidos, semestres_total_carrera -> estadoAcademicoService
+
+  foto_url?: string;
   
   // Relaciones
   institucion?: Institucion;
@@ -114,13 +122,20 @@ export interface Institucion {
 
 export interface Familia {
   id_familia: string | number;
+  
+  // === CAMPOS MIGRADOS (usar familiarService) ===
+  // nombre_madre, descripcion_madre -> familiar con tipo_familiar_id = MADRE
+  // nombre_padre, descripcion_padre -> familiar con tipo_familiar_id = PADRE
+  // hermanos -> familiar con tipo_familiar_id = HERMANO
+  // otros_familiares -> familiar con tipo_familiar_id = OTRO
+  
   nombre_madre?: string;
-  descripcion_madre?: string[] | string;
+  descripcion_madre?: string[];
   nombre_padre?: string;
-  descripcion_padre?: string[] | string;
+  descripcion_padre?: string[];
   hermanos?: any[];
-  otros_familiares?: any[];
   observaciones_hermanos?: string;
+  otros_familiares?: any[];
   observaciones_otros_familiares?: string;
   observaciones?: any;
   estudiante?: Estudiante;
@@ -132,8 +147,11 @@ export interface Familia {
 
 export interface RamosCursados {
   id_ramos_cursados: string;
-  semestre: number;
-  año?: number;
+  
+  // === CAMPOS MIGRADOS ===
+  // año, semestre -> usar periodoAcademicoService y periodo_academico_estudiante_id
+  periodo_academico_estudiante_id?: number;
+  
   oportunidad?: number;
   codigo_ramo?: string;
   nombre_ramo: string;
@@ -149,8 +167,10 @@ export interface RamosCursados {
 
 export interface HistorialAcademico {
   id_historial_academico: string;
-  año: number;
-  semestre: number;
+  
+  // === CAMPOS MIGRADOS ===
+  // año, semestre -> usar periodoAcademicoService
+  
   nivel_educativo?: string;
   ramos_aprobados?: number;
   ramos_reprobados?: number;
@@ -178,9 +198,12 @@ export interface InformacionAcademica {
   colegio?: string;
   especialidad_colegio?: string;
   comuna_colegio?: string;
-  puntajes_admision?: any;
-  puntajes_paes?: any;
-  ensayos_paes?: any[];
+  
+  // === CAMPOS MIGRADOS ===
+  // puntajes_admision -> usar informacionAdmisionService
+  // ensayos_paes -> usar informacionAdmisionService / ensayoPaesService
+  // puntajes_paes es alias de puntajes_admision (deprecado)
+  
   beneficios?: string;
   resumen_semestres?: any;
   ultima_actualizacion_por?: string;
@@ -271,4 +294,96 @@ export interface NavItem {
   label: string;
   path: string;
   icon?: string;
+}
+
+// ============================================
+// BENEFICIOS
+// ============================================
+
+export interface Beneficio {
+  id: number;
+  nombre: string;
+  codigo: string;
+  tipo?: TipoBeneficio;
+  descripcion?: string;
+  activo: boolean;
+}
+
+export interface BeneficioEstudiante {
+  id: number;
+  estudiante_id: string;
+  beneficio_id: number;
+  beneficio?: Beneficio;
+  anio_inicio: number;
+  anio_termino?: number;
+  activo: boolean;
+  observaciones?: string;
+  created_at: Date | string;
+}
+
+// ============================================
+// INFORMACION DE ADMISION
+// ============================================
+
+export interface InformacionAdmision {
+  id: number;
+  estudiante_id: string;
+  via_acceso?: string;
+  anio_ingreso?: number;
+  colegio?: string;
+  especialidad_colegio?: string;
+  comuna_colegio?: string;
+  puntaje_nem?: number;
+  puntaje_ranking?: number;
+  puntaje_lenguaje?: number;
+  puntaje_matematicas?: number;
+  puntaje_ciencias?: number;
+  puntaje_historia?: number;
+  promedio_notas?: number;
+  observaciones?: string;
+  created_at: Date | string;
+  updated_at: Date | string;
+  ensayos_paes?: EnsayoPaes[];
+}
+
+export interface EnsayoPaes {
+  id: number;
+  estudiante_id: string;
+  admision_id?: number;
+  anio: number;
+  mes?: number;
+  institucion?: string;
+  puntaje_lenguaje?: number;
+  puntaje_matematicas?: number;
+  puntaje_ciencias?: number;
+  puntaje_historia?: number;
+  observaciones?: string;
+  created_at: Date | string;
+}
+
+// ============================================
+// PERIODO ACADEMICO ESTUDIANTE
+// ============================================
+
+export interface PeriodoAcademicoEstudiante {
+  id: number;
+  estudiante_id: string;
+  periodo_academico_id: number;
+  institucion_id?: number;
+  promedio?: number;
+  creditos_aprobados?: number;
+  creditos_reprobados?: number;
+  observaciones?: string;
+  created_at: Date | string;
+  periodo_academico?: PeriodoAcademico;
+  institucion?: Institucion;
+}
+
+export interface PeriodoAcademico {
+  id: number;
+  anio: number;
+  semestre: number;
+  fecha_inicio?: Date | string;
+  fecha_fin?: Date | string;
+  activo: boolean;
 }

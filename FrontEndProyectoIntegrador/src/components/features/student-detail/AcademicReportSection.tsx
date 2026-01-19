@@ -4,7 +4,13 @@
  */
 import React, { useEffect, useMemo, useState } from 'react';
 import type { Estudiante, HistorialAcademico } from '../../../types';
-import { historialAcademicoService, authService, informacionAcademicaService } from '../../../services';
+import { historialAcademicoService, authService } from '../../../services';
+import {
+  getEstudianteSemestresSuspendidos,
+  getEstudianteSemestresCarrera,
+  getHistorialAño,
+  getHistorialSemestre
+} from '../../../utils/migration-helpers';
 
 interface AcademicReportSectionProps {
   estudiante: Estudiante;
@@ -37,36 +43,8 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
   }>>([]);
 
   const [guardandoFila, setGuardandoFila] = useState<number | null>(null);
-  const [guardandoResumen, setGuardandoResumen] = useState(false);
   const [mensajeGlobal, setMensajeGlobal] = useState<string>('');
   const [errorGlobal, setErrorGlobal] = useState<string>('');
-  const [mensajeResumen, setMensajeResumen] = useState<string>('');
-
-  // Estado para resumen editable (manual)
-  const construirResumenBase = () => {
-    const resumenApi = (estudiante.informacionAcademica as any)?.resumen_semestres;
-    if (resumenApi) return { ...resumenApi } as Record<string, any>;
-
-    // fallback: calcular por defecto desde ramos/historial, pero luego el usuario puede sobrescribir
-    const { aprobados, reprobados, eliminados } = calcularTotalRamos();
-    const total = aprobados + reprobados + eliminados;
-    const porcAprobados = total === 0 ? 0 : Number(((aprobados / total) * 100).toFixed(1));
-    const porcReprobados = total === 0 ? 0 : Number(((reprobados / total) * 100).toFixed(1));
-    return {
-      numeroCarrera: estudiante.numero_carrera || 1,
-      semestresFinalizados: historialAcademico.length,
-      semestresSuspendidos: estudiante.semestres_suspendidos || 0,
-      semestresCarrera: estudiante.semestres_total_carrera || 10,
-      totalAprobados: aprobados,
-      totalReprobados: reprobados,
-      totalEliminados: eliminados,
-      porcAprobados,
-      porcReprobados,
-      porcTotal: 100,
-    } as Record<string, any>;
-  };
-
-  const [resumenManual, setResumenManual] = useState<Record<string, any>>(construirResumenBase());
 
   // Helper functions para calcular estadísticas académicas
   const historialAcademico: HistorialAcademico[] = (historialesExternos && historialesExternos.length > 0)
@@ -83,6 +61,84 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
     
     return { aprobados, reprobados, eliminados, total };
   };
+
+  // Estado para resumen editable (manual)
+  const construirResumenBase = () => {
+    const resumenApi = (estudiante.informacionAcademica as any)?.resumen_semestres;
+    if (resumenApi) return { ...resumenApi } as Record<string, any>;
+
+    // fallback: calcular por defecto desde ramos/historial, pero luego el usuario puede sobrescribir
+    const { aprobados, reprobados, eliminados } = calcularTotalRamos();
+    const total = aprobados + reprobados + eliminados;
+    const porcAprobados = total === 0 ? 0 : Number(((aprobados / total) * 100).toFixed(1));
+    const porcReprobados = total === 0 ? 0 : Number(((reprobados / total) * 100).toFixed(1));
+    return {
+      numeroCarrera: estudiante.numero_carrera || 1,
+      semestresFinalizados: historialAcademico.length,
+      semestresSuspendidos: getEstudianteSemestresSuspendidos(estudiante) || 0,
+      semestresCarrera: getEstudianteSemestresCarrera(estudiante) || 10,
+      totalAprobados: aprobados,
+      totalReprobados: reprobados,
+      totalEliminados: eliminados,
+      porcAprobados,
+      porcReprobados,
+      porcTotal: 100,
+    } as Record<string, any>;
+  };
+
+  const [resumenManual, setResumenManual] = useState<Record<string, any>>(construirResumenBase());
+
+  const adaptarHistoriales = (items: HistorialAcademico[]) => {
+    const porPeriodo = new Map<string, typeof filas[number]>();
+
+    items
+      .filter((historial: HistorialAcademico) => getHistorialAño(historial) || getHistorialSemestre(historial))
+      .forEach((historial: HistorialAcademico) => {
+        const key = `${getHistorialAño(historial) ?? 'sin-año'}-${getHistorialSemestre(historial) ?? 'sin-sem'}`;
+        const obs = typeof historial.observaciones === 'string'
+          ? historial.observaciones
+          : String(historial.observaciones ?? '');
+        // Tomar siempre el último registro para el período (sobrescribe si viene duplicado)
+        porPeriodo.set(key, {
+          id: (historial as any)?.id_historial_academico,
+          año: getHistorialAño(historial) ?? null,
+          semestre: getHistorialSemestre(historial) ?? null,
+          nSemestreCarrera: 0,
+          ramosAprobados: historial.ramos_aprobados ?? 0,
+          ramosReprobados: historial.ramos_reprobados ?? 0,
+          ramosEliminados: historial.ramos_eliminados ?? 0,
+          totalRamos: (historial.ramos_aprobados ?? 0) + (historial.ramos_reprobados ?? 0) + (historial.ramos_eliminados ?? 0),
+          observaciones: obs || historial.trayectoria_academica?.join(', ') || '',
+          promedioSemestre: historial.promedio_semestre ?? null,
+          nivelEducativo: historial.nivel_educativo,
+          ultimaActualizacionPor: historial.ultima_actualizacion_por || '',
+        });
+      });
+
+    return ordenarFilas(Array.from(porPeriodo.values()));
+  };
+
+  const calcularResumenDesdeFilas = (items: typeof filas) => {
+    const aprobados = items.reduce((acc, f) => acc + (f.ramosAprobados || 0), 0);
+    const reprobados = items.reduce((acc, f) => acc + (f.ramosReprobados || 0), 0);
+    const eliminados = items.reduce((acc, f) => acc + (f.ramosEliminados || 0), 0);
+    const total = aprobados + reprobados + eliminados;
+    const porcAprobados = total === 0 ? 0 : Number(((aprobados / total) * 100).toFixed(1));
+    const porcReprobados = total === 0 ? 0 : Number(((reprobados / total) * 100).toFixed(1));
+
+    return {
+      numeroCarrera: estudiante.numero_carrera || 1,
+      semestresFinalizados: items.filter(f => f.año !== null && f.semestre !== null).length,
+      semestresSuspendidos: getEstudianteSemestresSuspendidos(estudiante) || 0,
+      semestresCarrera: getEstudianteSemestresCarrera(estudiante) || items.length || 0,
+      totalAprobados: aprobados,
+      totalReprobados: reprobados,
+      totalEliminados: eliminados,
+      porcAprobados,
+      porcReprobados,
+      porcTotal: 100,
+    } as Record<string, any>;
+  };
   
   // Calcular semestres finalizados
   
@@ -97,59 +153,30 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
       .map((item, idx) => ({ ...item, nSemestreCarrera: idx + 1 }));
   };
 
-  // Preparar datos por semestre solo con historiales (sin autogenerar duplicados)
-  const prepararDatosPorSemestre = () => {
-    const porPeriodo = new Map<string, typeof filas[number]>();
-
-    historialAcademico
-      .filter((historial: HistorialAcademico) => historial.año || historial.semestre)
-      .forEach((historial: HistorialAcademico) => {
-        const key = `${historial.año ?? 'sin-año'}-${historial.semestre ?? 'sin-sem'}`;
-        if (!porPeriodo.has(key)) {
-          porPeriodo.set(key, {
-            id: historial.id_historial_academico,
-            año: historial.año ?? null,
-            semestre: historial.semestre ?? null,
-            nSemestreCarrera: 0,
-            ramosAprobados: historial.ramos_aprobados ?? 0,
-            ramosReprobados: historial.ramos_reprobados ?? 0,
-            ramosEliminados: historial.ramos_eliminados ?? 0,
-            totalRamos: (historial.ramos_aprobados ?? 0) + (historial.ramos_reprobados ?? 0) + (historial.ramos_eliminados ?? 0),
-            observaciones: historial.observaciones || historial.trayectoria_academica?.join(', ') || '',
-            promedioSemestre: historial.promedio_semestre ?? null,
-            nivelEducativo: historial.nivel_educativo,
-            ultimaActualizacionPor: historial.ultima_actualizacion_por || '',
-          });
-        }
-      });
-
-    const ordenados = ordenarFilas(Array.from(porPeriodo.values()));
-
-    if (ordenados.length === 0) {
-      const añoActual = new Date().getFullYear();
-      const semestreActual = new Date().getMonth() < 6 ? 1 : 2;
-      return [{
-        año: añoActual,
-        semestre: semestreActual,
-        nSemestreCarrera: 1,
-        ramosAprobados: 0,
-        ramosReprobados: 0,
-        ramosEliminados: 0,
-        totalRamos: 0,
-        observaciones: '',
-        promedioSemestre: null,
-        nivelEducativo: estudiante.institucion?.nivel_educativo,
-        ultimaActualizacionPor: '',
-      }];
+  const cargarFilasDesdeApi = async (estudianteId?: string) => {
+    if (!estudianteId) return;
+    try {
+      const recarga = await historialAcademicoService.getByEstudiante(estudianteId);
+      const filasActualizadas = adaptarHistoriales(Array.isArray(recarga) ? recarga : []);
+      setFilas(filasActualizadas);
+    } catch (err: any) {
+      setErrorGlobal(err?.message || 'No se pudo cargar el detalle académico');
     }
-
-    return ordenados;
   };
 
   useEffect(() => {
-    setFilas(prepararDatosPorSemestre());
+    // Cargar siempre desde API para mostrar lo último guardado
+    cargarFilasDesdeApi(String(estudiante.id_estudiante || ''));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [estudiante, historialesExternos]);
+  }, [estudiante?.id_estudiante]);
+
+  useEffect(() => {
+    // Evitar parpadeo: solo recalcular resumen cuando hay filas cargadas
+    if (filas.length > 0) {
+      setResumenManual(calcularResumenDesdeFilas(filas));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filas]);
 
   const handleChangeFila = (index: number, campo: string, valor: string) => {
     setFilas(prev => {
@@ -204,39 +231,44 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
     setErrorGlobal('');
 
     try {
-      const payload = {
-        id_estudiante: String(estudiante.id_estudiante),
-        año: fila.año,
-        semestre: fila.semestre,
+      const normalizeNumber = (value: number | null | undefined) => {
+        const n = Number(value);
+        return Number.isFinite(n) ? n : undefined;
+      };
+
+      const normalizeText = (value: string | null | undefined) => {
+        if (typeof value !== 'string') return '';
+        return value.trim();
+      };
+
+      const payloadBase = {
+        año: normalizeNumber(fila.año),
+        semestre: normalizeNumber(fila.semestre),
         nivel_educativo: fila.nivelEducativo || estudiante.institucion?.nivel_educativo || 'Superior',
-        ramos_aprobados: fila.ramosAprobados,
-        ramos_reprobados: fila.ramosReprobados,
-        ramos_eliminados: fila.ramosEliminados,
-        promedio_semestre: fila.promedioSemestre ?? 0,
-        observaciones: fila.observaciones || '',
+        ramos_aprobados: normalizeNumber(fila.ramosAprobados) ?? 0,
+        ramos_reprobados: normalizeNumber(fila.ramosReprobados) ?? 0,
+        ramos_eliminados: normalizeNumber(fila.ramosEliminados) ?? 0,
+        promedio_semestre: normalizeNumber(fila.promedioSemestre) ?? 0,
+        observaciones: normalizeText(fila.observaciones),
         ultima_actualizacion_por: autor,
       };
 
-      const respuesta = await historialAcademicoService.upsert(payload);
+      // El backend rechaza null/undefined y valores no numéricos; limpiamos
+      const sanitized = Object.fromEntries(
+        Object.entries(payloadBase).filter(([, value]) => value !== null && value !== undefined),
+      );
 
-      setFilas(prev => prev.map((f, i) => {
-        if (i !== index) return f;
-        const ramosAprobados = (respuesta as any)?.ramos_aprobados ?? payload.ramos_aprobados ?? 0;
-        const ramosReprobados = (respuesta as any)?.ramos_reprobados ?? payload.ramos_reprobados ?? 0;
-        const ramosEliminados = (respuesta as any)?.ramos_eliminados ?? payload.ramos_eliminados ?? 0;
-        return {
-          ...f,
-          id: (respuesta as any)?.id_historial_academico || f.id,
-          ramosAprobados,
-          ramosReprobados,
-          ramosEliminados,
-          totalRamos: ramosAprobados + ramosReprobados + ramosEliminados,
-          observaciones: (respuesta as any)?.observaciones ?? payload.observaciones,
-          promedioSemestre: (respuesta as any)?.promedio_semestre ?? payload.promedio_semestre ?? f.promedioSemestre,
-          nivelEducativo: (respuesta as any)?.nivel_educativo ?? f.nivelEducativo,
-          ultimaActualizacionPor: (respuesta as any)?.ultima_actualizacion_por ?? payload.ultima_actualizacion_por,
-        };
-      }));
+      if (fila.id) {
+        await historialAcademicoService.update(Number(fila.id), sanitized);
+      } else {
+        await historialAcademicoService.create({
+          id_estudiante: String(estudiante.id_estudiante),
+          ...sanitized,
+        });
+      }
+
+      // Refrescar filas desde backend para asegurar que observaciones y demás campos se reflejen
+      await cargarFilasDesdeApi(String(estudiante.id_estudiante));
 
       setMensajeGlobal('Cambios guardados');
     } catch (err: any) {
@@ -247,34 +279,16 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
   };
   
   useEffect(() => {
-    // Si cambian los historiales externos o el estudiante, rehidratar el resumen solo si no se ha editado manualmente
+    // Rehidratar solo cuando cambia el estudiante (id) para evitar sobrescribir el resumen en cada render
     setResumenManual(construirResumenBase());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [estudiante, historialesExternos]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [estudiante?.id_estudiante]);
 
   const handleChangeResumen = (campo: string, valor: string) => {
     setResumenManual(prev => ({
       ...prev,
       [campo]: valor === '' ? '' : isNaN(Number(valor)) ? valor : Number(valor),
     }));
-  };
-
-  const handleGuardarResumen = async () => {
-    if (!estudiante.id_estudiante) return;
-    setGuardandoResumen(true);
-    setMensajeResumen('');
-    setErrorGlobal('');
-    try {
-      await informacionAcademicaService.upsertByEstudiante(String(estudiante.id_estudiante), {
-        resumen_semestres: resumenManual,
-        ultima_actualizacion_por: autor,
-      } as any);
-      setMensajeResumen('Resumen guardado');
-    } catch (err: any) {
-      setErrorGlobal(err?.message || 'No se pudo guardar el resumen');
-    } finally {
-      setGuardandoResumen(false);
-    }
   };
 
   const datosPorSemestre = filas;
@@ -432,19 +446,7 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
         </tbody>
       </table>
 
-      {modoEdicion && (
-        <div className="flex items-center gap-3 mb-6">
-          <button
-            onClick={handleGuardarResumen}
-            disabled={guardandoResumen}
-            className="px-3 py-2 bg-[var(--color-turquoise)] text-white font-bold rounded"
-          >
-            {guardandoResumen ? 'Guardando...' : 'Guardar resumen manual'}
-          </button>
-          {mensajeResumen && <span className="text-green-700 font-semibold">{mensajeResumen}</span>}
-          {errorGlobal && <span className="text-red-700 font-semibold">{errorGlobal}</span>}
-        </div>
-      )}
+      {/* Botón de guardar resumen manual eliminado; el guardado general se encarga del resumen */}
 
       {modoEdicion && (
         <div className="flex justify-end mb-4">

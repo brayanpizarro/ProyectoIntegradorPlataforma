@@ -12,6 +12,20 @@ const defaultSemestre = (): Semestre => ({
   semestre: 1,
 });
 
+const getSemestreFromRamo = (ramo: any, index: number): Semestre => {
+  const periodo = ramo?.periodo_academico_estudiante?.periodo_academico;
+
+  if (periodo?.año && periodo?.semestre) {
+    return { año: Number(periodo.año), semestre: Number(periodo.semestre) };
+  }
+
+  if (ramo?.año && ramo?.semestre) {
+    return { año: Number(ramo.año), semestre: Number(ramo.semestre) };
+  }
+
+  return asignarSemestreFallback(ramo?.nombre_ramo, index);
+};
+
 export const useSemesterOptions = (estudianteId?: number | string) => {
   const [semestresDisponibles, setSemestresDisponibles] = useState<Semestre[]>([]);
   const [semestreActual, setSemestreActual] = useState<Semestre>(defaultSemestre);
@@ -24,22 +38,18 @@ export const useSemesterOptions = (estudianteId?: number | string) => {
       try {
         const todosLosRamos = await ramosCursadosService.getByEstudiante(estudianteId.toString());
 
-        const semestresUnicos = new Set<string>();
-        todosLosRamos.forEach((ramo: any) => {
-          const año = ramo.año || new Date().getFullYear();
-          const semestre = ramo.semestre || 1;
-          semestresUnicos.add(`${año}-${semestre}`);
+        const semestresUnicos = new Map<string, Semestre>();
+        todosLosRamos.forEach((ramo: any, index: number) => {
+          const { año, semestre } = getSemestreFromRamo(ramo, index);
+          semestresUnicos.set(`${año}-${semestre}`, { año, semestre });
         });
 
         if (semestresUnicos.size === 0) {
-          semestresUnicos.add(`${new Date().getFullYear()}-1`);
+          const { año, semestre } = defaultSemestre();
+          semestresUnicos.set(`${año}-${semestre}`, { año, semestre });
         }
 
-        const semestres = Array.from(semestresUnicos)
-          .map(str => {
-            const [año, semestre] = str.split('-').map(Number);
-            return { año, semestre };
-          })
+        const semestres = Array.from(semestresUnicos.values())
           .sort((a, b) => {
             if (a.año !== b.año) return b.año - a.año;
             return b.semestre - a.semestre;
@@ -118,46 +128,41 @@ export const useSemesterPerformanceData = (
     const cargarDatosSemestre = async () => {
       if (!estudiante.id_estudiante) return;
 
-      setLoadingDatos(true);
-      try {
-        // 1) Intento filtrado por año/semestre desde el backend
-        let ramos = await ramosCursadosService.getByEstudiante(
-          estudiante.id_estudiante.toString(),
-          semestreActual.año,
-          semestreActual.semestre
+      // Construye una vista local de ramos con año/semestre normalizados para usar como fallback
+      const obtenerRamosLocales = () => {
+        const todosLosRamos = estudiante.ramosCursados || [];
+        const ramosConSemestre = todosLosRamos.map((ramo: any, index: number) => {
+          const { año, semestre } = getSemestreFromRamo(ramo, index);
+          return { ...ramo, año, semestre };
+        });
+
+        const ramosLocales = ramosConSemestre.filter(
+          (r) => Number(r.año) === semestreActual.año && Number(r.semestre) === semestreActual.semestre
         );
 
-        // 2) Si no viene nada, obtener todos los ramos del estudiante y filtrar localmente
-        if (!ramos || ramos.length === 0) {
-          const todos = await ramosCursadosService.getByEstudiante(
-            estudiante.id_estudiante.toString()
-          );
-          ramos = todos || [];
-        }
+        return { ramosLocales, ramosConSemestre };
+      };
 
-        // 3) Normalizar año/semestre faltantes para que el filtrado funcione
+      setLoadingDatos(true);
+      try {
+        // 1) Obtener ramos del backend (ya incluye periodo_academico_estudiante)
+        const ramos = await ramosCursadosService.getByEstudiante(
+          estudiante.id_estudiante.toString()
+        );
+
+        // 2) Normalizar año/semestre usando la relación de periodo académico
         const ramosNormalizados = (ramos || []).map((ramo: any, index: number) => {
-          if (ramo.año && ramo.semestre) return ramo;
-          const { año, semestre } = asignarSemestreFallback(ramo.nombre_ramo, index);
-          return {
-            ...ramo,
-            año: ramo.año ?? año,
-            semestre: ramo.semestre ?? semestre,
-          };
+          const { año, semestre } = getSemestreFromRamo(ramo, index);
+          return { ...ramo, año, semestre };
         });
 
         const ramosFiltrados = (ramosNormalizados || []).filter((ramo) =>
           Number(ramo.año) === semestreActual.año && Number(ramo.semestre) === semestreActual.semestre
         );
 
-        if (ramosFiltrados.length > 0) {
-          setRamosSemestre(ramosFiltrados);
-        } else if (ramosNormalizados && ramosNormalizados.length > 0) {
-          // Si no hay coincidencia exacta, muestra lo que llegó sin perder datos
-          setRamosSemestre(ramosNormalizados);
-        } else {
-          throw new Error('No data from backend, using local fallback');
-        }
+        // Mostrar solo ramos del semestre seleccionado; si no hay, dejar vacío
+        if (ramosFiltrados.length > 0) setRamosSemestre(ramosFiltrados);
+        else setRamosSemestre([]);
 
         try {
           const historialResponse = await historialAcademicoService.getByEstudiante(
@@ -171,18 +176,7 @@ export const useSemesterPerformanceData = (
       } catch (error) {
         console.error('Error cargando datos del semestre:', error);
 
-        const todosLosRamos = estudiante.ramosCursados || [];
-        const ramosConSemestre = todosLosRamos.map((ramo: any, index: number) => {
-          if (ramo.año && ramo.semestre) {
-            return ramo;
-          }
-          const { año, semestre } = asignarSemestreFallback(ramo.nombre_ramo, index);
-          return { ...ramo, año: ramo.año || año, semestre: ramo.semestre || semestre };
-        });
-
-        const ramosLocales = ramosConSemestre.filter(
-          (r) => r.año === semestreActual.año && r.semestre === semestreActual.semestre
-        );
+        const { ramosLocales } = obtenerRamosLocales();
         setRamosSemestre(ramosLocales);
         setHistorialSemestre(null);
       } finally {
@@ -199,6 +193,7 @@ export const useSemesterPerformanceData = (
 export const useSemesterStats = (ramosSemestre: any[], historialSemestre: any) => {
   return useMemo(() => {
     if (historialSemestre) {
+      const promedioHist = Number(historialSemestre.promedio_semestre);
       return {
         total:
           (historialSemestre.ramos_aprobados || 0) +
@@ -207,7 +202,7 @@ export const useSemesterStats = (ramosSemestre: any[], historialSemestre: any) =
         aprobados: historialSemestre.ramos_aprobados || 0,
         reprobados: historialSemestre.ramos_reprobados || 0,
         eliminados: historialSemestre.ramos_eliminados || 0,
-        promedio: historialSemestre.promedio_semestre || null,
+        promedio: Number.isFinite(promedioHist) ? promedioHist : null,
       };
     }
 
@@ -219,11 +214,15 @@ export const useSemesterStats = (ramosSemestre: any[], historialSemestre: any) =
     const ramosConNota = ramosSemestre.filter(
       (r) => r.promedio_final && !isNaN(parseFloat(r.promedio_final))
     );
-    const promedio =
+    const promedioCalculado =
       ramosConNota.length > 0
         ? ramosConNota.reduce((sum, r) => sum + parseFloat(r.promedio_final), 0) /
           ramosConNota.length
         : null;
+
+    const promedio = Number.isFinite(promedioCalculado as number)
+      ? Number(promedioCalculado)
+      : null;
 
     return { total, aprobados, reprobados, eliminados, promedio };
   }, [ramosSemestre, historialSemestre]);

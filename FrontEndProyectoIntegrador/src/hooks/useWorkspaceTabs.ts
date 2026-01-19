@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 export interface Tab {
   id: string;
@@ -15,17 +15,61 @@ export interface WorkspaceState {
   activePanel: 'left' | 'right';
 }
 
+const STORAGE_KEY = 'entrevistaWorkspaceTabs';
+
+const defaultWorkspace: WorkspaceState = {
+  leftTabs: [],
+  rightTabs: [],
+  splitView: false,
+  activePanel: 'left',
+};
+
+const loadInitialWorkspace = (): WorkspaceState => {
+  if (typeof window === 'undefined') return defaultWorkspace;
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return defaultWorkspace;
+    const parsed = JSON.parse(stored) as WorkspaceState;
+    // Validar estructura básica y garantizar panel activo
+    const leftTabs = Array.isArray(parsed.leftTabs) ? parsed.leftTabs : [];
+    const rightTabs = Array.isArray(parsed.rightTabs) ? parsed.rightTabs : [];
+    const splitView = Boolean(parsed.splitView);
+    const activePanel = parsed.activePanel === 'right' ? 'right' : 'left';
+
+    // Garantizar que haya una pestaña activa por panel con tabs
+    const normalizeTabs = (tabs: Tab[]): Tab[] => {
+      if (tabs.length === 0) return tabs;
+      const hasActive = tabs.some((t) => t.isActive);
+      if (hasActive) return tabs;
+      return tabs.map((t, idx) => ({ ...t, isActive: idx === 0 }));
+    };
+
+    return {
+      leftTabs: normalizeTabs(leftTabs),
+      rightTabs: normalizeTabs(rightTabs),
+      splitView,
+      activePanel,
+    };
+  } catch {
+    return defaultWorkspace;
+  }
+};
+
 /**
  * Custom hook for managing workspace tabs
  * Handles tab creation, closing, focusing, and split view
  */
 export const useWorkspaceTabs = () => {
-  const [workspace, setWorkspace] = useState<WorkspaceState>({
-    leftTabs: [],
-    rightTabs: [],
-    splitView: false,
-    activePanel: 'left'
-  });
+  const [workspace, setWorkspace] = useState<WorkspaceState>(loadInitialWorkspace);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(workspace));
+    } catch {
+      // Ignorar errores de persistencia
+    }
+  }, [workspace]);
 
   const openTab = useCallback((sectionId: string, sectionTitle: string, type: 'note' | 'data') => {
     const tabId = `tab-${sectionId}`;

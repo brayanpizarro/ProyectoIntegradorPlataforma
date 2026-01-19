@@ -92,6 +92,23 @@ export default function GeneracionViewSimple(){
     navigate(`/estudiante/${studentId}`);
   };
 
+  const handleDeleteStudent = async (studentId: string | number) => {
+    const confirmed = window.confirm('¿Seguro que deseas eliminar este estudiante?');
+    if (!confirmed) return;
+
+    try {
+      await estudianteService.delete(String(studentId));
+      setStudents((prev) => prev.filter((student) => {
+        const id = String((student as any).id_estudiante || student.id);
+        return id !== String(studentId);
+      }));
+      logger.log('🗑️ Estudiante eliminado:', studentId);
+    } catch (error) {
+      logger.error('❌ Error al eliminar estudiante:', error);
+      alert('No se pudo eliminar el estudiante. Intenta nuevamente.');
+    }
+  };
+
   useEffect(() => {
     logger.log('🔍 Cargando estudiantes de generación:', id);
     const fetchStudents = async () => {
@@ -159,6 +176,7 @@ export default function GeneracionViewSimple(){
         sortDirection={sortDirection}
         onSort={handleSort}
         onViewDetails={handleVerDetalles}
+        onDelete={handleDeleteStudent}
       />
 
       {/* Modal para crear estudiante */}

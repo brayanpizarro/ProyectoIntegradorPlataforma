@@ -2,20 +2,22 @@
  * Sección de desempeño por semestre
  * Tabla detallada de ramos con comentarios y notas
  */
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import type { Estudiante } from '../../../types';
 import {
   useSemesterOptions,
   useSemesterPerformanceData,
   useSemesterStats
 } from './hooks/useSemesterPerformance';
+import { ramosCursadosService, historialAcademicoService } from '../../../services';
 
 interface SemesterPerformanceSectionProps {
   estudiante: Estudiante;
   modoEdicion: boolean;
+  onCambioDesempeno?: () => void;
 }
 
-export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProps> = ({ estudiante, modoEdicion }) => {
+export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProps> = ({ estudiante, modoEdicion, onCambioDesempeno }) => {
   const {
     semestresDisponibles,
     semestreActual,
@@ -29,8 +31,69 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
     loadingDatos
   } = useSemesterPerformanceData(estudiante, semestreActual);
 
+  const [ramosEditable, setRamosEditable] = useState<any[]>([]);
+  const [historialEditable, setHistorialEditable] = useState<any | null>(null);
+  useEffect(() => {
+    setRamosEditable(ramosSemestre);
+  }, [ramosSemestre]);
+
+  useEffect(() => {
+    setHistorialEditable(historialSemestre);
+  }, [historialSemestre]);
+
+  const actualizarRamo = async (ramoId: string | number | undefined, cambios: Partial<any>) => {
+    if (!ramoId) return;
+    setRamosEditable((prev) => prev.map((r) => (r.id_ramo === ramoId ? { ...r, ...cambios } : r)));
+    try {
+      await ramosCursadosService.update(String(ramoId), cambios);
+      if (onCambioDesempeno) onCambioDesempeno();
+    } catch (error) {
+      console.error('Error actualizando ramo', error);
+      // Revertir si falla
+      setRamosEditable(ramosSemestre);
+    }
+  };
+
   const { total, aprobados, reprobados, eliminados, promedio } = useSemesterStats(ramosSemestre, historialSemestre);
   const loading = loadingSemestres || loadingDatos;
+  const sinHistorial = !historialEditable?.id_historial_academico;
+
+  const crearHistorialSiNoExiste = async () => {
+    if (!sinHistorial) return historialEditable;
+    try {
+      const nuevo = await historialAcademicoService.create({
+        id_estudiante: estudiante.id_estudiante.toString(),
+        año: semestreActual.año,
+        semestre: semestreActual.semestre,
+        nivel_educativo: estudiante.institucion?.nivel_educativo || 'Superior',
+        comentarios_generales: '',
+        dificultades: '',
+        aprendizajes: ''
+      });
+      setHistorialEditable(nuevo);
+      if (onCambioDesempeno) onCambioDesempeno();
+      return nuevo;
+    } catch (error) {
+      console.error('Error creando historial académico', error);
+      return null;
+    }
+  };
+
+  const actualizarCampoHistorial = async (campo: string, valor: string) => {
+    setHistorialEditable((prev: any) => ({ ...(prev || {}), [campo]: valor }));
+    let historialId = historialEditable?.id_historial_academico;
+    if (!historialId) {
+      const creado = await crearHistorialSiNoExiste();
+      historialId = creado?.id_historial_academico;
+      if (!historialId) return;
+    }
+    try {
+      await historialAcademicoService.update(historialId, { [campo]: valor });
+      if (onCambioDesempeno) onCambioDesempeno();
+    } catch (error) {
+      console.error('Error actualizando historial académico', error);
+    }
+  };
 
   // Formatear notas parciales para mostrar
   const formatearNotasParciales = (notas: any) => {
@@ -110,15 +173,17 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
                     Cargando ramos del semestre...
                   </td>
                 </tr>
-              ) : ramosSemestre.length > 0 ? (
-                ramosSemestre.map((ramo, index) => (
+              ) : ramosEditable.length > 0 ? (
+                ramosEditable.map((ramo, index) => (
                   <tr key={ramo.id_ramo || index}>
                     <td className="p-2 text-center border">{index + 1}</td>
                     <td className="p-2 border">
                       {modoEdicion ? (
                         <input 
                           type="text" 
-                          defaultValue={ramo.nombre_ramo || ''} 
+                          value={ramo.nombre_ramo || ''} 
+                          onChange={(e) => setRamosEditable((prev) => prev.map((r) => r.id_ramo === ramo.id_ramo ? { ...r, nombre_ramo: e.target.value } : r))}
+                          onBlur={(e) => actualizarRamo(ramo.id_ramo, { nombre_ramo: e.target.value })}
                           className="w-full px-1.5 py-1 border border-gray-300 rounded text-sm"
                         />
                       ) : (
@@ -128,7 +193,8 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
                     <td className="p-2 text-center border">
                       {modoEdicion ? (
                         <select 
-                          defaultValue={ramo.oportunidad || 1}
+                          value={ramo.oportunidad || 1}
+                          onChange={(e) => actualizarRamo(ramo.id_ramo, { oportunidad: Number(e.target.value) })}
                           className="w-full px-1.5 py-1 border border-gray-300 rounded text-sm text-center"
                         >
                           <option value={1}>1ra</option>
@@ -153,7 +219,8 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
                     <td className="p-2 border">
                       {modoEdicion ? (
                         <textarea 
-                          defaultValue={ramo.comentarios || ''}
+                          value={ramo.comentarios || ''}
+                          onChange={(e) => actualizarRamo(ramo.id_ramo, { comentarios: e.target.value })}
                           className="w-full min-h-[120px] px-1.5 py-1 border border-gray-300 rounded text-xs resize-y"
                           placeholder="Agregar comentarios..."
                         />
@@ -165,7 +232,8 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
                       {modoEdicion ? (
                         <input 
                           type="text" 
-                          defaultValue={formatearNotasParciales(ramo.notas_parciales)} 
+                          value={formatearNotasParciales(ramo.notas_parciales)} 
+                          onChange={(e) => actualizarRamo(ramo.id_ramo, { notas_parciales: e.target.value })}
                           className="w-full px-1.5 py-1 border border-gray-300 rounded text-sm text-center"
                           placeholder="ej: 5.1; 3.8; 4.0"
                         />
@@ -177,10 +245,11 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
                       {modoEdicion ? (
                         <input 
                           type="number" 
-                          defaultValue={ramo.promedio_final || ''} 
+                          value={ramo.promedio_final ?? ''} 
                           step="0.1"
                           min="1.0"
                           max="7.0"
+                          onChange={(e) => actualizarRamo(ramo.id_ramo, { promedio_final: e.target.value ? Number(e.target.value) : null })}
                           className="w-full px-1.5 py-1 border border-gray-300 rounded text-sm text-center"
                         />
                       ) : (
@@ -262,7 +331,12 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
             className="w-full min-h-[120px] px-3 py-2 border border-gray-300 rounded resize-y"
             placeholder="Agregar comentarios generales del semestre..."
             disabled={!modoEdicion}
-            defaultValue={''}
+            value={historialEditable?.comentarios_generales || ''}
+            onChange={(e) => {
+              setHistorialEditable((prev: any) => ({ ...(prev || {}), comentarios_generales: e.target.value }));
+              if (onCambioDesempeno) onCambioDesempeno();
+            }}
+            onBlur={(e) => actualizarCampoHistorial('comentarios_generales', e.target.value)}
           />
         </div>
 
@@ -272,7 +346,12 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
             className="w-full min-h-[100px] px-3 py-2 border border-gray-300 rounded resize-y"
             placeholder="Agregar principales dificultades o desafíos del semestre..."
             disabled={!modoEdicion}
-            defaultValue={''}
+            value={historialEditable?.dificultades || ''}
+            onChange={(e) => {
+              setHistorialEditable((prev: any) => ({ ...(prev || {}), dificultades: e.target.value }));
+              if (onCambioDesempeno) onCambioDesempeno();
+            }}
+            onBlur={(e) => actualizarCampoHistorial('dificultades', e.target.value)}
           />
         </div>
 
@@ -282,6 +361,12 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
             className="w-full min-h-[100px] px-3 py-2 border border-gray-300 rounded resize-y"
             placeholder="Agregar principales aprendizajes o logros..."
             disabled={!modoEdicion}
+            value={historialEditable?.aprendizajes || ''}
+            onChange={(e) => {
+              setHistorialEditable((prev: any) => ({ ...(prev || {}), aprendizajes: e.target.value }));
+              if (onCambioDesempeno) onCambioDesempeno();
+            }}
+            onBlur={(e) => actualizarCampoHistorial('aprendizajes', e.target.value)}
           />
         </div>
       </div>

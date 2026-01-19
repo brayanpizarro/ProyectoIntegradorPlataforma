@@ -3,6 +3,11 @@ import { Box, Table, TableBody, TableContainer, Paper } from '@mui/material';
 import type { Estudiante } from '../../../types';
 import { SectionDivider, EditableField, EditableTextarea } from './components';
 import { personalDataConfig, type FieldConfig } from './config/personalDataFields';
+import { 
+  getEstudianteEmail,
+  getEstudianteTelefono,
+  getEstudianteDireccion
+} from '../../../utils/migration-helpers';
 
 interface PersonalDataSectionProps {
   estudiante: Estudiante;
@@ -17,13 +22,29 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
 }) => {
   const getFieldValue = (field: FieldConfig): string => {
     let value: any = '';
+
+    // Normalizar informacionAcademica: la relación puede venir como array por el mapeo de TypeORM
+    const infoAcad = Array.isArray(estudiante.informacionAcademica)
+      ? estudiante.informacionAcademica[0]
+      : estudiante.informacionAcademica;
     
-    if (field.source === 'root') {
+    // Campos especiales de informacion_contacto (migrados)
+    if (field.key === 'email') {
+      value = getEstudianteEmail(estudiante);
+    } else if (field.key === 'telefono') {
+      value = getEstudianteTelefono(estudiante);
+    } else if (field.key === 'direccion') {
+      value = getEstudianteDireccion(estudiante);
+    } else if (field.source === 'root') {
       value = estudiante[field.key as keyof Estudiante];
     } else if (field.source === 'informacionAcademica') {
-      value = estudiante.informacionAcademica?.[field.key as keyof typeof estudiante.informacionAcademica];
+      value = infoAcad?.[field.key as keyof typeof infoAcad];
     } else if (field.source === 'institucion') {
-      value = estudiante.institucion?.[field.key as keyof typeof estudiante.institucion];
+      if (field.key === 'institucion_nombre') {
+        value = estudiante.institucion?.nombre;
+      } else {
+        value = estudiante.institucion?.[field.key as keyof typeof estudiante.institucion];
+      }
     }
     
     // Formatear fecha si es necesario
@@ -60,28 +81,7 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
     return edad.toString();
   };
 
-  const formatearPromedios = () => {
-    const infoAcad = estudiante.informacionAcademica;
-    if (!infoAcad) return 'Sin definir';
-    
-    const promedios = [
-      infoAcad.promedio_1 ? `1°M: ${infoAcad.promedio_1}` : null,
-      infoAcad.promedio_2 ? `2°M: ${infoAcad.promedio_2}` : null,
-      infoAcad.promedio_3 ? `3°M: ${infoAcad.promedio_3}` : null,
-      infoAcad.promedio_4 ? `4°M: ${infoAcad.promedio_4}` : null,
-    ].filter(Boolean);
-
-    return promedios.length > 0 ? promedios.join(' | ') : 'Sin definir';
-  };
-
-  const formatearPuntajesPAES = () => {
-    const puntajes = estudiante.informacionAcademica?.puntajes_admision;
-    if (!puntajes || typeof puntajes !== 'object') return 'Sin definir';
-    
-    return Object.entries(puntajes)
-      .map(([key, value]) => `${key}: ${value}`)
-      .join(' | ') || 'Sin definir';
-  };
+  // Nota: PAES ahora se trata como texto plano (sin formatear) para evitar sobrescrituras al tipear
 
   const getTrayectoriaAcademica = () => {
     const historiales = estudiante.historialesAcademicos;
@@ -95,7 +95,10 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
   };
 
   const getBeneficiosInfo = () => {
-    return estudiante.informacionAcademica?.beneficios || 'Sin definir';
+    const infoAcad = Array.isArray(estudiante.informacionAcademica)
+      ? estudiante.informacionAcademica[0]
+      : estudiante.informacionAcademica;
+    return infoAcad?.beneficios || 'Sin definir';
   };
 
   // Función para renderizar campos según configuración
@@ -129,32 +132,6 @@ export const PersonalDataSection: React.FC<PersonalDataSectionProps> = ({
           />
         );
       }
-    }
-
-    if (field.customRender === 'promedios') {
-      return (
-        <EditableField
-          key={field.key}
-          label={field.label}
-          value={formatearPromedios()}
-          modoEdicion={false}
-          onChange={() => {}}
-          readOnly
-        />
-      );
-    }
-
-    if (field.customRender === 'paes') {
-      return (
-        <EditableField
-          key={field.key}
-          label={field.label}
-          value={formatearPuntajesPAES()}
-          modoEdicion={modoEdicion}
-          onChange={(val) => handleFieldChange(field.key, val)}
-          placeholder={field.placeholder}
-        />
-      );
     }
 
     if (field.customRender === 'trayectoria') {

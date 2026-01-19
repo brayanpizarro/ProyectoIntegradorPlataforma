@@ -6,14 +6,17 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { TokenService } from './services/token.service';
+import { EmailService } from './services/email.service';
 import { User } from '../users/entities/user.entity';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
+import emailConfig from '../config/email.config';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
+    ConfigModule.forFeature(emailConfig),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -26,7 +29,7 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, TokenService, JwtStrategy, JwtRefreshStrategy],
+  providers: [AuthService, TokenService, EmailService, JwtStrategy, JwtRefreshStrategy],
   exports: [AuthService, TokenService, JwtStrategy, PassportModule],
 })
 export class AuthModule {}

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { institucionService } from '../../../../services';
+import { institucionService, estudianteService } from '../../../../services';
 import { logger } from '../../../../config';
 import type { Estudiante, Institucion } from '../../../../types';
 
@@ -25,9 +25,15 @@ export const useInstitucionEditing = ({ estudiante }: UseInstitucionEditingProps
 
     const guardarCambios = async (): Promise<void> => {
         const institucionId = estudiante?.institucion?.id_institucion;
-        
-        if (!institucionId || Object.keys(datosInstitucionEditados).length === 0) {
-            logger.log('⚠️ No hay institución o cambios para guardar');
+        const estudianteId = estudiante?.id_estudiante || (estudiante as any)?.id;
+
+        if (!estudianteId) {
+            logger.warn('⚠️ No hay id de estudiante, no se pueden guardar datos de institución');
+            return;
+        }
+
+        if (Object.keys(datosInstitucionEditados).length === 0) {
+            logger.log('⚠️ No hay cambios en institución para guardar');
             return;
         }
 
@@ -36,14 +42,23 @@ export const useInstitucionEditing = ({ estudiante }: UseInstitucionEditingProps
         // Filtrar solo los campos de la institución
         Object.keys(datosInstitucionEditados).forEach(campo => {
             if (camposInstitucion.includes(campo)) {
-                datosInstitucion[campo] = (datosInstitucionEditados as any)[campo];
+                const valor = (datosInstitucionEditados as any)[campo];
+                datosInstitucion[campo] = valor;
             }
         });
 
         if (Object.keys(datosInstitucion).length === 0) return;
 
-        await institucionService.update(institucionId, datosInstitucion);
-        logger.log('✅ Datos de la institución actualizados');
+        if (institucionId) {
+            // Actualizar institución existente
+            await institucionService.update(institucionId, datosInstitucion);
+            logger.log('✅ Datos de la institución actualizados');
+        } else {
+            // Crear nueva institución y asociarla al estudiante con la clave esperada por el backend
+            const nueva = await institucionService.create(datosInstitucion);
+            await estudianteService.update(estudianteId, { id_institucion: nueva.id_institucion });
+            logger.log('✅ Institución creada y asociada al estudiante');
+        }
     };
 
     const limpiarCambios = () => {

@@ -174,7 +174,24 @@ export function LoginAdminForm({ onAuthChange }: LoginAdminFormProps) {
           {loading ? 'Verificando credenciales...' : 'Acceder al Panel'}
         </Button>
 
-        <Box sx={{ mt: 2, textAlign: 'center' }}>
+        <Box sx={{ mt: 2, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Link
+            component="button"
+            type="button"
+            variant="body2"
+            onClick={() => navigate('/solicitar-recuperacion')}
+            sx={{
+              color: '#4db6ac',
+              textDecoration: 'underline',
+              cursor: 'pointer',
+              transition: 'color 0.3s ease',
+              '&:hover': {
+                color: '#ff6f61'
+              }
+            }}
+          >
+            ¿Olvidaste tu contraseña?
+          </Link>
           <Link
             component="button"
             type="button"

@@ -1,5 +1,5 @@
 export interface JwtPayload {
-  sub: number;
+  sub: string;
   username: string;
   email: string;
   rol: string;
@@ -10,12 +10,12 @@ export interface JwtRefreshPayload extends JwtPayload {
 }
 
 export interface StoredRefreshToken {
-  userId: number;
+  userId: string;
   tokenId: string;
 }
 
 export interface AuthenticatedUser {
-  id: number;
+  id: string;
   username: string;
   email: string;
   rol: string;

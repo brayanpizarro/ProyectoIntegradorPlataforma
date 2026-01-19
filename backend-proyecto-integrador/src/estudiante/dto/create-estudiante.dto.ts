@@ -4,12 +4,11 @@ import {
   MinLength,
   IsOptional,
   IsDateString,
-  IsEmail,
   IsEnum,
   IsUUID,
   IsNumber,
 } from 'class-validator';
-import { TipoEstudiante, StatusEstudiante } from '../entities/estudiante.entity';
+import { TipoEstudiante } from '../entities/estudiante.entity';
 
 export class CreateEstudianteDto {
   // CAMPOS OBLIGATORIOS
@@ -22,13 +21,6 @@ export class CreateEstudianteDto {
   @IsNotEmpty()
   rut: string;
 
-  @IsEmail()
-  email: string;
-
-  @IsString()
-  @IsNotEmpty()
-  telefono: string;
-
   @IsDateString()
   fecha_de_nacimiento: string;
 
@@ -38,11 +30,11 @@ export class CreateEstudianteDto {
   // CAMPOS OPCIONALES
   @IsOptional()
   @IsString()
-  generacion?: string;
+  genero?: string;
 
   @IsOptional()
-  @IsEnum(StatusEstudiante)
-  status?: StatusEstudiante;
+  @IsString()
+  generacion?: string;
 
   @IsOptional()
   @IsUUID()
@@ -51,4 +43,26 @@ export class CreateEstudianteDto {
   @IsOptional()
   @IsNumber()
   numero_carrera?: number;
+
+  @IsOptional()
+  @IsString()
+  observaciones?: string;
+
+  // CAMPOS DE CONTACTO (opcionales, se crearán en informacion_contacto)
+  @IsOptional()
+  @IsString()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  telefono?: string;
+
+  @IsOptional()
+  @IsString()
+  direccion?: string;
+
+  @IsOptional()
+  @IsString()
+  foto_url?: string;
+
 }

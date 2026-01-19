@@ -30,7 +30,7 @@ export class FamiliaController {
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return await this.familiaService.findOne(+id);
+    return await this.familiaService.findOne(id);
   }
 
   @Get('estudiante/:estudianteId')
@@ -40,66 +40,18 @@ export class FamiliaController {
 
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateFamiliaDto: UpdateFamiliaDto) {
-    return await this.familiaService.update(+id, updateFamiliaDto);
+    return await this.familiaService.update(id, updateFamiliaDto);
   }
 
-  @Patch(':id/descripcion-madre')
-  async addDescripcionMadre(
-    @Param('id') id: string,
-    @Body('descripcion') descripcion: string,
-  ) {
-    return await this.familiaService.addDescripcionMadre(+id, descripcion);
-  }
-
-  @Patch(':id/descripcion-padre')
-  async addDescripcionPadre(
-    @Param('id') id: string,
-    @Body('descripcion') descripcion: string,
-  ) {
-    return await this.familiaService.addDescripcionPadre(+id, descripcion);
-  }
-
-  @Patch(':id/descripcion-madre/:index')
-  @HttpCode(HttpStatus.OK)
-  async updateDescripcionMadre(
-    @Param('id') id: string,
-    @Param('index') index: string,
-    @Body() body: { nuevaDescripcion: string },
-  ) {
-    return this.familiaService.updateDescripcionMadre(+id, +index, body.nuevaDescripcion);
-  }
-
-  @Delete(':id/descripcion-madre/:index')
-  @HttpCode(HttpStatus.OK)
-  async deleteDescripcionMadre(
-    @Param('id') id: string,
-    @Param('index') index: string,
-  ) {
-    return this.familiaService.deleteDescripcionMadre(+id, +index);
-  }
-
-  @Patch(':id/descripcion-padre/:index')
-  @HttpCode(HttpStatus.OK)
-  async updateDescripcionPadre(
-    @Param('id') id: string,
-    @Param('index') index: string,
-    @Body() body: { nuevaDescripcion: string },
-  ) {
-    return this.familiaService.updateDescripcionPadre(+id, +index, body.nuevaDescripcion);
-  }
-
-  @Delete(':id/descripcion-padre/:index')
-  @HttpCode(HttpStatus.OK)
-  async deleteDescripcionPadre(
-    @Param('id') id: string,
-    @Param('index') index: string,
-  ) {
-    return this.familiaService.deleteDescripcionPadre(+id, +index);
-  }
+  // === ENDPOINTS DE DESCRIPCIÓN ELIMINADOS ===
+  // addDescripcionMadre, addDescripcionPadre, updateDescripcionMadre, deleteDescripcionMadre,
+  // updateDescripcionPadre, deleteDescripcionPadre eliminados
+  // Los campos fueron migrados a la tabla normalizada 'familiar'
+  // Usar los endpoints de FamiliarController para gestionar familiares individuales
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: string) {
-    await this.familiaService.remove(+id);
+    await this.familiaService.remove(id);
   }
 }

@@ -14,14 +14,6 @@ export const useStudentDetail = () => {
   // Gestionar permisos y navegación
   const permissions = useStudentPermissions();
 
-  // Gestionar edición
-  const editing = useStudentEditing({
-    id: studentData.id,
-    estudiante: studentData.estudiante,
-    reloadStudentData: studentData.reloadStudentData,
-    setInformesGuardados: studentData.setInformesGuardados
-  });
-
   // Gestionar semestres
   const semesters = useStudentSemesters({
     id: studentData.id,
@@ -29,10 +21,21 @@ export const useStudentDetail = () => {
     setInformesGuardados: studentData.setInformesGuardados
   });
 
+  // Gestionar edición (incluye cambios externos de semestres/ramos)
+  const editing = useStudentEditing({
+    id: studentData.id,
+    estudiante: studentData.estudiante,
+    reloadStudentData: studentData.reloadStudentData,
+    setInformesGuardados: studentData.setInformesGuardados,
+    hayCambiosExternos: semesters.hayCambiosSemestre,
+    limpiarCambiosExternos: semesters.limpiarCambiosSemestre
+  });
+
   // Gestionar entrevistas
   const interviews = useStudentInterviews();
 
   // Combinar datos del estudiante con ediciones temporales
+  // Calcular directamente en cada render para asegurar actualización
   const estudianteConEdiciones = editing.getDatosCombinadosParaVista();
 
   return {

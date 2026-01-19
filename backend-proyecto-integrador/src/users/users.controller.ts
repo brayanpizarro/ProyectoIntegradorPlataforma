@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   UseGuards,
-  ParseIntPipe,
   HttpCode,
   HttpStatus,
   Query,
@@ -51,7 +50,7 @@ export class UsersController {
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<User> {
+  async findOne(@Param('id') id: string): Promise<User> {
     return this.usersService.findOne(id);
   }
 
@@ -66,7 +65,7 @@ export class UsersController {
 
   @Patch(':id')
   async update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<User> {
     return this.usersService.update(id, updateUserDto);
@@ -74,7 +73,7 @@ export class UsersController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  async remove(@Param('id') id: string): Promise<void> {
     return this.usersService.remove(id);
   }
 
@@ -82,7 +81,7 @@ export class UsersController {
   @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
   async changePassword(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() changePasswordDto: { password: string },
   ): Promise<{ message: string }> {
     await this.usersService.changePassword(id, changePasswordDto.password);

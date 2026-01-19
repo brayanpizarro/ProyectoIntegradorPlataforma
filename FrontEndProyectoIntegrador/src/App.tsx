@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { authService } from './services/authService';
 import { logger } from './config';
 import { LoginAdminForm } from './components/features/auth/login/LoginAdminForm';
+import { SolicitarRecuperacion, VerificarCodigo, NuevaPassword } from './components/features/auth/password-recovery';
 import { LoadingSpinner } from './components/ui';
 
 // Lazy loading de componentes pesados para mejor rendimiento
@@ -51,6 +52,18 @@ function App() {
                 <Navigate to="/dashboard" replace /> : 
                 <LoginAdminForm onAuthChange={handleAuthChange} />
             }
+          />
+          <Route 
+            path="/solicitar-recuperacion" 
+            element={<SolicitarRecuperacion />}
+          />
+          <Route 
+            path="/verificar-codigo" 
+            element={<VerificarCodigo />}
+          />
+          <Route 
+            path="/nueva-password" 
+            element={<NuevaPassword />}
           />
           <Route 
             path="/dashboard" 

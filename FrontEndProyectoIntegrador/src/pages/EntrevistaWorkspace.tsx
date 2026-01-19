@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Box } from '@mui/material';
 import { authService } from '../services/authService';
@@ -19,6 +19,29 @@ export function EntrevistaWorkspace() {
   const [entrevistaId, setEntrevistaId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [customTags, setCustomTags] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const stored = localStorage.getItem('entrevistaCustomTags');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const handleAddCustomTag = useCallback((tag: string) => {
+    const normalized = tag.trim();
+    if (!normalized) return;
+    const existsAsDefault = sidebarSections.some((section) =>
+      section.items.some((item) => item.title.toLowerCase() === normalized.toLowerCase()),
+    );
+    if (existsAsDefault) return;
+    setCustomTags((prev) => {
+      const exists = prev.some((t) => t.toLowerCase() === normalized.toLowerCase());
+      if (exists) return prev;
+      return [...prev, normalized];
+    });
+  }, []);
   
   const {
     workspace,
@@ -29,6 +52,14 @@ export function EntrevistaWorkspace() {
     disableSplitView,
     setActivePanel
   } = useWorkspaceTabs();
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('entrevistaCustomTags', JSON.stringify(customTags));
+    } catch {
+      // Ignorar errores de almacenamiento
+    }
+  }, [customTags]);
 
   // CARGAR DATOS: Entrevista y estudiante al iniciar
   useEffect(() => {
@@ -124,6 +155,8 @@ export function EntrevistaWorkspace() {
           onSectionClick={openTab}
           activePanel={workspace.activePanel}
           splitViewActive={workspace.splitView}
+          customTags={customTags}
+          onAddCustomTag={handleAddCustomTag}
         />
         
         {/* ÁREA DE PESTAÑAS */}

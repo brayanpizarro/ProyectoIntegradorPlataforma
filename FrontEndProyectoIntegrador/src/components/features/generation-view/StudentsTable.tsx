@@ -16,6 +16,7 @@ interface StudentsTableProps {
   sortDirection: 'asc' | 'desc';
   onSort: (field: keyof UIStudent) => void;
   onViewDetails: (studentId: string | number) => void;
+  onDelete: (studentId: string | number) => void;
 }
 
 /**
@@ -28,6 +29,7 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
   sortDirection,
   onSort,
   onViewDetails,
+  onDelete,
 }) => {
   const getSortIcon = (field: keyof UIStudent) => {
     if (sortField !== field) return '↕️';
@@ -141,12 +143,20 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
                 </div>
               </td>
               <td className="py-3 px-3 border-b border-gray-300 text-center">
-                <button
-                  onClick={() => onViewDetails((student as any).id_estudiante || student.id)}
-                  className="px-3 py-1.5 bg-[var(--color-turquoise)] text-white rounded hover:bg-[var(--color-turquoise-light)] transition-colors text-xs font-bold"
-                >
-                  Ver Detalles
-                </button>
+                  <div className="flex items-center justify-center gap-2">
+                    <button
+                      onClick={() => onViewDetails((student as any).id_estudiante || student.id)}
+                      className="px-3 py-1.5 bg-[var(--color-turquoise)] text-white rounded hover:bg-[var(--color-turquoise-light)] transition-colors text-xs font-bold"
+                    >
+                      Ver Detalles
+                    </button>
+                    <button
+                      onClick={() => onDelete((student as any).id_estudiante || student.id)}
+                      className="px-3 py-1.5 bg-[var(--color-coral-dark)] text-white rounded hover:bg-red-500 transition-colors text-xs font-bold"
+                    >
+                      Eliminar
+                    </button>
+                  </div>
               </td>
             </tr>
           ))}

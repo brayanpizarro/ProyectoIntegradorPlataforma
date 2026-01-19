@@ -27,6 +27,11 @@ export class UpdateInstitucionDto {
   @Expose()
   @IsString()
   @IsOptional()
+  duracion?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
   anio_de_ingreso?: string;
 
   @Expose()

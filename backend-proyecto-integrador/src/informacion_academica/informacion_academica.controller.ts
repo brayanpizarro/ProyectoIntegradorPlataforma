@@ -37,13 +37,13 @@ export class InformacionAcademicaController {
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   async findOne(@Param('id') id: string) {
-    return await this.informacionAcademicaService.findOne(+id);
+    return await this.informacionAcademicaService.findOne(id);
   }
 
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
   async update(@Param('id') id: string, @Body() updateInformacionAcademicaDto: UpdateInformacionAcademicaDto) {
-    return await this.informacionAcademicaService.update(+id, updateInformacionAcademicaDto);
+    return await this.informacionAcademicaService.update(id, updateInformacionAcademicaDto);
   }
 
   @Patch(':id/promedio/:nivel')
@@ -53,41 +53,17 @@ export class InformacionAcademicaController {
     @Param('nivel') nivel: '1' | '2' | '3' | '4',
     @Body() body: { promedio: number },
   ) {
-    return await this.informacionAcademicaService.updatePromedio(+id, nivel, body.promedio);
+    return await this.informacionAcademicaService.updatePromedio(id, nivel, body.promedio);
   }
 
-  @Post(':id/ensayo-paes')
-  @HttpCode(HttpStatus.CREATED)
-  async addEnsayoPaes(
-    @Param('id') id: string,
-    @Body() ensayo: any, // JSONB flexible
-  ) {
-    return await this.informacionAcademicaService.addEnsayoPaes(+id, ensayo);
-  }
-
-  @Patch(':id/ensayo-paes/:index')
-  @HttpCode(HttpStatus.OK)
-  async updateEnsayoPaes(
-    @Param('id') id: string,
-    @Param('index') index: string,
-    @Body() ensayo: any, // JSONB flexible
-  ) {
-    return await this.informacionAcademicaService.updateEnsayoPaes(+id, +index, ensayo);
-  }
-
-  @Delete(':id/ensayo-paes/:index')
-  @HttpCode(HttpStatus.OK)
-  async deleteEnsayoPaes(
-    @Param('id') id: string,
-    @Param('index') index: string,
-  ) {
-    return await this.informacionAcademicaService.deleteEnsayoPaes(+id, +index);
-  }
+  // === ENDPOINTS DE ENSAYO PAES ELIMINADOS ===
+  // addEnsayoPaes, updateEnsayoPaes, deleteEnsayoPaes eliminados
+  // Los ensayos PAES fueron migrados al módulo informacion-admision/ensayo-paes
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.informacionAcademicaService.remove(+id);
+    return this.informacionAcademicaService.remove(id);
   }
 }

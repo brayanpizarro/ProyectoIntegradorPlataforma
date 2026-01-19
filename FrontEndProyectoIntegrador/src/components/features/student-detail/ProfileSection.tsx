@@ -2,9 +2,14 @@
  * Sección de perfil del estudiante
  * Muestra avatar, información básica y resumen académico
  */
-import { Box, Paper, Typography, Avatar, Select, MenuItem, FormControl, CircularProgress } from '@mui/material';
-import { AccountCircle as AccountCircleIcon } from '@mui/icons-material';
+import { Box, Paper, Typography, Avatar, Select, MenuItem, FormControl, CircularProgress, Button, LinearProgress } from '@mui/material';
+import { AccountCircle as AccountCircleIcon, CloudUpload as CloudUploadIcon } from '@mui/icons-material';
 import { StatCard } from '../../ui';
+import {
+  getEstudianteStatus,
+  getEstudianteEmail,
+  getEstudianteTelefono
+} from '../../../utils/migration-helpers';
 // Colores personalizados para cada estado
 const estadoColorMap: Record<string, string> = {
   activo: '#43a047', // verde
@@ -14,7 +19,8 @@ const estadoColorMap: Record<string, string> = {
 };
 import { useState, useEffect } from 'react';
 import type { SelectChangeEvent } from '@mui/material';
-import { estudianteService } from '../../../services/estudiante.service';
+import { estadoAcademicoService } from '../../../services';
+import { estudianteService } from '../../../services';
 import type { Estudiante, StatusEstudiante } from '../../../types';
 import type { SeccionActiva } from './TabNavigation';
 
@@ -25,19 +31,26 @@ interface ProfileSectionProps {
 }
 
 export function ProfileSection({ estudiante, seccionActiva }: ProfileSectionProps) {
-  const [status, setStatus] = useState<StatusEstudiante>(estudiante.status || estudiante.estado || 'activo');
+  const statusInicial = getEstudianteStatus(estudiante) || estudiante.estado || 'activo';
+  const [status, setStatus] = useState<StatusEstudiante>(statusInicial as StatusEstudiante);
+  const [fotoUrl, setFotoUrl] = useState<string | undefined>(estudiante.foto_url);
+  const [subiendo, setSubiendo] = useState(false);
+  const [errorUpload, setErrorUpload] = useState('');
 
-  // Sincroniza el estado local si cambia el prop estudiante.status o estudiante.estado
+  // Sincroniza el estado local si cambia el prop estudiante
   useEffect(() => {
-    setStatus(estudiante.status || estudiante.estado || 'activo');
-  }, [estudiante.status, estudiante.estado]);
+    const nuevoStatus = getEstudianteStatus(estudiante) || estudiante.estado || 'activo';
+    setStatus(nuevoStatus as StatusEstudiante);
+    setFotoUrl(estudiante.foto_url);
+  }, [estudiante]);
 
   // Si seccionActiva está presente, sincroniza el status cada vez que se vuelve a la pestaña de perfil
   useEffect(() => {
     if (seccionActiva === 'perfil') {
-      setStatus(estudiante.status || estudiante.estado || 'activo');
+      const nuevoStatus = getEstudianteStatus(estudiante) || estudiante.estado || 'activo';
+      setStatus(nuevoStatus as StatusEstudiante);
     }
-  }, [seccionActiva, estudiante.status, estudiante.estado]);
+  }, [seccionActiva, estudiante]);
   const [loading, setLoading] = useState(false);
   const statusOptions: { value: StatusEstudiante; label: string }[] = [
     { value: 'activo', label: 'Activo' },
@@ -52,10 +65,16 @@ export function ProfileSection({ estudiante, seccionActiva }: ProfileSectionProp
     setLoading(true);
     const estudianteId = (estudiante.id_estudiante ?? estudiante.id) ? String(estudiante.id_estudiante ?? estudiante.id) : '';
     try {
-      await estudianteService.update(estudianteId, { status: newStatus });
-    } catch {
+      // Actualizar usando estado-academico.service.ts (upsert crea o actualiza)
+      await estadoAcademicoService.upsertByEstudiante(estudianteId, { status: newStatus });
+      
+      // Actualizar el objeto estudiante local para reflejar el cambio
+      (estudiante as any).status = newStatus;
+    } catch (error) {
+      console.error('Error al actualizar estado:', error);
       alert('No se pudo actualizar el estado.');
-      setStatus(estudiante.status || estudiante.estado || 'activo');
+      const statusFallback = getEstudianteStatus(estudiante) || estudiante.estado || 'activo';
+      setStatus(statusFallback as StatusEstudiante);
     } finally {
       setLoading(false);
     }
@@ -64,8 +83,8 @@ export function ProfileSection({ estudiante, seccionActiva }: ProfileSectionProp
   const infoFields = [
     { label: 'Nombre Completo', value: estudiante.nombre },
     { label: 'RUT', value: estudiante.rut },
-    { label: 'Correo Electrónico', value: estudiante.email },
-    { label: 'Teléfono', value: estudiante.telefono },
+    { label: 'Correo Electrónico', value: getEstudianteEmail(estudiante) },
+    { label: 'Teléfono', value: getEstudianteTelefono(estudiante) },
     { label: 'Universidad', value: estudiante.institucion?.nombre || estudiante.universidad },
     { label: 'Carrera', value: estudiante.institucion?.carrera_especialidad || estudiante.carrera },
     { label: 'Generación', value: estudiante.generacion || estudiante.año_generacion },
@@ -88,9 +107,65 @@ export function ProfileSection({ estudiante, seccionActiva }: ProfileSectionProp
                 mx: 'auto',
                 fontSize: '4rem'
               }}
+              src={fotoUrl}
+              alt={estudiante.nombre}
             >
-              <AccountCircleIcon sx={{ fontSize: '8rem', color: 'grey.500' }} />
+              {!fotoUrl && <AccountCircleIcon sx={{ fontSize: '8rem', color: 'grey.500' }} />}
             </Avatar>
+            <input
+              id="upload-avatar"
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setErrorUpload('');
+                setSubiendo(true);
+                try {
+                  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+                  const preset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+                  const folder = import.meta.env.VITE_CLOUDINARY_FOLDER || 'proyecto-integrador';
+                  if (!cloudName || !preset) throw new Error('Faltan variables VITE_CLOUDINARY_CLOUD_NAME o VITE_CLOUDINARY_UPLOAD_PRESET');
+                  const formData = new FormData();
+                  formData.append('file', file);
+                  formData.append('upload_preset', preset);
+                  formData.append('folder', folder);
+                  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                    method: 'POST',
+                    body: formData,
+                  });
+                  if (!res.ok) throw new Error('Error subiendo imagen');
+                  const data = await res.json();
+                  const secureUrl = data.secure_url as string;
+                  const estudianteId = (estudiante.id_estudiante ?? estudiante.id) ? String(estudiante.id_estudiante ?? estudiante.id) : '';
+                  setFotoUrl(secureUrl);
+                  await estudianteService.update(estudianteId, { foto_url: secureUrl });
+                } catch (err: any) {
+                  setErrorUpload(err.message || 'No se pudo subir la imagen');
+                } finally {
+                  setSubiendo(false);
+                  if (e.target) e.target.value = '';
+                }
+              }}
+            />
+            <label htmlFor="upload-avatar">
+              <Button
+                component="span"
+                variant="outlined"
+                startIcon={<CloudUploadIcon />}
+                disabled={subiendo}
+                sx={{ mt: 1, textTransform: 'none' }}
+              >
+                {subiendo ? 'Subiendo...' : 'Cambiar foto'}
+              </Button>
+            </label>
+            {subiendo && <LinearProgress sx={{ mt: 1 }} />}
+            {errorUpload && (
+              <Typography color="error" variant="caption" display="block" sx={{ mt: 1 }}>
+                {errorUpload}
+              </Typography>
+            )}
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mt: 1 }}>
               <Typography sx={{ fontWeight: 600, mr: 1, minWidth: 60 }} color="text.secondary">
                 Estado:
@@ -168,7 +243,7 @@ export function ProfileSection({ estudiante, seccionActiva }: ProfileSectionProp
           <StatCard
             icon="✅"
             label="Estado Académico"
-            value={estudiante.status || estudiante.estado || 'N/A'}
+            value={getEstudianteStatus(estudiante) || estudiante.estado || 'N/A'}
             accentColor="#ff9800"
           />
         </Box>

@@ -1,27 +1,38 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  BeforeInsert,
 } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 import { Estudiante } from '../../estudiante/entities/estudiante.entity';
 
 @Entity('historial_academico')
 export class HistorialAcademico {
-  @PrimaryGeneratedColumn()
-  id_historial_academico: number;
+  @PrimaryColumn('uuid')
+  id_historial_academico: string;
 
-  @Column({ nullable: true, default: null })
-  año: number;
+  @BeforeInsert()
+  generateId() {
+    this.id_historial_academico = uuidv4();
+  }
 
-  @Column({ nullable: true, default: null })
-  semestre: number;
+  // === CAMPOS LEGACY ELIMINADOS ===
+  // año y semestre fueron migrados a periodo_academico (centralizado)
+  // Usar la relación periodo_academico_estudiante en su lugar
 
   @Column({ nullable: true, default: null })
   nivel_educativo: string;
+
+  @Column({ nullable: true, type: 'int' })
+  año: number;
+
+  @Column({ nullable: true, type: 'int' })
+  semestre: number;
 
   @Column({ nullable: true, default: null })
   ramos_aprobados: number;
@@ -40,6 +51,15 @@ export class HistorialAcademico {
 
   @Column({ type: 'text', nullable: true, default: null })
   observaciones: string;
+
+  @Column({ type: 'text', nullable: true, default: null })
+  comentarios_generales: string;
+
+  @Column({ type: 'text', nullable: true, default: null })
+  dificultades: string;
+
+  @Column({ type: 'text', nullable: true, default: null })
+  aprendizajes: string;
 
   @Column({ nullable: true, default: null })
   ultima_actualizacion_por: string;

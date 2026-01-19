@@ -25,6 +25,8 @@ export const sidebarSections: SidebarSection[] = [
       { id: 'estudios', title: 'Estudios', icon: '📚', type: 'note' },
       { id: 'trabajo', title: 'Trabajo', icon: '💼', type: 'note' },
       { id: 'metas', title: 'Metas', icon: '🎯', type: 'note' },
+      { id: 'salud', title: 'Salud', icon: '⚕️', type: 'note' },
+      { id: 'actividades-extracurriculares', title: 'Actividades extracurriculares', icon: '🎭', type: 'note' },
       { id: 'problemas', title: 'Problemas', icon: '⚠️', type: 'note' },
     ]
   },

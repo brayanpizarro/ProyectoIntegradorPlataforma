@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { historialAcademicoService, authService } from '../../../../services';
 import type { Estudiante } from '../../../../types';
 import { logger } from '../../../../config';
@@ -13,9 +13,11 @@ interface UseStudentEditingProps {
   estudiante: Estudiante | null;
   reloadStudentData: () => Promise<void>;
   setInformesGuardados: (fn: (prev: any[]) => any[]) => void;
+  hayCambiosExternos?: boolean;
+  limpiarCambiosExternos?: () => void;
 }
 
-export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInformesGuardados }: UseStudentEditingProps) => {
+export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInformesGuardados, hayCambiosExternos = false, limpiarCambiosExternos }: UseStudentEditingProps) => {
   const [modoEdicion, setModoEdicion] = useState(false);
   const [isGuardando, setIsGuardando] = useState(false);
   const [mensajeExito, setMensajeExito] = useState<string>('');
@@ -43,11 +45,13 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
   });
 
   // Verificar si hay cambios pendientes en cualquier dominio
-  const hayCambiosPendientes =
+  const hayCambiosInternos =
     estudianteEditing.hayCambios ||
     familiaEditing.hayCambios ||
     academicEditing.hayCambios ||
     institucionEditing.hayCambios;
+
+  const hayCambiosPendientes = hayCambiosInternos || hayCambiosExternos;
 
 
   useEffect(() => {
@@ -89,7 +93,7 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
     ];
 
     const camposInstitucion = [
-      'carrera_especialidad', 'duracion', 'nombre', 'tipo_institucion',
+      'carrera_especialidad', 'duracion', 'nombre', 'institucion_nombre', 'tipo_institucion',
       'nivel_educativo', 'anio_de_ingreso', 'anio_de_egreso'
     ];
 
@@ -97,15 +101,17 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
       'año_ingreso_beca', 'colegio', 'especialidad_colegio',
       'comuna_colegio', 'via_acceso', 'beneficios',
       'promedio_1', 'promedio_2', 'promedio_3', 'promedio_4',
-      'puntajes_paes'
+       'puntajes_paes', 'puntajes_admision', 'trayectoria_academica'
     ];
 
-    if (camposEstudiante.includes(campo)) {
-      estudianteEditing.handleCampoChange(campo, valor);
-    } else if (camposInstitucion.includes(campo)) {
-      institucionEditing.handleInstitucionChange(campo, valor);
+    if (camposInstitucion.includes(campo)) {
+      // Alias: institucion_nombre debe mapear a nombre de institución
+      const campoMap = campo === 'institucion_nombre' ? 'nombre' : campo;
+      institucionEditing.handleInstitucionChange(campoMap, valor);
     } else if (camposAcademicos.includes(campo)) {
       academicEditing.handleCampoChange(campo, valor);
+    } else if (camposEstudiante.includes(campo)) {
+      estudianteEditing.handleCampoChange(campo, valor);
     }
   };
 
@@ -132,21 +138,11 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
       // Guardar en paralelo todos los dominios que tienen cambios
       const promesas: Promise<void>[] = [];
 
-      if (estudianteEditing.hayCambios) {
-        promesas.push(estudianteEditing.guardarCambios());
-      }
-
-      if (familiaEditing.hayCambios) {
-        promesas.push(familiaEditing.guardarCambios());
-      }
-
-      if (academicEditing.hayCambios) {
-        promesas.push(academicEditing.guardarCambios());
-      }
-
-      if (institucionEditing.hayCambios) {
-        promesas.push(institucionEditing.guardarCambios());
-      }
+      if (estudianteEditing.hayCambios) promesas.push(estudianteEditing.guardarCambios());
+      if (familiaEditing.hayCambios) promesas.push(familiaEditing.guardarCambios());
+      if (academicEditing.hayCambios) promesas.push(academicEditing.guardarCambios());
+      if (institucionEditing.hayCambios) promesas.push(institucionEditing.guardarCambios());
+      if (hayCambiosExternos && limpiarCambiosExternos) promesas.push(Promise.resolve().then(() => limpiarCambiosExternos()));
 
       // Ejecutar todos los guardados en paralelo
       await Promise.all(promesas);
@@ -159,6 +155,7 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
       familiaEditing.limpiarCambios();
       academicEditing.limpiarCambios();
       institucionEditing.limpiarCambios();
+      if (hayCambiosExternos && limpiarCambiosExternos) limpiarCambiosExternos();
 
       setModoEdicion(false);
 
@@ -235,7 +232,7 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
   // ============================================
   // DATOS COMBINADOS - Originales + Ediciones
   // ============================================
-  const getDatosCombinadosParaVista = () => {
+  const getDatosCombinadosParaVista = useCallback(() => {
     if (!estudiante) return null;
 
     // Combinar datos de todos los dominios
@@ -244,13 +241,24 @@ export const useStudentEditing = ({ id, estudiante, reloadStudentData, setInform
     const academicoCombinado = academicEditing.getDatosCombinados();
     const institucionCombinada = institucionEditing.getDatosCombinados();
 
-    return {
+    const datosFinales = {
       ...estudianteCombinado,
       familia: familiaCombinada || estudiante.familia,
       informacionAcademica: academicoCombinado || estudiante.informacionAcademica,
       institucion: institucionCombinada || estudiante.institucion
     };
-  };
+
+    // Log para debug
+    logger.log('🔍 getDatosCombinadosParaVista:', {
+      email: (datosFinales as any).email,
+      telefono: (datosFinales as any).telefono,
+      direccion: (datosFinales as any).direccion,
+      colegio: datosFinales.informacionAcademica?.colegio,
+      carrera: datosFinales.institucion?.carrera_especialidad
+    });
+
+    return datosFinales;
+  }, [estudiante, estudianteEditing, familiaEditing, academicEditing, institucionEditing]);
 
   return {
     modoEdicion,
