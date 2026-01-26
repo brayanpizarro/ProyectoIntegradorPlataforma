@@ -31,9 +31,29 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
   onViewDetails,
   onDelete,
 }) => {
+  // Umbrales de alerta por días sin entrevista
+  const WARNING_DAYS = 30;
+  const ALERT_DAYS = 60;
+
   const getSortIcon = (field: keyof UIStudent) => {
     if (sortField !== field) return '↕️';
     return sortDirection === 'asc' ? '↑' : '↓';
+  };
+
+  const getPromedioInfo = (promedio: UIStudent['promedio']) => {
+    const value = typeof promedio === 'number'
+      ? promedio
+      : promedio !== undefined && promedio !== null
+        ? Number(promedio)
+        : undefined;
+
+    if (!Number.isFinite(value)) {
+      return { value: undefined, colorClass: 'text-[var(--color-coral-dark)]' };
+    }
+
+    if (value >= 6.0) return { value, colorClass: 'text-[var(--color-turquoise)]' };
+    if (value >= 5.5) return { value, colorClass: 'text-[var(--color-orange)]' };
+    return { value, colorClass: 'text-[var(--color-coral-dark)]' };
   };
 
   return (
@@ -80,86 +100,99 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
           </tr>
         </thead>
         <tbody>
-          {students.map((student, index) => (
-            <tr 
-              key={(student as any).id_estudiante || student.id || index}
-              className={`${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'} hover:bg-[var(--color-turquoise)]/10 transition-colors`}
-            >
-              <td className="py-3 px-3 border-b border-gray-300">
-                <div className="font-bold text-gray-800">
-                  { (student as any).nombre || `${student.nombres || ''} ${student.apellidos || ''}` }
-                </div>
-                <div className="text-xs text-gray-500">
-                  {student.rut}
-                </div>
-              </td>
-              <td className="py-3 px-3 border-b border-gray-300 text-gray-600">
-                {student.carrera || student.institucion?.carrera_especialidad || 'N/A'}
-                <div className="text-xs text-gray-400">
-                  {student.universidad || student.institucion?.nombre || ''}
-                </div>
-              </td>
-              <td className="py-3 px-3 border-b border-gray-300 text-center">
-                <span 
-                  className="px-2 py-1 rounded-xl text-xs font-bold text-white"
-                  style={{ backgroundColor: getEstadoColor(student.estado || 'Activo') }}
-                >
-                  {student.estado || 'Activo'}
-                </span>
-              </td>
-              <td className={`py-3 px-3 border-b border-gray-300 text-center font-bold ${
-                (student.promedio || 0) >= 6.0 ? 'text-[var(--color-turquoise)]' : 
-                (student.promedio || 0) >= 5.5 ? 'text-[var(--color-orange)]' : 'text-[var(--color-coral-dark)]'
-              }`}>
-                {student.promedio ? student.promedio.toFixed(1) : 'N/A'}
-              </td>
-              <td className="py-3 px-3 border-b border-gray-300 text-center text-sm">
-                {formatDateChilean(student.ultimaEntrevista)}
-              </td>
-              <td className="py-3 px-3 border-b border-gray-300 text-center font-bold">
-                {student.totalEntrevistasAno || 0}
-              </td>
-              <td className="py-3 px-3 border-b border-gray-300 text-center">
-                <div className="flex gap-1 justify-center flex-wrap">
-                  {(student.diasSinEntrevista && student.diasSinEntrevista > 60) && (
-                    <span 
-                      className="px-1.5 py-0.5 rounded text-xs font-bold bg-yellow-100 text-yellow-800 border border-yellow-300"
-                      title={`${student.diasSinEntrevista} días sin entrevista`}
-                    >
-                      ⏰ {student.diasSinEntrevista}d
-                    </span>
-                  )}
-                  {student.tienePendienteNotas && (
-                    <span 
-                      className="px-1.5 py-0.5 rounded text-xs font-bold bg-red-100 text-red-800 border border-red-300"
-                      title="Pendiente de notas"
-                    >
-                      📝
-                    </span>
-                  )}
-                  {!student.diasSinEntrevista || (student.diasSinEntrevista <= 60 && !student.tienePendienteNotas) ? (
-                    <span className="text-gray-400 text-sm">—</span>
-                  ) : null}
-                </div>
-              </td>
-              <td className="py-3 px-3 border-b border-gray-300 text-center">
-                  <div className="flex items-center justify-center gap-2">
-                    <button
-                      onClick={() => onViewDetails((student as any).id_estudiante || student.id)}
-                      className="px-3 py-1.5 bg-[var(--color-turquoise)] text-white rounded hover:bg-[var(--color-turquoise-light)] transition-colors text-xs font-bold"
-                    >
-                      Ver Detalles
-                    </button>
-                    <button
-                      onClick={() => onDelete((student as any).id_estudiante || student.id)}
-                      className="px-3 py-1.5 bg-[var(--color-coral-dark)] text-white rounded hover:bg-red-500 transition-colors text-xs font-bold"
-                    >
-                      Eliminar
-                    </button>
+          {students.map((student, index) => {
+            const { value: promedioValor, colorClass: promedioColor } = getPromedioInfo(student.promedio);
+
+            return (
+              <tr 
+                key={(student as any).id_estudiante || student.id || index}
+                className={`${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'} hover:bg-[var(--color-turquoise)]/10 transition-colors`}
+              >
+                <td className="py-3 px-3 border-b border-gray-300">
+                  <div className="font-bold text-gray-800">
+                    { (student as any).nombre || `${student.nombres || ''} ${student.apellidos || ''}` }
                   </div>
-              </td>
-            </tr>
-          ))}
+                  <div className="text-xs text-gray-500">
+                    {student.rut}
+                  </div>
+                </td>
+                <td className="py-3 px-3 border-b border-gray-300 text-gray-600">
+                  {student.carrera || student.institucion?.carrera_especialidad || 'N/A'}
+                  <div className="text-xs text-gray-400">
+                    {student.universidad || student.institucion?.nombre || ''}
+                  </div>
+                </td>
+                <td className="py-3 px-3 border-b border-gray-300 text-center">
+                  <span 
+                    className={`px-3 py-1 rounded-full text-xs font-bold border ${(() => {
+                      const estado = (student.estado || 'activo').toLowerCase();
+                      if (estado === 'activo') return 'bg-green-100 text-green-800 border-green-300';
+                      if (estado === 'inactivo') return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+                      if (estado === 'egresado') return 'bg-blue-100 text-blue-800 border-blue-300';
+                      if (estado === 'retirado') return 'bg-red-100 text-red-800 border-red-300';
+                      return 'bg-gray-100 text-gray-800 border-gray-300';
+                    })()}`}
+                  >
+                    {student.estado || 'Activo'}
+                  </span>
+                </td>
+                <td className={`py-3 px-3 border-b border-gray-300 text-center font-bold ${promedioColor}`}>
+                  {promedioValor !== undefined ? promedioValor.toFixed(1) : 'N/A'}
+                </td>
+                <td className="py-3 px-3 border-b border-gray-300 text-center text-sm">
+                  {formatDateChilean(student.ultimaEntrevista)}
+                </td>
+                <td className="py-3 px-3 border-b border-gray-300 text-center font-bold">
+                  {student.totalEntrevistasAno || 0}
+                </td>
+                <td className="py-3 px-3 border-b border-gray-300 text-center">
+                  <div className="flex gap-1 justify-center flex-wrap">
+                    {student.diasSinEntrevista !== undefined && (
+                      <span
+                        className={`px-2.5 py-1 rounded text-sm font-bold border ${
+                          student.diasSinEntrevista >= ALERT_DAYS
+                            ? 'bg-red-100 text-red-800 border-red-300'
+                            : student.diasSinEntrevista >= WARNING_DAYS
+                              ? 'bg-yellow-100 text-yellow-800 border-yellow-300'
+                              : 'bg-green-100 text-green-800 border-green-300'
+                        }`}
+                        title={`${student.diasSinEntrevista} días sin entrevista`}
+                      >
+                        ⏰ {student.diasSinEntrevista}d
+                      </span>
+                    )}
+                    {student.tienePendienteNotas && (
+                      <span 
+                        className="px-1.5 py-0.5 rounded text-xs font-bold bg-red-100 text-red-800 border border-red-300"
+                        title="Pendiente de notas"
+                      >
+                        📝
+                      </span>
+                    )}
+                    {student.diasSinEntrevista === undefined && !student.tienePendienteNotas ? (
+                      <span className="text-gray-400 text-sm">—</span>
+                    ) : null}
+                  </div>
+                </td>
+                <td className="py-3 px-3 border-b border-gray-300 text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => onViewDetails((student as any).id_estudiante || student.id)}
+                        className="px-3 py-1.5 bg-[var(--color-turquoise)] text-white rounded hover:bg-[var(--color-turquoise-light)] transition-colors text-xs font-bold"
+                      >
+                        Ver Detalles
+                      </button>
+                      <button
+                        onClick={() => onDelete((student as any).id_estudiante || student.id)}
+                        className="px-3 py-1.5 bg-[var(--color-coral-dark)] text-white rounded hover:bg-red-500 transition-colors text-xs font-bold"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 

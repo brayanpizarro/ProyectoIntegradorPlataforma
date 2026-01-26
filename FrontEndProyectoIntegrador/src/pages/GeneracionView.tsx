@@ -1,9 +1,15 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { estudianteService } from '../services';
+import {
+  estudianteService,
+  entrevistaService,
+  historialAcademicoService,
+  ramosCursadosService,
+} from '../services';
 import { logger } from '../config';
 import { GenerationHeader, StudentFilterPanel, StudentsTable } from '../components/features/generation-view';
 import { CreateEstudianteModal } from '../components/features/dashboard';
+import { daysSince } from '../utils/dateHelpers';
 import type { Estudiante } from '../types';
 
 type UIStudent = Estudiante & {
@@ -26,6 +32,118 @@ export default function GeneracionViewSimple(){
 
   const [students, setStudents] = useState<UIStudent[]>([]);
   const [openCreateEstudiante, setOpenCreateEstudiante] = useState(false);
+
+  const normalizeNumber = (value?: number | string | null) => {
+    if (value === null || value === undefined) return undefined;
+    const num = typeof value === 'number' ? value : Number(value);
+    return Number.isFinite(num) ? num : undefined;
+  };
+
+  const calculatePromedio = (
+    student: Estudiante,
+    historiales: any[],
+    ramos: any[]
+  ): number | undefined => {
+    const directo =
+      normalizeNumber(student.promedio) ??
+      normalizeNumber(student.informacionAcademica?.promedio_acumulado) ??
+      normalizeNumber(student.informacionAcademica?.promedio_1);
+
+    if (directo !== undefined) return directo;
+
+    const historialesConPromedio = historiales.filter(
+      (h) => normalizeNumber(h?.promedio_semestre) !== undefined
+    );
+    if (historialesConPromedio.length > 0) {
+      const suma = historialesConPromedio.reduce(
+        (acc, h) => acc + (normalizeNumber(h.promedio_semestre) || 0),
+        0
+      );
+      const promedio = suma / historialesConPromedio.length;
+      if (Number.isFinite(promedio)) return promedio;
+    }
+
+    const ramosConNota = ramos.filter(
+      (r) => normalizeNumber(r?.promedio_final) !== undefined
+    );
+    if (ramosConNota.length > 0) {
+      const suma = ramosConNota.reduce(
+        (acc, r) => acc + (normalizeNumber(r.promedio_final) || 0),
+        0
+      );
+      const promedio = suma / ramosConNota.length;
+      if (Number.isFinite(promedio)) return promedio;
+    }
+
+    return undefined;
+  };
+
+  const enrichStudentsWithStats = useCallback(async (rawStudents: Estudiante[]): Promise<UIStudent[]> => {
+    const currentYear = new Date().getFullYear();
+
+    return Promise.all(
+      rawStudents.map(async (student) => {
+        const studentId = String((student as any).id_estudiante || student.id || '');
+
+        if (!studentId) {
+          return {
+            ...student,
+            promedio: normalizeNumber(student.promedio),
+            totalEntrevistasAno: 0,
+          };
+        }
+
+        const [entrevistas, historiales, ramos] = await Promise.all([
+          entrevistaService.getByEstudiante(studentId).catch((error) => {
+            logger.warn('⚠️ No se pudieron cargar entrevistas del estudiante', { studentId, error });
+            return [];
+          }),
+          student.historialesAcademicos && student.historialesAcademicos.length > 0
+            ? Promise.resolve(student.historialesAcademicos)
+            : historialAcademicoService.getByEstudiante(studentId).catch((error) => {
+                logger.warn('⚠️ No se pudo cargar historial académico del estudiante', { studentId, error });
+                return [];
+              }),
+          student.ramosCursados && student.ramosCursados.length > 0
+            ? Promise.resolve(student.ramosCursados)
+            : ramosCursadosService.getByEstudiante(studentId).catch((error) => {
+                logger.warn('⚠️ No se pudieron cargar ramos cursados del estudiante', { studentId, error });
+                return [];
+              }),
+        ]);
+
+        const entrevistasList = Array.isArray(entrevistas) ? entrevistas : [];
+        const historialesList = Array.isArray(historiales) ? historiales : historiales ? [historiales] : [];
+        const ramosList = Array.isArray(ramos) ? ramos : [];
+
+        const ultimaEntrevistaDate = entrevistasList
+          .map((entrevista) => (entrevista?.fecha ? new Date(entrevista.fecha) : undefined))
+          .filter((fecha): fecha is Date => Boolean(fecha))
+          .sort((a, b) => b.getTime() - a.getTime())[0];
+
+        const ultimaEntrevista = ultimaEntrevistaDate ? ultimaEntrevistaDate.toISOString() : undefined;
+        const totalEntrevistasAno = entrevistasList.filter((entrevista) => {
+          const fecha = entrevista?.fecha ? new Date(entrevista.fecha) : undefined;
+          return fecha?.getFullYear() === currentYear;
+        }).length;
+        const diasSinEntrevista = ultimaEntrevista ? daysSince(ultimaEntrevista) : undefined;
+
+        const promedioCalculado = calculatePromedio(student, historialesList, ramosList);
+        const tienePendienteNotas = ramosList.some(
+          (ramo) => normalizeNumber(ramo?.promedio_final) === undefined
+        );
+
+        return {
+          ...student,
+          promedio: promedioCalculado ?? normalizeNumber(student.promedio),
+          ultimaEntrevista,
+          totalEntrevistasAno,
+          diasSinEntrevista,
+          tienePendienteNotas,
+        };
+      })
+    );
+  }, []);
   
   // Obtener opciones únicas para los filtros
   const carreras = [...new Set(students.map(student => 
@@ -109,42 +227,38 @@ export default function GeneracionViewSimple(){
     }
   };
 
-  useEffect(() => {
+  const loadStudents = useCallback(async () => {
     logger.log('🔍 Cargando estudiantes de generación:', id);
-    const fetchStudents = async () => {
-      try {
-        const dataStudents = await estudianteService.getByGeneracion(id || '')
-        setStudents(dataStudents);
-        logger.log('✅ Estudiantes cargados:', dataStudents.length);
-        
-        // Si es una generación nueva sin estudiantes, abrir automáticamente el modal
-        if (dataStudents.length === 0) {
-          logger.log('📂 Generación nueva detectada, abriendo formulario...');
-          // Pequeño delay para que el usuario vea la interfaz primero
-          setTimeout(() => {
-            setOpenCreateEstudiante(true);
-          }, 500);
-        }
-      } catch (error) {
-        logger.error('❌ Error al cargar estudiantes de generación:', error);
-        setStudents([]);
+    try {
+      const dataStudents = await estudianteService.getByGeneracion(id || '');
+      const studentsWithStats = await enrichStudentsWithStats(dataStudents);
+      setStudents(studentsWithStats);
+      logger.log('✅ Estudiantes cargados:', dataStudents.length);
+      
+      if (dataStudents.length === 0) {
+        logger.log('📂 Generación nueva detectada, abriendo formulario...');
+        setTimeout(() => {
+          setOpenCreateEstudiante(true);
+        }, 500);
       }
+    } catch (error) {
+      logger.error('❌ Error al cargar estudiantes de generación:', error);
+      setStudents([]);
     }
-    fetchStudents();
-  }, [id, generationId]);
+  }, [enrichStudentsWithStats, generationId, id]);
+
+  useEffect(() => {
+    loadStudents();
+  }, [loadStudents]);
 
   const handleAddStudent = () => {
     setOpenCreateEstudiante(true);
   };
 
   const handleEstudianteCreated = async () => {
-    // Recargar estudiantes después de crear uno nuevo
     console.log('🔄 Recargando estudiantes de generación', id, 'después de crear nuevo estudiante...');
     try {
-      const dataStudents = await estudianteService.getByGeneracion(id || '')
-      setStudents(dataStudents);
-      console.log('✅ GeneracionView actualizada - Estudiantes:', dataStudents.length, dataStudents);
-      logger.log('✅ Estudiantes actualizados:', dataStudents.length);
+      await loadStudents();
     } catch (error) {
       logger.error('❌ Error al recargar estudiantes:', error);
     }

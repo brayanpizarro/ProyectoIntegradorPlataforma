@@ -59,7 +59,6 @@ export class CreateEntrevistaDto {
   @IsNumber()
   @IsNotEmpty()
   @Min(2020)
-  @Max(2030)
   año: number;
 
   @Type(() => Number)
