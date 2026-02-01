@@ -38,7 +38,6 @@ export default function EstudianteDetail() {
     handleFamiliaChange,
     handleGuardar,
     handleToggleEdicion,
-    handleGenerarInforme,
     estudianteConEdiciones,
     informesGuardados,
     setMensajeExito,
@@ -83,7 +82,6 @@ export default function EstudianteDetail() {
         isGuardando={isGuardando}
         onToggleEdicion={handleToggleEdicion}
         onGuardar={handleGuardar}
-        onGenerarInforme={handleGenerarInforme}
         canEdit={canEdit}
       />
 

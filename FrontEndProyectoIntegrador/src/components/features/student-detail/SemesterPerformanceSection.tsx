@@ -10,6 +10,7 @@ import {
   useSemesterStats
 } from './hooks/useSemesterPerformance';
 import { ramosCursadosService, historialAcademicoService } from '../../../services';
+import jsPDF from 'jspdf';
 
 interface SemesterPerformanceSectionProps {
   estudiante: Estudiante;
@@ -113,6 +114,91 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
     return estado || 'Sin definir';
   };
 
+  const generarInformeSemestre = () => {
+    const doc = new jsPDF();
+    let y = 15;
+
+    const addLine = (text: string, gap = 6) => {
+      doc.text(text, 14, y);
+      y += gap;
+      if (y > 280) {
+        doc.addPage();
+        y = 15;
+      }
+    };
+
+    const nombreEstudiante = estudiante.nombre || estudiante.nombres || 'Estudiante';
+    const rut = estudiante.rut || '-';
+
+    doc.setFontSize(16);
+    addLine('Informe de Desempeno Academico', 10);
+    doc.setFontSize(11);
+    addLine(`Estudiante: ${nombreEstudiante}`);
+    addLine(`RUT: ${rut}`);
+    addLine(`Semestre: ${semestreActual.año}/${semestreActual.semestre}S`);
+    addLine(`Fecha de emision: ${new Date().toLocaleDateString('es-CL')}`, 10);
+
+    addLine('Ramos cursados:', 8);
+    if (ramosEditable.length === 0) {
+      addLine(' - No hay ramos registrados para este semestre.', 8);
+    } else {
+      // Dibujar tabla manual (sin autoTable) con columnas fijas
+      const startX = 14;
+      const colWidths = [10, 60, 16, 28, 22, 22, 28];
+      const headers = ['#', 'Ramo', 'Oport.', 'Notas parciales', 'Promedio', 'Aprobacion', 'Comentarios'];
+
+      const drawRow = (values: string[], isHeader = false) => {
+        let x = startX;
+        const height = isHeader ? 8 : 9;
+        values.forEach((val, idx) => {
+          doc.rect(x, y, colWidths[idx], height);
+          doc.text(val, x + 2, y + (isHeader ? 5 : 6));
+          x += colWidths[idx];
+        });
+        y += height;
+        if (y > 280) {
+          doc.addPage();
+          y = 15;
+        }
+      };
+
+      drawRow(headers, true);
+
+      ramosEditable.forEach((ramo, idx) => {
+        const fila = [
+          `${idx + 1}`,
+          ramo.nombre_ramo || 'Sin nombre',
+          `${ramo.oportunidad || 1}ra`,
+          formatearNotasParciales(ramo.notas_parciales) || '-',
+          ramo.promedio_final ? Number(ramo.promedio_final).toFixed(1) : '-',
+          getEstadoAprobacion(ramo.estado),
+          ramo.comentarios || '-'
+        ];
+        drawRow(fila);
+      });
+      y += 6;
+    }
+
+    addLine('Resumen del semestre:', 10);
+    const resumenPromedio = promedio !== null ? promedio.toFixed(1) : '-';
+    addLine(
+      `   Inscritos: ${total} | Aprobados: ${aprobados} | Reprobados: ${reprobados} | Eliminados: ${eliminados} | Promedio semestre: ${resumenPromedio}`,
+      10
+    );
+
+    addLine('Comentarios generales:', 8);
+    addLine(`   ${historialEditable?.comentarios_generales || '-'}`, 8);
+
+    addLine('Principales dificultades:', 8);
+    addLine(`   ${historialEditable?.dificultades || '-'}`, 8);
+
+    addLine('Principales aprendizajes:', 8);
+    addLine(`   ${historialEditable?.aprendizajes || '-'}`, 10);
+
+    const fileSafeName = nombreEstudiante.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+    doc.save(`informe-desempeno-${fileSafeName}-${semestreActual.año}-${semestreActual.semestre}s.pdf`);
+  };
+
   return (
     <div>
       <div className="bg-[var(--color-turquoise)] text-white text-center font-bold text-xl py-3 mb-2">
@@ -124,6 +210,12 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
           Semestre {semestreActual.año}/{semestreActual.semestre}S
         </div>
         <div className="flex gap-2">
+          <button
+            onClick={generarInformeSemestre}
+            className="px-3 py-1 bg-emerald-600 text-white rounded shadow text-sm hover:bg-emerald-700"
+          >
+            Generar informe
+          </button>
           <select
             value={`${semestreActual.año}-${semestreActual.semestre}`}
             onChange={(e) => {

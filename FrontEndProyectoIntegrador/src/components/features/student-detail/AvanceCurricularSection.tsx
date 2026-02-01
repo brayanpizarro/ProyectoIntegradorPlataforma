@@ -153,14 +153,25 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
       periodo = await periodoAcademicoService.createPeriodo({ año, semestre });
     }
 
-    let periodoEstudianteId: number | undefined;
+    const periodoId = (periodo as any)?.id_periodo_academico || (periodo as any)?.id;
+
+    if (!periodoId) {
+      throw new Error('No se pudo obtener el ID del período académico');
+    }
+
+    let periodoEstudianteId: string | undefined;
     try {
       const registros = await periodoAcademicoService.getByEstudiante(estudiante.id_estudiante.toString());
       const existente = registros.find(
-        (r: any) => r.periodo_academico_id === periodo.id || r.periodo_academico?.id === periodo.id
+        (r: any) =>
+          r.periodo_academico_id === periodoId ||
+          r.periodo_academico?.id_periodo_academico === periodoId ||
+          r.periodo_academico?.id === periodoId
       );
       if (existente) {
-        periodoEstudianteId = existente.id;
+        periodoEstudianteId =
+          (existente as any).id_periodo_academico_estudiante ||
+          (existente as any).id;
       }
     } catch (err) {
       // Ignorar y crear si no se pudo obtener
@@ -169,12 +180,14 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
     if (!periodoEstudianteId) {
       const creado = await periodoAcademicoService.create({
         estudiante_id: estudiante.id_estudiante.toString(),
-        periodo_academico_id: periodo.id,
+        periodo_academico_id: periodoId,
       } as any);
-      periodoEstudianteId = (creado as any).id;
+      periodoEstudianteId =
+        (creado as any).id_periodo_academico_estudiante ||
+        (creado as any).id;
     }
 
-    return { periodoEstudianteId, periodoId: periodo.id, año, semestre };
+    return { periodoEstudianteId, periodoId, año, semestre };
   };
 
   // Cargar datos reales desde el backend
@@ -196,8 +209,15 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
           const periodoBackend = ramo.periodo_academico_estudiante?.periodo_academico;
           const periodoKey = `${añoPeriodo}-${semestrePeriodo}`;
 
-          const periodoEstudianteId = ramo.periodo_academico_estudiante_id || ramo.periodo_academico_estudiante?.id;
-          const periodoId = periodoBackend?.id || ramo.periodo_academico_id;
+          const periodoEstudianteId =
+            ramo.periodo_academico_estudiante_id ||
+            ramo.periodo_academico_estudiante?.id_periodo_academico_estudiante ||
+            ramo.periodo_academico_estudiante?.id;
+
+          const periodoId =
+            periodoBackend?.id_periodo_academico ||
+            periodoBackend?.id ||
+            ramo.periodo_academico_id;
 
           if (!semestreMap[periodoKey]) {
             semestreMap[periodoKey] = {

@@ -1,7 +1,8 @@
 import { BaseHttpClient } from './base.http';
 
 export interface PeriodoAcademico {
-  id: number;
+  id?: string;
+  id_periodo_academico?: string;
   año: number;
   semestre: number;
   es_actual: boolean;
@@ -10,9 +11,10 @@ export interface PeriodoAcademico {
 }
 
 export interface PeriodoAcademicoEstudiante {
-  id: number;
+  id?: string;
+  id_periodo_academico_estudiante?: string;
   estudiante_id: string;
-  periodo_academico_id: number;
+  periodo_academico_id: string;
   periodo_academico?: PeriodoAcademico;
   fecha_inicio?: Date;
   fecha_termino?: Date;
@@ -30,7 +32,7 @@ export interface CreatePeriodoAcademicoDto {
 
 export interface CreatePeriodoAcademicoEstudianteDto {
   estudiante_id: string;
-  periodo_academico_id: number;
+  periodo_academico_id: string;
   fecha_inicio?: Date;
   fecha_termino?: Date;
   esta_cursando?: boolean;
@@ -43,7 +45,7 @@ class PeriodoAcademicoService extends BaseHttpClient {
     return await this.request<PeriodoAcademico[]>('/periodo-academico/periodos');
   }
 
-  async getPeriodoById(id: number): Promise<PeriodoAcademico> {
+  async getPeriodoById(id: string): Promise<PeriodoAcademico> {
     return await this.request<PeriodoAcademico>(`/periodo-academico/periodos/${id}`);
   }
 
@@ -67,7 +69,7 @@ class PeriodoAcademicoService extends BaseHttpClient {
     return await this.request<PeriodoAcademicoEstudiante[]>('/periodo-academico');
   }
 
-  async getById(id: number): Promise<PeriodoAcademicoEstudiante> {
+  async getById(id: string): Promise<PeriodoAcademicoEstudiante> {
     return await this.request<PeriodoAcademicoEstudiante>(`/periodo-academico/${id}`);
   }
 
@@ -75,7 +77,7 @@ class PeriodoAcademicoService extends BaseHttpClient {
     return await this.request<PeriodoAcademicoEstudiante[]>(`/periodo-academico/estudiante/${idEstudiante}`);
   }
 
-  async getByPeriodo(periodoId: number): Promise<PeriodoAcademicoEstudiante[]> {
+  async getByPeriodo(periodoId: string): Promise<PeriodoAcademicoEstudiante[]> {
     return await this.request<PeriodoAcademicoEstudiante[]>(`/periodo-academico/periodo/${periodoId}`);
   }
 
@@ -86,14 +88,14 @@ class PeriodoAcademicoService extends BaseHttpClient {
     });
   }
 
-  async update(id: number, data: Partial<CreatePeriodoAcademicoEstudianteDto>): Promise<PeriodoAcademicoEstudiante> {
+  async update(id: string, data: Partial<CreatePeriodoAcademicoEstudianteDto>): Promise<PeriodoAcademicoEstudiante> {
     return await this.request<PeriodoAcademicoEstudiante>(`/periodo-academico/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(data)
     });
   }
 
-  async delete(id: number): Promise<void> {
+  async delete(id: string): Promise<void> {
     return await this.request<void>(`/periodo-academico/${id}`, {
       method: 'DELETE'
     });

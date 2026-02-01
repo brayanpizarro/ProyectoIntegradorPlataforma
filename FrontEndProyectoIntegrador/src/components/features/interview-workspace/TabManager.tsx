@@ -1,5 +1,6 @@
-﻿import { Box, Paper, IconButton, Button, Chip, Typography, Alert } from '@mui/material';
-import { Close as CloseIcon, ViewColumn as ViewColumnIcon } from '@mui/icons-material';
+﻿import { useState } from 'react';
+import { Box, Paper, IconButton, Button, Typography, Alert } from '@mui/material';
+import { Close as CloseIcon, ViewColumn as ViewColumnIcon, Search as SearchIcon } from '@mui/icons-material';
 import type { Estudiante } from '../../../types';
 import { NoteEditor } from './NoteEditor';
 import { DataTable } from './DataTable';
@@ -41,6 +42,21 @@ export function TabManager({
   estudiante,
   entrevistaId
 }: TabManagerProps) {
+  const [filtersByTab, setFiltersByTab] = useState<Record<string, boolean>>({});
+
+  const toggleFiltersForTab = (tabId: string) => {
+    setFiltersByTab(prev => ({
+      ...prev,
+      [tabId]: !prev[tabId]
+    }));
+  };
+
+  const setFiltersVisibleForTab = (tabId: string, visible: boolean) => {
+    setFiltersByTab(prev => ({
+      ...prev,
+      [tabId]: visible
+    }));
+  };
 
   // COMPONENTE: Panel de pestañas individual
   function TabPanel({
@@ -77,27 +93,8 @@ export function TabManager({
           }
         }}
       >
-        {/* HEADER DEL PANEL */}
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'space-between', 
-          bgcolor: isActive ? 'primary.light' : 'grey.50', 
-          borderBottom: 1, 
-          borderColor: 'grey.200', 
-          px: 2, 
-          py: 1 
-        }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="caption" fontWeight={600}>
-              {panelId === 'left' ? '📋' : '📊'} Panel {panelId === 'left' ? 'Izquierdo' : 'Derecho'}
-            </Typography>
-            {isActive && <Chip label="● Activo" size="small" sx={{ height: 18, bgcolor: 'primary.main', color: 'white' }} />}
-          </Box>
-        </Box>
-
         {/* BARRA DE PESTAÑAS */}
-        <Box sx={{ bgcolor: 'grey.50', borderBottom: 1, borderColor: 'grey.200', height: 48, minHeight: 48, maxHeight: 48, display: 'flex', alignItems: 'center', px: 1, gap: 0.5, overflowX: 'auto', overflowY: 'hidden' }}>
+          <Box sx={{ bgcolor: 'grey.50', borderBottom: 1, borderColor: 'grey.200', height: 48, minHeight: 48, maxHeight: 48, display: 'flex', alignItems: 'center', px: 1, gap: 0.5 }}>
           {tabs.length === 0 ? (
             <Typography variant="body2" color="text.secondary" sx={{ flex: 1, textAlign: 'center', fontStyle: 'italic', py: 2 }}>
               {panelId === 'left' ? 
@@ -106,78 +103,107 @@ export function TabManager({
               }
             </Typography>
           ) : (
-            <>
-              {tabs.map((tab) => (
-                <Box
-                  key={tab.id}
-                  onClick={() => {
-                    onFocusTab(tab.id);
-                    onSetActivePanel(panelId);
-                  }}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    px: 2,
-                    py: 1,
-                    bgcolor: tab.isActive ? 'white' : 'transparent',
-                    border: tab.isActive ? 1 : 0,
-                    borderColor: tab.isActive ? 'grey.200' : 'transparent',
-                    borderBottom: tab.isActive ? 0 : 1,
-                    borderRadius: '8px 8px 0 0',
-                    cursor: 'pointer',
-                    fontWeight: tab.isActive ? 600 : 400,
-                    color: tab.isActive ? 'text.primary' : 'text.secondary',
-                    maxWidth: 150,
-                    minWidth: 100,
-                    position: 'relative',
-                    mb: tab.isActive ? '-1px' : 0,
-                    zIndex: tab.isActive ? 10 : 1,
-                    flexShrink: 0
-                  }}
-                >
-                  <Typography sx={{ fontSize: '0.875rem', flexShrink: 0 }}>
-                    {tab.type === 'note' ? '📝' : '📊'}
-                  </Typography>
-                  
-                  <Typography variant="caption" noWrap sx={{ flex: 1 }}>
-                    {tab.title}
-                  </Typography>
-                  
-                  <IconButton
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onCloseTab(tab.id);
-                    }}
-                    sx={{ 
-                      width: 16, 
-                      height: 16, 
-                      p: 0,
-                      '&:hover': { bgcolor: 'error.light', color: 'error.main' }
-                    }}
-                  >
-                    <CloseIcon sx={{ fontSize: 12 }} />
-                  </IconButton>
+              <>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, overflowX: 'auto', overflowY: 'hidden', flex: 1, pr: 1 }}>
+                  {tabs.map((tab) => (
+                    <Box
+                      key={tab.id}
+                      onClick={() => {
+                        onFocusTab(tab.id);
+                        onSetActivePanel(panelId);
+                      }}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        px: 2,
+                        py: 1,
+                        bgcolor: tab.isActive ? 'background.paper' : 'transparent',
+                        border: tab.isActive ? 1 : 0,
+                        borderColor: tab.isActive ? 'primary.main' : 'transparent',
+                        borderBottom: tab.isActive ? 0 : 1,
+                        borderRadius: '8px 8px 0 0',
+                        cursor: 'pointer',
+                        fontWeight: tab.isActive ? 600 : 400,
+                        color: tab.isActive ? 'text.primary' : 'text.secondary',
+                        maxWidth: tab.isActive ? 260 : 150,
+                        minWidth: tab.isActive ? 140 : 100,
+                        position: 'relative',
+                        mb: tab.isActive ? '-1px' : 0,
+                        zIndex: tab.isActive ? 10 : 1,
+                        flexShrink: 0,
+                        boxShadow: tab.isActive ? '0 2px 6px rgba(0,0,0,0.08)' : 'none',
+                        '&::after': {
+                          content: '""',
+                          position: 'absolute',
+                          left: 12,
+                          right: 12,
+                          bottom: -1,
+                          height: 3,
+                          borderRadius: 9999,
+                          backgroundColor: tab.isActive ? 'primary.main' : 'transparent'
+                        }
+                      }}
+                    >
+                      <Typography sx={{ fontSize: '0.875rem', flexShrink: 0 }}>
+                        {tab.type === 'note' ? '📝' : '📊'}
+                      </Typography>
+                    
+                      <Typography variant="caption" noWrap={!tab.isActive} sx={{ flex: 1 }}>
+                        {tab.title}
+                      </Typography>
+                    
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onCloseTab(tab.id);
+                        }}
+                        sx={{ 
+                          width: 16, 
+                          height: 16, 
+                          p: 0,
+                          '&:hover': { bgcolor: 'error.light', color: 'error.main' }
+                        }}
+                      >
+                        <CloseIcon sx={{ fontSize: 12 }} />
+                      </IconButton>
+                    </Box>
+                  ))}
                 </Box>
-              ))}
-              
-              {!workspace.splitView && panelId === 'left' && tabs.length > 0 && (
-                <IconButton
-                  size="small"
-                  onClick={onEnableSplitView}
-                  title="Dividir vista"
-                  sx={{ ml: 'auto', flexShrink: 0 }}
-                >
-                  <ViewColumnIcon fontSize="small" />
-                </IconButton>
-              )}
-            </>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+                  {!workspace.splitView && panelId === 'left' && tabs.length > 0 && (
+                    <IconButton
+                      size="small"
+                      onClick={onEnableSplitView}
+                      title="Dividir vista"
+                    >
+                      <ViewColumnIcon fontSize="small" />
+                    </IconButton>
+                  )}
+
+                  {activeTab && activeTab.type === 'note' && (
+                    <Button
+                      size="small"
+                      variant={filtersByTab[activeTab.id] ? 'contained' : 'outlined'}
+                      color="primary"
+                      startIcon={<SearchIcon fontSize="small" />}
+                      onClick={() => {
+                        toggleFiltersForTab(activeTab.id);
+                        onSetActivePanel(panelId);
+                      }}
+                    >
+                      Filtros
+                    </Button>
+                  )}
+                </Box>
+              </>
           )}
         </Box>
 
         {/* CONTENIDO DE LA PESTAÑA ACTIVA */}
-        <Box sx={{ flex: 1, overflow: 'auto', height: '100%', maxHeight: 'calc(100% - 96px)' }}>
+        <Box sx={{ flex: 1, overflow: 'auto', height: '100%', maxHeight: 'calc(100% - 48px)' }}>
           {activeTab ? (
             activeTab.type === 'note' ? (
               entrevistaId ? (
@@ -186,6 +212,8 @@ export function TabManager({
                   sectionTitle={activeTab.title}
                   estudiante={estudiante}
                   entrevistaId={entrevistaId}
+                    showFiltersExternal={filtersByTab[activeTab.id] || false}
+                    onFiltersVisibilityChange={(visible) => setFiltersVisibleForTab(activeTab.id, visible)}
                 />
               ) : (
                 <Box sx={{ p: 4, textAlign: 'center' }}>
@@ -268,33 +296,6 @@ export function TabManager({
         )}
       </Box>
 
-      {/* BARRA DE ESTADO */}
-      <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.50', border: 1, borderColor: 'grey.200', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 48, minHeight: 48, maxHeight: 48, flexShrink: 0 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-          <Typography variant="caption" color="text.secondary">
-            📋 {workspace.leftTabs.length + workspace.rightTabs.length} pestañas abiertas
-          </Typography>
-          {workspace.splitView && (
-            <Typography variant="caption" color="text.secondary">
-              ⧉ Vista dividida: {workspace.leftTabs.length} izq. | {workspace.rightTabs.length} der.
-            </Typography>
-          )}
-        </Box>
-        
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography variant="caption" color="text.secondary">Panel activo:</Typography>
-          <Chip
-            label={workspace.activePanel === 'left' ? 'Izquierdo' : 'Derecho'}
-            size="small"
-            sx={{
-              height: 20,
-              fontWeight: 600,
-              bgcolor: workspace.activePanel === 'left' ? 'info.light' : 'warning.light',
-              color: workspace.activePanel === 'left' ? 'info.dark' : 'warning.dark'
-            }}
-          />
-        </Box>
-      </Paper>
     </Box>
   );
 }

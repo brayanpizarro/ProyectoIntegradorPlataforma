@@ -4,8 +4,7 @@ import {
   ArrowBack as ArrowBackIcon,
   Edit as EditIcon,
   Visibility as VisibilityIcon,
-  Save as SaveIcon,
-  Description as DescriptionIcon
+  Save as SaveIcon
 } from '@mui/icons-material';
 import { getEstadoColor } from '../../../utils/estadoColors';
 
@@ -17,7 +16,6 @@ interface StudentHeaderProps {
   isGuardando?: boolean;
   onToggleEdicion: () => void;
   onGuardar?: () => void;
-  onGenerarInforme?: () => void;
   canEdit?: boolean;
 }
 
@@ -29,7 +27,6 @@ export function StudentHeader({
   isGuardando = false,
   onToggleEdicion,
   onGuardar,
-  onGenerarInforme,
   canEdit = true,
 }: StudentHeaderProps) {
   const navigate = useNavigate();
@@ -130,21 +127,6 @@ export function StudentHeader({
               )}
             </>
           )}
-          <Button 
-            variant="contained"
-            startIcon={<DescriptionIcon />}
-            onClick={onGenerarInforme}
-            sx={{
-              bgcolor: 'warning.main',
-              textTransform: 'none',
-              fontWeight: 500,
-              '&:hover': {
-                bgcolor: 'warning.dark'
-              }
-            }}
-          >
-            Generar Informe
-          </Button>
         </Box>
       </Box>
     </Paper>
