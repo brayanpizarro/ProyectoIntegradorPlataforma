@@ -1,5 +1,4 @@
 import React from 'react';
-import { getEstadoColor } from '../../../utils/estadoColors';
 import { formatDateChilean } from '../../../utils/dateHelpers';
 import type { Estudiante } from '../../../types';
 
@@ -47,7 +46,7 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
         ? Number(promedio)
         : undefined;
 
-    if (!Number.isFinite(value)) {
+    if (!Number.isFinite(value) || value === undefined) {
       return { value: undefined, colorClass: 'text-[var(--color-coral-dark)]' };
     }
 

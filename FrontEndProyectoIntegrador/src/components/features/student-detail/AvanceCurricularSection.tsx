@@ -88,8 +88,8 @@ interface MallaCurricular {
   fechaFin?: string;
   periodo?: string;
   periodoKey?: string;
-  periodoEstudianteId?: number;
-  periodoId?: number;
+  periodoEstudianteId?: string;
+  periodoId?: string;
   ramos: {
     id?: number;
     codigo: string;
@@ -449,7 +449,7 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
           data: ramoData
         });
 
-        await ramosCursadosService.update(String(ramoMovido.backendId), ramoData);
+        await ramosCursadosService.update(String(ramoMovido.backendId), ramoData as any);
         
         // Recargar datos para mantener sincronización
         await cargarDatosReales();
