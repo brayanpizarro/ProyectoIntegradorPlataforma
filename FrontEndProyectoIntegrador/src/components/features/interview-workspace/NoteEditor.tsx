@@ -41,6 +41,8 @@ export function NoteEditor({
   const [isLoading, setIsLoading] = useState(false);
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState('');
   const updateShowFilters = (visible: boolean) => {
     setShowFilters(visible);
     onFiltersVisibilityChange?.(visible);
@@ -144,6 +146,51 @@ export function NoteEditor({
     } catch (error) {
       console.error('Error al guardar nota:', error);
       alert('Error al guardar la nota. Inténtalo nuevamente.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleStartEdit = (note: Note) => {
+    setEditingNoteId(note.id);
+    setEditingText(note.content);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingNoteId(null);
+    setEditingText('');
+  };
+
+  const handleUpdateNote = async () => {
+    if (!editingNoteId || !entrevistaId) return;
+    const trimmed = editingText.trim();
+    if (!trimmed) return;
+    setIsLoading(true);
+    try {
+      await entrevistaService.updateTexto(entrevistaId, editingNoteId, { contenido: trimmed });
+      setNotes((prev) =>
+        prev.map((n) => (n.id === editingNoteId ? { ...n, content: trimmed } : n))
+      );
+      handleCancelEdit();
+    } catch (error) {
+      console.error('Error al actualizar nota:', error);
+      alert('Error al actualizar la nota. Inténtalo nuevamente.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteNote = async (noteId: string) => {
+    if (!entrevistaId) return;
+    if (!window.confirm('¿Eliminar esta nota?')) return;
+    setIsLoading(true);
+    try {
+      await entrevistaService.deleteTexto(entrevistaId, noteId);
+      setNotes((prev) => prev.filter((n) => n.id !== noteId));
+      if (editingNoteId === noteId) handleCancelEdit();
+    } catch (error) {
+      console.error('Error al eliminar nota:', error);
+      alert('Error al eliminar la nota. Inténtalo nuevamente.');
     } finally {
       setIsLoading(false);
     }
@@ -254,12 +301,55 @@ export function NoteEditor({
                     <span>•</span>
                     <span>{formatTime(note.timestamp)}</span>
                   </div>
+                  <div className="flex gap-2 text-xs">
+                    {editingNoteId === note.id ? (
+                      <>
+                        <button
+                          onClick={handleUpdateNote}
+                          disabled={isLoading || !editingText.trim()}
+                          className="px-2 py-1 bg-emerald-600 text-white rounded disabled:opacity-60"
+                        >
+                          Guardar
+                        </button>
+                        <button
+                          onClick={handleCancelEdit}
+                          className="px-2 py-1 bg-gray-200 text-gray-700 rounded"
+                        >
+                          Cancelar
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => handleStartEdit(note)}
+                          className="px-2 py-1 bg-white border border-gray-300 rounded text-gray-700"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleDeleteNote(note.id)}
+                          className="px-2 py-1 bg-white border border-red-300 text-red-600 rounded"
+                        >
+                          Eliminar
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
                 
                 {/* Contenido de la nota */}
-                <div className="text-[13px] text-gray-800 leading-6 whitespace-pre-wrap break-words" style={{ overflowWrap: 'anywhere' }}>
-                  {note.content}
-                </div>
+                {editingNoteId === note.id ? (
+                  <textarea
+                    value={editingText}
+                    onChange={(e) => setEditingText(e.target.value)}
+                    rows={3}
+                    className="w-full p-2 border border-gray-300 rounded text-[13px]"
+                  />
+                ) : (
+                  <div className="text-[13px] text-gray-800 leading-6 whitespace-pre-wrap break-words" style={{ overflowWrap: 'anywhere' }}>
+                    {note.content}
+                  </div>
+                )}
               </div>
             ))}
           </div>

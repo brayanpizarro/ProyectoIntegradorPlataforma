@@ -22,6 +22,8 @@ export function InterviewsSection({ estudianteId, estudiante }: InterviewsSectio
   const [entrevistas, setEntrevistas] = useState<Entrevista[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editandoId, setEditandoId] = useState<string | null>(null);
+  const [textoEdicion, setTextoEdicion] = useState('');
 
   // Cargar entrevistas del backend
   useEffect(() => {
@@ -53,6 +55,45 @@ export function InterviewsSection({ estudianteId, estudiante }: InterviewsSectio
     navigate(`/entrevista/${entrevista.id}`);
   };
 
+  const handleIniciarEdicionComentario = (entrevista: Entrevista) => {
+    setEditandoId(entrevista.id);
+    setTextoEdicion(entrevista.observaciones || '');
+  };
+
+  const handleGuardarComentario = async (entrevista: Entrevista) => {
+    try {
+      await entrevistaService.update(entrevista.id, { observaciones: textoEdicion });
+      setEntrevistas((prev) => prev.map((e) => (e.id === entrevista.id ? { ...e, observaciones: textoEdicion } : e)));
+      setEditandoId(null);
+      setTextoEdicion('');
+    } catch (err) {
+      console.error('Error guardando comentario', err);
+      alert('No se pudo guardar el comentario');
+    }
+  };
+
+  const handleEliminarComentario = async (entrevista: Entrevista) => {
+    if (!window.confirm('¿Eliminar solo el comentario? La entrevista se mantendrá.')) return;
+    try {
+      await entrevistaService.update(entrevista.id, { observaciones: '' });
+      setEntrevistas((prev) => prev.map((e) => (e.id === entrevista.id ? { ...e, observaciones: '' } : e)));
+    } catch (err) {
+      console.error('Error eliminando comentario', err);
+      alert('No se pudo eliminar el comentario');
+    }
+  };
+
+  const handleEliminarEntrevista = async (entrevista: Entrevista) => {
+    if (!window.confirm('¿Eliminar la entrevista y todos sus comentarios?')) return;
+    try {
+      await entrevistaService.delete(entrevista.id);
+      setEntrevistas((prev) => prev.filter((e) => e.id !== entrevista.id));
+    } catch (err) {
+      console.error('Error eliminando entrevista', err);
+      alert('No se pudo eliminar la entrevista');
+    }
+  };
+
   // Generar entrevista consolidada con datos reales
   const entrevistaConsolidada = {
     id: 'consolidado',
@@ -80,26 +121,39 @@ export function InterviewsSection({ estudianteId, estudiante }: InterviewsSectio
     updated_at: new Date()
   };
 
-  // Mostrar loading
+  // Agrupar por fecha (solo día) y ordenar desc
+  const entrevistasOrdenadas = [...entrevistas].sort(
+    (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+  );
+
+  // Agrupar por fecha local (string dd/mm/aaaa) para asegurar una sola tarjeta por día
+  const entrevistasPorFecha = entrevistasOrdenadas.reduce<Record<string, Entrevista[]>>((acc, ent) => {
+    const fecha = new Date(ent.fecha);
+    const fechaKey = fecha.toLocaleDateString('es-CL', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+    acc[fechaKey] = acc[fechaKey] ? [...acc[fechaKey], ent] : [ent];
+    return acc;
+  }, {});
+
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 240 }}>
         <CircularProgress />
       </Box>
     );
   }
 
-  // Mostrar error
   if (error) {
     return (
-      <Box sx={{ textAlign: 'center', p: 4 }}>
-        <Typography variant="h6" color="error" gutterBottom>
-          {error}
+      <Paper elevation={2} sx={{ p: 4, borderRadius: 2 }}>
+        <Typography variant="h6" fontWeight={700} gutterBottom>
+          Error al cargar entrevistas
         </Typography>
-        <Button onClick={() => window.location.reload()} variant="outlined">
-          Reintentar
-        </Button>
-      </Box>
+        <Typography color="text.secondary">{error}</Typography>
+      </Paper>
     );
   }
 
@@ -126,79 +180,115 @@ export function InterviewsSection({ estudianteId, estudiante }: InterviewsSectio
       </Box>
 
       <Stack spacing={2}>
-        {entrevistas.map((entrevista) => (
-          <Paper 
-            key={entrevista.id}
-            elevation={2}
-            sx={{ 
-              p: 3, 
-              borderRadius: 2,
-              transition: 'all 0.2s',
-              '&:hover': {
-                elevation: 4,
-                transform: 'translateY(-2px)'
-              }
-            }}
-          >
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-              <Box>
-                <Typography variant="h6" fontWeight={600} gutterBottom>
-                  {entrevista.tipo_entrevista || 'Entrevista'}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Fecha: {new Date(entrevista.fecha).toLocaleDateString('es-CL')}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Tutor: {entrevista.nombre_Tutor}
-                </Typography>
-              </Box>
-              <Chip 
-                label={entrevista.estado || 'Completada'} 
-                color={entrevista.estado === 'completada' ? 'success' : 'primary'}
-                size="small"
-                sx={{ fontWeight: 600 }}
-              />
-            </Box>
-            
-            <Box sx={{ mt: 2 }}>
-              <Typography variant="body2" fontWeight={600} color="text.secondary" gutterBottom>
-                Observaciones:
-              </Typography>
-              <Typography variant="body2" color="text.primary">
-                {entrevista.observaciones || 'Sin observaciones'}
-              </Typography>
-            </Box>
+        {Object.entries(entrevistasPorFecha)
+          .sort((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime())
+          .map(([fechaKey, entrevistasDia]) => (
+          <Paper key={fechaKey} elevation={1} sx={{ p: 2, borderRadius: 2 }}>
+            <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1 }}>
+              {fechaKey}
+            </Typography>
+            <Stack spacing={1} divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'grey.200' }} />}> 
+              {entrevistasDia.map((entrevista) => {
+                const hora = new Date(entrevista.fecha).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+                return (
+                  <Box key={entrevista.id} sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+                    <Chip label={hora} size="small" color="primary" variant="outlined" sx={{ mt: 0.5 }} />
+                    <Box sx={{ flex: 1 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <Typography variant="subtitle2" fontWeight={600}>
+                          {entrevista.tipo_entrevista || 'Entrevista'}
+                        </Typography>
+                        <Chip 
+                          label={entrevista.estado || 'Completada'} 
+                          color={entrevista.estado === 'completada' ? 'success' : 'primary'}
+                          size="small"
+                          sx={{ fontWeight: 600 }}
+                        />
+                      </Box>
 
-            {entrevista.temas_abordados && entrevista.temas_abordados.length > 0 && (
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="body2" fontWeight={600} color="text.secondary" gutterBottom>
-                  Temas:
-                </Typography>
-                <Typography variant="body2" color="text.primary">
-                  {entrevista.temas_abordados.join(', ')}
-                </Typography>
-              </Box>
-            )}
+                        {editandoId === entrevista.id ? (
+                          <Box sx={{ mt: 0.25 }}>
+                            <textarea
+                              value={textoEdicion}
+                              onChange={(e) => setTextoEdicion(e.target.value)}
+                              rows={3}
+                              style={{ width: '100%', resize: 'vertical', padding: '8px', borderRadius: '8px', border: '1px solid #ccc' }}
+                            />
+                          </Box>
+                        ) : (
+                          <Typography variant="body2" color="text.primary" sx={{ mt: 0.25 }}>
+                            {entrevista.observaciones || 'Sin observaciones'}
+                          </Typography>
+                        )}
 
-            <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
-              <Button 
-                startIcon={<VisibilityIcon />}
-                variant="outlined"
-                size="small"
-                onClick={() => handleEditarEntrevista(entrevista)}
-              >
-                Ver Detalle
-              </Button>
-              <Button 
-                startIcon={<EditIcon />}
-                variant="outlined"
-                color="primary"
-                size="small"
-                onClick={() => handleEditarEntrevista(entrevista)}
-              >
-                Editar
-              </Button>
-            </Box>
+                      {entrevista.temas_abordados && entrevista.temas_abordados.length > 0 && (
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25 }}>
+                          Temas: {entrevista.temas_abordados.join(', ')}
+                        </Typography>
+                      )}
+
+                      <Box sx={{ mt: 0.5, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                        <Button 
+                          startIcon={<VisibilityIcon />}
+                          variant="outlined"
+                          size="small"
+                          onClick={() => handleEditarEntrevista(entrevista)}
+                        >
+                          Ver Detalle
+                        </Button>
+                        {editandoId === entrevista.id ? (
+                          <>
+                            <Button 
+                              startIcon={<EditIcon />}
+                              variant="contained"
+                              color="primary"
+                              size="small"
+                              onClick={() => handleGuardarComentario(entrevista)}
+                            >
+                              Guardar
+                            </Button>
+                            <Button 
+                              variant="outlined"
+                              color="inherit"
+                              size="small"
+                              onClick={() => { setEditandoId(null); setTextoEdicion(''); }}
+                            >
+                              Cancelar
+                            </Button>
+                          </>
+                        ) : (
+                          <Button 
+                            startIcon={<EditIcon />}
+                            variant="outlined"
+                            color="primary"
+                            size="small"
+                            onClick={() => handleIniciarEdicionComentario(entrevista)}
+                          >
+                            Editar comentario
+                          </Button>
+                        )}
+                        <Button 
+                          variant="outlined"
+                          color="warning"
+                          size="small"
+                          onClick={() => handleEliminarComentario(entrevista)}
+                        >
+                          Eliminar comentario
+                        </Button>
+                        <Button 
+                          variant="outlined"
+                          color="error"
+                          size="small"
+                          onClick={() => handleEliminarEntrevista(entrevista)}
+                        >
+                          Eliminar entrevista
+                        </Button>
+                      </Box>
+                    </Box>
+                  </Box>
+                );
+              })}
+            </Stack>
           </Paper>
         ))}
       </Stack>

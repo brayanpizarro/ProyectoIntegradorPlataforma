@@ -2,6 +2,8 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
+  Delete,
   Body,
   Param,
   UsePipes,
@@ -20,6 +22,12 @@ export class EntrevistasController {
     return this.entrevistasService.create(createEntrevistaDto);
   }
 
+  @Delete(':id')
+  async delete(@Param('id') id: string) {
+    await this.entrevistasService.deleteEntrevista(id);
+    return { message: 'Entrevista eliminada' };
+  }
+
   @Get()
   async findAll() {
     return this.entrevistasService.findAll();
@@ -30,6 +38,14 @@ export class EntrevistasController {
     @Param('idEstudiante') idEstudiante: string,
   ) {
     return this.entrevistasService.findByEstudiante(idEstudiante);
+  }
+
+  @Patch(':id')
+  async update(
+    @Param('id') id: string,
+    @Body() data: Partial<any>,
+  ) {
+    return this.entrevistasService.updateEntrevista(id, data);
   }
 
   @Get(':id')
@@ -48,5 +64,20 @@ export class EntrevistasController {
     @Body() textoData: { nombre_etiqueta: string; contenido: string; contexto?: string },
   ) {
     return this.entrevistasService.addTexto(id, textoData);
+  }
+
+  @Patch(':id/textos/:textoId')
+  async updateTexto(
+    @Param('id') id: string,
+    @Param('textoId') textoId: string,
+    @Body() data: { contenido?: string; contexto?: string },
+  ) {
+    return this.entrevistasService.updateTexto(id, textoId, data);
+  }
+
+  @Delete(':id/textos/:textoId')
+  async deleteTexto(@Param('id') id: string, @Param('textoId') textoId: string) {
+    await this.entrevistasService.deleteTexto(id, textoId);
+    return { message: 'Texto eliminado' };
   }
 }

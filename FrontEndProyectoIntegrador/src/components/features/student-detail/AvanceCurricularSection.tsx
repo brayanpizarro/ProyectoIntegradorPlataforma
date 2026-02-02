@@ -26,6 +26,11 @@ import {
   CreateSemesterModal 
 } from '../avance-curricular';
 
+const toNumberOrUndefined = (value: unknown): number | undefined => {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : undefined;
+};
+
 const parsePeriodoTexto = (periodo?: string, numeroSemestre?: number) => {
   let año = new Date().getFullYear();
   let semestre = numeroSemestre || 1;
@@ -88,8 +93,8 @@ interface MallaCurricular {
   fechaFin?: string;
   periodo?: string;
   periodoKey?: string;
-  periodoEstudianteId?: string;
-  periodoId?: string;
+  periodoEstudianteId?: number;
+  periodoId?: number;
   ramos: {
     id?: number;
     codigo: string;
@@ -142,7 +147,10 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
   const [editingSemester, setEditingSemester] = useState<MallaCurricular | null>(null);
   const [isCreateSemesterModalOpen, setIsCreateSemesterModalOpen] = useState(false);
 
-  const asegurarPeriodoParaSemestre = async (periodoTexto?: string, numeroSemestre?: number) => {
+  const asegurarPeriodoParaSemestre = async (
+    periodoTexto?: string,
+    numeroSemestre?: number
+  ): Promise<{ periodoEstudianteId: number; periodoId: number; año: number; semestre: number }> => {
     const { año, semestre } = parsePeriodoTexto(periodoTexto, numeroSemestre);
 
     let periodo = null;
@@ -153,13 +161,15 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
       periodo = await periodoAcademicoService.createPeriodo({ año, semestre });
     }
 
-    const periodoId = (periodo as any)?.id_periodo_academico || (periodo as any)?.id;
+    const periodoId = toNumberOrUndefined(
+      (periodo as any)?.id_periodo_academico || (periodo as any)?.id
+    );
 
     if (!periodoId) {
       throw new Error('No se pudo obtener el ID del período académico');
     }
 
-    let periodoEstudianteId: string | undefined;
+    let periodoEstudianteId: number | undefined;
     try {
       const registros = await periodoAcademicoService.getByEstudiante(estudiante.id_estudiante.toString());
       const existente = registros.find(
@@ -169,9 +179,10 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
           r.periodo_academico?.id === periodoId
       );
       if (existente) {
-        periodoEstudianteId =
+        periodoEstudianteId = toNumberOrUndefined(
           (existente as any).id_periodo_academico_estudiante ||
-          (existente as any).id;
+          (existente as any).id
+        );
       }
     } catch (err) {
       // Ignorar y crear si no se pudo obtener
@@ -182,9 +193,14 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
         estudiante_id: estudiante.id_estudiante.toString(),
         periodo_academico_id: periodoId,
       } as any);
-      periodoEstudianteId =
+      periodoEstudianteId = toNumberOrUndefined(
         (creado as any).id_periodo_academico_estudiante ||
-        (creado as any).id;
+        (creado as any).id
+      );
+    }
+
+    if (!periodoEstudianteId) {
+      throw new Error('No se pudo obtener el vínculo periodo-estudiante');
     }
 
     return { periodoEstudianteId, periodoId, año, semestre };
@@ -209,15 +225,17 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
           const periodoBackend = ramo.periodo_academico_estudiante?.periodo_academico;
           const periodoKey = `${añoPeriodo}-${semestrePeriodo}`;
 
-          const periodoEstudianteId =
+          const periodoEstudianteId = toNumberOrUndefined(
             ramo.periodo_academico_estudiante_id ||
             ramo.periodo_academico_estudiante?.id_periodo_academico_estudiante ||
-            ramo.periodo_academico_estudiante?.id;
+            ramo.periodo_academico_estudiante?.id
+          );
 
-          const periodoId =
+          const periodoId = toNumberOrUndefined(
             periodoBackend?.id_periodo_academico ||
             periodoBackend?.id ||
-            ramo.periodo_academico_id;
+            ramo.periodo_academico_id
+          );
 
           if (!semestreMap[periodoKey]) {
             semestreMap[periodoKey] = {

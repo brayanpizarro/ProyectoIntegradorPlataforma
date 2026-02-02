@@ -40,13 +40,15 @@ export const StudentsTable: React.FC<StudentsTableProps> = ({
   };
 
   const getPromedioInfo = (promedio: UIStudent['promedio']) => {
-    const value = typeof promedio === 'number'
+    const rawValue = typeof promedio === 'number'
       ? promedio
       : promedio !== undefined && promedio !== null
         ? Number(promedio)
         : undefined;
 
-    if (!Number.isFinite(value) || value === undefined) {
+    const value = Number.isFinite(rawValue) ? rawValue as number : undefined;
+
+    if (value === undefined) {
       return { value: undefined, colorClass: 'text-[var(--color-coral-dark)]' };
     }
 

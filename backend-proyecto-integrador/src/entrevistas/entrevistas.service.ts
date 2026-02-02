@@ -136,6 +136,45 @@ export class EntrevistasService {
       order: { fecha: 'DESC' },
     });
   }
+  
+  async deleteEntrevista(id: string): Promise<void> {
+    const entrevista = await this.entrevistaRepository.findOne({ where: { id } });
+    if (!entrevista) {
+      throw new BadRequestException('Entrevista no encontrada');
+    }
+    await this.entrevistaRepository.remove(entrevista);
+  }
+
+  async updateEntrevista(
+    id: string,
+    data: Partial<Pick<Entrevista, 'observaciones' | 'estado' | 'temas_abordados' | 'fecha' | 'nombre_Tutor' | 'duracion_minutos'>>,
+  ): Promise<Entrevista> {
+    const entrevista = await this.entrevistaRepository.findOne({ where: { id } });
+    if (!entrevista) {
+      throw new BadRequestException('Entrevista no encontrada');
+    }
+
+    if (data.observaciones !== undefined) {
+      entrevista.observaciones = data.observaciones;
+    }
+    if (data.estado) {
+      entrevista.estado = data.estado as any;
+    }
+    if (Array.isArray(data.temas_abordados)) {
+      entrevista.temas_abordados = data.temas_abordados;
+    }
+    if (data.fecha) {
+      entrevista.fecha = new Date(data.fecha as any);
+    }
+    if (data.nombre_Tutor) {
+      entrevista.nombre_Tutor = data.nombre_Tutor;
+    }
+    if (typeof data.duracion_minutos === 'number') {
+      entrevista.duracion_minutos = data.duracion_minutos;
+    }
+
+    return this.entrevistaRepository.save(entrevista);
+  }
 
   async addTexto(
     entrevistaId: string,
@@ -173,5 +212,33 @@ export class EntrevistasService {
     });
 
     return this.textoRepository.save(texto);
+  }
+
+  async updateTexto(
+    entrevistaId: string,
+    textoId: string,
+    data: { contenido?: string; contexto?: string },
+  ): Promise<Texto> {
+    const texto = await this.textoRepository.findOne({ where: { id: textoId, entrevistaId } });
+    if (!texto) {
+      throw new BadRequestException('Texto no encontrado para esta entrevista');
+    }
+    if (typeof data.contenido === 'string') {
+      texto.contenido = data.contenido;
+    }
+    if (typeof data.contexto === 'string') {
+      texto.contexto = data.contexto;
+    }
+    // Actualizar fecha a ahora para reflejar edición
+    texto.fecha = new Date();
+    return this.textoRepository.save(texto);
+  }
+
+  async deleteTexto(entrevistaId: string, textoId: string): Promise<void> {
+    const texto = await this.textoRepository.findOne({ where: { id: textoId, entrevistaId } });
+    if (!texto) {
+      throw new BadRequestException('Texto no encontrado para esta entrevista');
+    }
+    await this.textoRepository.remove(texto);
   }
 }
