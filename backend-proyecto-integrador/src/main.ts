@@ -9,7 +9,10 @@ async function bootstrap() {
   const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [
     'https://entrevistas.fundacioncarmengoudie.cl',
     'https://api.cloudinary.com',
-    'http://localhost:5173', // Para desarrollo local
+    'http://localhost:5173', // Vite dev
+    'http://127.0.0.1:5173',
+    'http://localhost:3000', // Front dev/preview
+    'http://127.0.0.1:3000',
   ];
 
   app.enableCors({

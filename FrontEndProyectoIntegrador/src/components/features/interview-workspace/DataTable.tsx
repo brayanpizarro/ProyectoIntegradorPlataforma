@@ -1,6 +1,6 @@
 ﻿import { Fragment, useEffect, useState } from 'react';
 import type { Estudiante, HistorialAcademico, RamosCursados } from '../../../types';
-import { historialAcademicoService } from '../../../services';
+import { historialAcademicoService, ramosCursadosService } from '../../../services';
 import {
   getEstudianteEmail,
   getEstudianteTelefono,
@@ -36,8 +36,58 @@ export function DataTable({
     estudiante.historialesAcademicos || []
   );
   const [loadingHistorial, setLoadingHistorial] = useState(false);
+  const [ramos, setRamos] = useState<RamosCursados[]>(estudiante.ramosCursados || []);
+  const [comentariosSemestre, setComentariosSemestre] = useState<Record<string, {
+    generales: string;
+    dificultades: string;
+    aprendizajes: string;
+  }>>({});
+
+  // Normaliza cualquier nota disponible en el ramo a un número
+  const getNotaRamo = (ramo: RamosCursados): number | null => {
+    const rawNota =
+      (ramo as any).promedio_final ??
+      (ramo as any).nota_final ??
+      (ramo as any).notaFinal ??
+      (ramo as any).nota ??
+      (ramo as any).promedio;
+
+    if (rawNota !== null && rawNota !== undefined && rawNota !== '') {
+      const parsed = Number(rawNota);
+      if (!Number.isNaN(parsed)) return parsed;
+    }
+
+    const parciales = (ramo as any).notas_parciales;
+    if (Array.isArray(parciales) && parciales.length > 0) {
+      const validas = parciales.map(Number).filter(n => !Number.isNaN(n));
+      if (validas.length > 0) {
+        const promedioParciales = validas.reduce((acc, n) => acc + n, 0) / validas.length;
+        return Number(promedioParciales.toFixed(1));
+      }
+    }
+
+    return null;
+  };
 
   useEffect(() => {
+    const loadRamos = async () => {
+      if (!estudiante.id_estudiante) return;
+      try {
+        console.log('🔄 [DataTable] Cargando ramos para estudiante:', estudiante.id_estudiante);
+        const data = await ramosCursadosService.getByEstudiante(estudiante.id_estudiante.toString());
+        if (Array.isArray(data) && data.length > 0) {
+          console.log('✅ [DataTable] Ramos cargados:', data.length);
+          setRamos(data);
+          return;
+        }
+        console.log('📊 [DataTable] Ramos desde API vacío, usando embebidos');
+        setRamos(estudiante.ramosCursados || []);
+      } catch (error) {
+        console.error('❌ [DataTable] Error cargando ramos:', error);
+        setRamos(estudiante.ramosCursados || []);
+      }
+    };
+
     const loadHistorial = async () => {
       if (!estudiante.id_estudiante) {
         console.warn('⚠️ [DataTable] No hay ID de estudiante');
@@ -71,8 +121,9 @@ export function DataTable({
       }
     };
 
+    loadRamos();
     loadHistorial();
-  }, [estudiante.id_estudiante, estudiante.historialesAcademicos]);
+  }, [estudiante.id_estudiante, estudiante.historialesAcademicos, estudiante.ramosCursados]);
   // FUNCIÓN: Obtener contenido según la sección
   const getSectionContent = () => {
     switch (tabId) {
@@ -172,11 +223,11 @@ export function DataTable({
           }
         }
 
-        const ramos = estudiante.ramosCursados || [];
-        console.log('📊 [DataTable] Ramos cursados:', ramos.length);
-        if (ramos.length > 0) {
+        const ramosList = ramos.length ? ramos : (estudiante.ramosCursados || []);
+        console.log('📊 [DataTable] Ramos cursados:', ramosList.length);
+        if (ramosList.length > 0) {
           // Buscar el semestre más alto registrado (con o sin año)
-          const ramosConSemestre = ramos.filter(r => getRamoSemestre(r));
+          const ramosConSemestre = ramosList.filter(r => getRamoSemestre(r));
           console.log('📊 [DataTable] Ramos con semestre definido:', ramosConSemestre.length);
           
           if (ramosConSemestre.length > 0) {
@@ -213,45 +264,47 @@ export function DataTable({
       try {
         console.log('📊 [DataTable] Calculando promedio actual...');
         
-        if (estudiante.promedio) {
+        if (estudiante.promedio !== undefined && estudiante.promedio !== null) {
           console.log('📊 [DataTable] Promedio directo:', estudiante.promedio);
           return estudiante.promedio;
         }
-        if (estudiante.informacionAcademica?.promedio_acumulado) {
+        if (estudiante.informacionAcademica?.promedio_acumulado !== undefined && estudiante.informacionAcademica?.promedio_acumulado !== null) {
           console.log('📊 [DataTable] Promedio acumulado:', estudiante.informacionAcademica.promedio_acumulado);
           return estudiante.informacionAcademica.promedio_acumulado;
         }
-        if (estudiante.informacionAcademica?.promedio_1) {
+        if (estudiante.informacionAcademica?.promedio_1 !== undefined && estudiante.informacionAcademica?.promedio_1 !== null) {
           console.log('📊 [DataTable] Promedio 1:', estudiante.informacionAcademica.promedio_1);
           return estudiante.informacionAcademica.promedio_1;
         }
 
         const historialesList = historiales || estudiante.historialesAcademicos || [];
         if (historialesList.length > 0) {
-          const conPromedio = historialesList.filter(h => h.promedio_semestre);
+          const conPromedio = historialesList.filter(h => h.promedio_semestre !== undefined && h.promedio_semestre !== null);
           console.log('📊 [DataTable] Historiales con promedio:', conPromedio.length);
           if (conPromedio.length > 0) {
-            const suma = conPromedio.reduce((acc, h) => acc + (h.promedio_semestre || 0), 0);
-            const promedio = (suma / conPromedio.length).toFixed(1);
+            const suma = conPromedio.reduce((acc, h) => acc + Number(h.promedio_semestre), 0);
+            const promedio = Number((suma / conPromedio.length).toFixed(1));
             console.log('📊 [DataTable] Promedio desde historiales:', promedio);
             return promedio;
           }
         }
 
-        const ramos = estudiante.ramosCursados || [];
-        console.log('📊 [DataTable] Total ramos cursados:', ramos.length);
-        console.log('📊 [DataTable] Ramos detalle:', ramos.map(r => ({ 
+        const ramosList = ramos.length ? ramos : (estudiante.ramosCursados || []);
+        console.log('📊 [DataTable] Total ramos cursados:', ramosList.length);
+        console.log('📊 [DataTable] Ramos detalle:', ramosList.map(r => ({ 
           nombre: r.nombre_ramo, 
           semestre: getRamoSemestre(r), 
           año: getRamoAño(r),
-          promedio: r.promedio_final,
+          promedio: getNotaRamo(r),
           estado: r.estado 
         })));
-        const ramosConNota = ramos.filter(r => r.promedio_final && !isNaN(parseFloat(String(r.promedio_final))));
+        const ramosConNota = ramosList
+          .map(r => ({ ramo: r, nota: getNotaRamo(r) }))
+          .filter(item => item.nota !== null && Number.isFinite(item.nota));
         console.log('📊 [DataTable] Ramos con nota válida:', ramosConNota.length);
         if (ramosConNota.length > 0) {
-          const suma = ramosConNota.reduce((acc, r) => acc + parseFloat(String(r.promedio_final)), 0);
-          const promedio = (suma / ramosConNota.length).toFixed(1);
+          const suma = ramosConNota.reduce((acc, item) => acc + (item.nota || 0), 0);
+          const promedio = Number((suma / ramosConNota.length).toFixed(1));
           console.log('📊 [DataTable] Promedio calculado desde ramos:', promedio);
           return promedio;
         }
@@ -302,13 +355,13 @@ export function DataTable({
     // Log de debug
     console.log('📊 [DataTable] Renderizando avance académico');
     console.log('📊 [DataTable] Estudiante completo:', estudiante);
-    console.log('📊 [DataTable] Ramos cursados:', estudiante.ramosCursados?.length || 0);
+    console.log('📊 [DataTable] Ramos cursados:', (ramos.length || estudiante.ramosCursados?.length) || 0);
     console.log('📊 [DataTable] Historiales académicos:', (historiales || estudiante.historialesAcademicos || []).length);
 
     return (
       <div className="p-6">
         {/* Mensaje informativo de debug */}
-        {(!estudiante.ramosCursados || estudiante.ramosCursados.length === 0) && 
+        {(ramos.length === 0 && (!estudiante.ramosCursados || estudiante.ramosCursados.length === 0)) && 
          (!(historiales || estudiante.historialesAcademicos) || (historiales || estudiante.historialesAcademicos || []).length === 0) && (
           <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
             <h4 className="text-sm font-semibold text-yellow-800 mb-2">⚠️ Información limitada</h4>
@@ -321,7 +374,7 @@ export function DataTable({
               <pre className="mt-2 p-2 bg-white rounded text-[10px] overflow-auto">
                 {JSON.stringify({
                   id_estudiante: estudiante.id_estudiante,
-                  ramosCursados: estudiante.ramosCursados?.length || 0,
+                  ramosCursados: (ramos.length || estudiante.ramosCursados?.length) || 0,
                   historialesAcademicos: (historiales || estudiante.historialesAcademicos || []).length,
                   generacion: estudiante.generacion,
                   status: getEstudianteStatus(estudiante)
@@ -373,8 +426,8 @@ export function DataTable({
                       porcentaje = (semestresUnicos.size / 10) * 100;
                     }
                   } else {
-                    const ramos = estudiante.ramosCursados || [];
-                    const ramosConSemestre = ramos.filter(r => getRamoSemestre(r));
+                    const ramosList = ramos.length ? ramos : (estudiante.ramosCursados || []);
+                    const ramosConSemestre = ramosList.filter(r => getRamoSemestre(r));
                     if (ramosConSemestre.length > 0) {
                       const conAño = ramosConSemestre.filter(r => getRamoAño(r));
                       if (conAño.length > 0) {
@@ -408,8 +461,8 @@ export function DataTable({
                     porcentaje = (semestresUnicos.size / 10) * 100;
                   }
                 } else {
-                  const ramos = estudiante.ramosCursados || [];
-                  const ramosConSemestre = ramos.filter(r => getRamoSemestre(r));
+                  const ramosList = ramos.length ? ramos : (estudiante.ramosCursados || []);
+                  const ramosConSemestre = ramosList.filter(r => getRamoSemestre(r));
                   if (ramosConSemestre.length > 0) {
                     const conAño = ramosConSemestre.filter(r => getRamoAño(r));
                     if (conAño.length > 0) {
@@ -430,9 +483,9 @@ export function DataTable({
           <div className="text-xs text-gray-500">
             * Basado en semestres cursados {(() => {
               const historialesList = historiales || estudiante.historialesAcademicos || [];
-              const ramos = estudiante.ramosCursados || [];
+              const ramosList = ramos.length ? ramos : (estudiante.ramosCursados || []);
               if (historialesList.length > 0) return 'desde historial académico';
-              if (ramos.length > 0) return 'desde ramos cursados';
+              if (ramosList.length > 0) return 'desde ramos cursados';
               return 'de carrera estimada en 10 semestres';
             })()}
           </div>
@@ -443,7 +496,7 @@ export function DataTable({
 
   // RENDER: Historial académico - Desempeño por semestre
   const renderHistorial = () => {
-    const ramos = estudiante.ramosCursados || [];
+    const ramosList = ramos.length ? ramos : (estudiante.ramosCursados || []);
     
     if (loadingHistorial) {
       return (
@@ -458,9 +511,9 @@ export function DataTable({
 
     // Agrupar ramos por semestre
     const ramosPorSemestre: Record<string, RamosCursados[]> = {};
-    ramos.forEach(ramo => {
+    ramosList.forEach(ramo => {
       const semestreRamo = getRamoSemestre(ramo);
-      if (semestreRamo) {
+      if (semestreRamo !== undefined && semestreRamo !== null) {
         const añoRamo = getRamoAño(ramo);
         const key = añoRamo ? `${añoRamo}-${semestreRamo}` : `Semestre ${semestreRamo}`;
         if (!ramosPorSemestre[key]) {
@@ -500,9 +553,11 @@ export function DataTable({
         <div className="space-y-4">
           {periodosOrdenados.map((periodo, idx) => {
             const ramosDelPeriodo = ramosPorSemestre[periodo];
-            const ramosConNota = ramosDelPeriodo.filter(r => r.promedio_final && !isNaN(parseFloat(String(r.promedio_final))));
+            const ramosConNota = ramosDelPeriodo
+              .map(r => ({ ramo: r, nota: getNotaRamo(r) }))
+              .filter(item => item.nota !== null && Number.isFinite(item.nota));
             const promedioSemestre = ramosConNota.length > 0
-              ? (ramosConNota.reduce((sum, r) => sum + parseFloat(String(r.promedio_final)), 0) / ramosConNota.length).toFixed(1)
+              ? Number((ramosConNota.reduce((sum, item) => sum + (item.nota || 0), 0) / ramosConNota.length).toFixed(1))
               : null;
 
             return (
@@ -522,45 +577,88 @@ export function DataTable({
                   </div>
                 </div>
 
-                {/* Lista de ramos */}
-                <div className="divide-y divide-gray-100">
-                  {ramosDelPeriodo.map((ramo, ramoIdx) => {
-                    const nota = ramo.promedio_final ? parseFloat(String(ramo.promedio_final)) : null;
-                    const estadoColor = 
-                      ramo.estado === 'aprobado' ? 'bg-green-100 text-green-800' :
-                      ramo.estado === 'reprobado' ? 'bg-red-100 text-red-800' :
-                      ramo.estado === 'cursando' ? 'bg-blue-100 text-blue-800' :
-                      'bg-gray-100 text-gray-800';
+                {/* Tabla de ramos del semestre */}
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-50 text-left text-xs uppercase tracking-wider text-gray-600">
+                        <th className="px-4 py-3">Asignatura</th>
+                        <th className="px-4 py-3">Código</th>
+                        <th className="px-4 py-3 text-center">Nota</th>
+                        <th className="px-4 py-3 text-center">Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-100">
+                      {ramosDelPeriodo.map((ramo, ramoIdx) => {
+                        const nota = getNotaRamo(ramo);
+                        const estadoColor = 
+                          ramo.estado === 'aprobado' ? 'bg-green-100 text-green-800' :
+                          ramo.estado === 'reprobado' ? 'bg-red-100 text-red-800' :
+                          ramo.estado === 'cursando' ? 'bg-blue-100 text-blue-800' :
+                          'bg-gray-100 text-gray-800';
+
+                        return (
+                          <tr key={ramoIdx} className="hover:bg-gray-50 transition-colors">
+                            <td className="px-4 py-3 font-medium text-gray-900">{ramo.nombre_ramo || 'Sin nombre'}</td>
+                            <td className="px-4 py-3 text-gray-700">{ramo.codigo_ramo || '—'}</td>
+                            <td className="px-4 py-3 text-center font-semibold" style={{ color: nota !== null && nota >= 4.0 ? '#059669' : '#dc2626' }}>
+                              {nota !== null ? nota.toFixed(1) : 'Sin nota'}
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${estadoColor}`}>
+                                {ramo.estado || 'Pendiente'}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Comentarios del semestre */}
+                <div className="p-4 bg-gray-50 border-t border-gray-200 space-y-4">
+                  {(() => {
+                    const current = comentariosSemestre[periodo] || { generales: '', dificultades: '', aprendizajes: '' };
+                    const update = (field: 'generales' | 'dificultades' | 'aprendizajes', value: string) => {
+                      setComentariosSemestre(prev => ({
+                        ...prev,
+                        [periodo]: { ...current, [field]: value }
+                      }));
+                    };
 
                     return (
-                      <div key={ramoIdx} className="p-4 hover:bg-gray-50 transition-colors">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <h5 className="m-0 text-sm font-medium text-gray-900">{ramo.nombre_ramo || 'Sin nombre'}</h5>
-                            {ramo.codigo_ramo && (
-                              <p className="m-0 mt-1 text-xs text-gray-500">Código: {ramo.codigo_ramo}</p>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-3">
-                            {nota !== null && (
-                              <div className="text-right">
-                                <div className="text-xs text-gray-500">Nota</div>
-                                <div 
-                                  className="text-lg font-bold"
-                                  style={{ color: nota >= 4.0 ? '#059669' : '#dc2626' }}
-                                >
-                                  {nota.toFixed(1)}
-                                </div>
-                              </div>
-                            )}
-                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${estadoColor}`}>
-                              {ramo.estado || 'Pendiente'}
-                            </span>
-                          </div>
-                        </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <label className="flex flex-col gap-2">
+                          <span className="text-xs font-semibold text-gray-700">Comentarios generales</span>
+                          <textarea
+                            className="w-full min-h-[80px] border border-gray-200 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            placeholder="Agregar comentarios generales del semestre..."
+                            value={current.generales}
+                            onChange={(e) => update('generales', e.target.value)}
+                          />
+                        </label>
+                        <label className="flex flex-col gap-2">
+                          <span className="text-xs font-semibold text-gray-700">Principales dificultades / desafíos</span>
+                          <textarea
+                            className="w-full min-h-[80px] border border-gray-200 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            placeholder="Agregar principales dificultades o desafíos del semestre..."
+                            value={current.dificultades}
+                            onChange={(e) => update('dificultades', e.target.value)}
+                          />
+                        </label>
+                        <label className="flex flex-col gap-2">
+                          <span className="text-xs font-semibold text-gray-700">Principales aprendizajes / logros</span>
+                          <textarea
+                            className="w-full min-h-[80px] border border-gray-200 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            placeholder="Agregar principales aprendizajes o logros..."
+                            value={current.aprendizajes}
+                            onChange={(e) => update('aprendizajes', e.target.value)}
+                          />
+                        </label>
                       </div>
                     );
-                  })}
+                  })()}
                 </div>
 
                 {/* Footer con estadísticas */}

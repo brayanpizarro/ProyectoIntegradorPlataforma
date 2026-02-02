@@ -36,8 +36,19 @@ export const getEstudianteStatus = (estudiante: Estudiante): string => {
   return (estudiante as any).status || 'Activo';
 };
 
-export const getEstudianteSemestre = (_estudiante: Estudiante): number | undefined => {
-  // TODO: Llamar al servicio estado-academico.service.ts para obtener el semestre actual
+export const getEstudianteSemestre = (estudiante: Estudiante): number | undefined => {
+  // Prioriza cualquier campo ya presente en el modelo antes de recurrir al servicio real
+  const semestre =
+    estudiante.semestre ??
+    (estudiante as any).semestre_actual ??
+    (estudiante as any).semestre_activo ??
+    (estudiante as any)?.estadoAcademico?.semestre;
+
+  if (semestre !== null && semestre !== undefined && semestre !== '') {
+    const parsed = Number(semestre);
+    if (!Number.isNaN(parsed)) return parsed;
+  }
+
   return undefined;
 };
 
@@ -98,14 +109,36 @@ export const getFamiliaObservacionesGenerales = (_familia: Familia | undefined):
 };
 
 // === PERIODOS ACADÉMICOS (AÑO/SEMESTRE) ===
-export const getRamoSemestre = (_ramo: RamosCursados): number | undefined => {
-  // TODO: Llamar al servicio periodo-academico.service.ts
-  return undefined;
+const parsePeriodoTexto = (periodo?: string): { año?: number; semestre?: number } => {
+  if (!periodo || typeof periodo !== 'string') return {};
+  const match = periodo.match(/^(\d{4})[-/](\d{1,2})/);
+  if (!match) return {};
+  return { año: Number(match[1]), semestre: Number(match[2]) };
 };
 
-export const getRamoAño = (_ramo: RamosCursados): number | undefined => {
-  // TODO: Llamar al servicio periodo-academico.service.ts
-  return undefined;
+export const getRamoSemestre = (ramo: RamosCursados): number | undefined => {
+  const periodo = (ramo as any)?.periodo_academico_estudiante?.periodo_academico;
+  const parsed = parsePeriodoTexto((ramo as any)?.periodo || (periodo as any)?.periodo);
+
+  return (
+    (periodo && (periodo as any).semestre) ||
+    (ramo as any).semestre ||
+    parsed.semestre ||
+    undefined
+  );
+};
+
+export const getRamoAño = (ramo: RamosCursados): number | undefined => {
+  const periodo = (ramo as any)?.periodo_academico_estudiante?.periodo_academico;
+  const parsed = parsePeriodoTexto((ramo as any)?.periodo || (periodo as any)?.periodo);
+
+  return (
+    (periodo && (periodo as any).año) ||
+    (periodo && (periodo as any).anio) ||
+    (ramo as any).año ||
+    parsed.año ||
+    undefined
+  );
 };
 
 export const getHistorialSemestre = (_historial: HistorialAcademico): number | undefined => {
@@ -142,6 +175,8 @@ export const getInformacionAcademicaPuntajesAdmision = (
 };
 
 export const formatearPeriodo = (_año: number | undefined, _semestre: number | undefined): string => {
-  // TODO: Usar periodo-academico.service.ts para formatear correctamente
-  return 'Sin período';
+  if (!_año && !_semestre) return 'Sin período';
+  if (_año && _semestre) return `${_año}-${_semestre}`;
+  if (_año) return `${_año}`;
+  return `Semestre ${_semestre}`;
 };

@@ -26,7 +26,11 @@ import {
   CreateSemesterModal 
 } from '../avance-curricular';
 
-const toNumberOrUndefined = (value: unknown): number | undefined => {
+const toIdOrUndefined = (value: unknown): string | number | undefined => {
+  if (value === null || value === undefined) return undefined;
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string' && value.trim() !== '') return value;
+
   const num = Number(value);
   return Number.isFinite(num) ? num : undefined;
 };
@@ -93,8 +97,8 @@ interface MallaCurricular {
   fechaFin?: string;
   periodo?: string;
   periodoKey?: string;
-  periodoEstudianteId?: number;
-  periodoId?: number;
+  periodoEstudianteId?: string | number;
+  periodoId?: string | number;
   ramos: {
     id?: number;
     codigo: string;
@@ -150,7 +154,7 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
   const asegurarPeriodoParaSemestre = async (
     periodoTexto?: string,
     numeroSemestre?: number
-  ): Promise<{ periodoEstudianteId: number; periodoId: number; año: number; semestre: number }> => {
+  ): Promise<{ periodoEstudianteId: string | number; periodoId: string | number; año: number; semestre: number }> => {
     const { año, semestre } = parsePeriodoTexto(periodoTexto, numeroSemestre);
 
     let periodo = null;
@@ -161,7 +165,7 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
       periodo = await periodoAcademicoService.createPeriodo({ año, semestre });
     }
 
-    const periodoId = toNumberOrUndefined(
+    const periodoId = toIdOrUndefined(
       (periodo as any)?.id_periodo_academico || (periodo as any)?.id
     );
 
@@ -169,7 +173,7 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
       throw new Error('No se pudo obtener el ID del período académico');
     }
 
-    let periodoEstudianteId: number | undefined;
+    let periodoEstudianteId: string | number | undefined;
     try {
       const registros = await periodoAcademicoService.getByEstudiante(estudiante.id_estudiante.toString());
       const existente = registros.find(
@@ -179,7 +183,7 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
           r.periodo_academico?.id === periodoId
       );
       if (existente) {
-        periodoEstudianteId = toNumberOrUndefined(
+        periodoEstudianteId = toIdOrUndefined(
           (existente as any).id_periodo_academico_estudiante ||
           (existente as any).id
         );
@@ -193,7 +197,7 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
         estudiante_id: estudiante.id_estudiante.toString(),
         periodo_academico_id: periodoId,
       } as any);
-      periodoEstudianteId = toNumberOrUndefined(
+      periodoEstudianteId = toIdOrUndefined(
         (creado as any).id_periodo_academico_estudiante ||
         (creado as any).id
       );
@@ -225,13 +229,13 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
           const periodoBackend = ramo.periodo_academico_estudiante?.periodo_academico;
           const periodoKey = `${añoPeriodo}-${semestrePeriodo}`;
 
-          const periodoEstudianteId = toNumberOrUndefined(
+          const periodoEstudianteId = toIdOrUndefined(
             ramo.periodo_academico_estudiante_id ||
             ramo.periodo_academico_estudiante?.id_periodo_academico_estudiante ||
             ramo.periodo_academico_estudiante?.id
           );
 
-          const periodoId = toNumberOrUndefined(
+          const periodoId = toIdOrUndefined(
             periodoBackend?.id_periodo_academico ||
             periodoBackend?.id ||
             ramo.periodo_academico_id
