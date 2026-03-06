@@ -189,7 +189,12 @@ export function InterviewsSection({ estudianteId, estudiante }: InterviewsSectio
             </Typography>
             <Stack spacing={1} divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'grey.200' }} />}> 
               {entrevistasDia.map((entrevista) => {
-                const hora = new Date(entrevista.fecha).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+                const fechaObj = new Date(entrevista.fecha);
+                const hasHoraRegistrada = !(fechaObj.getUTCHours() === 0 && fechaObj.getUTCMinutes() === 0);
+                const hora = hasHoraRegistrada
+                  ? fechaObj.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })
+                  : '--:--';
+
                 return (
                   <Box key={entrevista.id} sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
                     <Chip label={hora} size="small" color="primary" variant="outlined" sx={{ mt: 0.5 }} />

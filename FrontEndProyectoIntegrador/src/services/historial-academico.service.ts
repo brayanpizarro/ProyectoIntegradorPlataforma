@@ -96,7 +96,7 @@ class HistorialAcademicoService extends BaseHttpClient {
     });
   }
 
-  async delete(id: number) {
+  async delete(id: number | string) {
     return await this.request(`/historial-academico/${id}`, {
       method: 'DELETE',
     });

@@ -43,6 +43,7 @@ export function NoteEditor({
   const [showFilters, setShowFilters] = useState(false);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
+  const [entrevistaFecha, setEntrevistaFecha] = useState<Date | null>(null);
   const updateShowFilters = (visible: boolean) => {
     setShowFilters(visible);
     onFiltersVisibilityChange?.(visible);
@@ -73,11 +74,23 @@ export function NoteEditor({
       try {
         setIsLoading(true);
         let textos = [];
-        // Si hay estudiante, cargar todos los textos históricos
-        if (estudiante?.id_estudiante) {
-          textos = await entrevistaService.getAllTextosByEstudiante(estudiante.id_estudiante.toString());
-        } else if (entrevistaId) {
+        let fechaEntrevista: Date | null = entrevistaFecha;
+
+        if (entrevistaId) {
+          try {
+            const entrevistaDetalle = await entrevistaService.getById(entrevistaId);
+            if (entrevistaDetalle?.fecha) {
+              const base = new Date(entrevistaDetalle.fecha);
+              fechaEntrevista = new Date(base.getFullYear(), base.getMonth(), base.getDate(), 12, 0, 0, 0);
+            }
+          } catch (err) {
+            console.warn('No se pudo cargar la fecha de la entrevista', err);
+          }
+          // Para una entrevista específica, obtener solo sus textos
           textos = await entrevistaService.getTextos(entrevistaId);
+        } else if (estudiante?.id_estudiante) {
+          // Fallback: textos históricos del estudiante (vista consolidada)
+          textos = await entrevistaService.getAllTextosByEstudiante(estudiante.id_estudiante.toString());
         }
         // Filtrar por etiqueta (sectionTitle)
         const textosFiltrados = textos.filter(
@@ -87,11 +100,12 @@ export function NoteEditor({
         const notasFormateadas: Note[] = textosFiltrados.map((texto: any) => ({
           id: texto.id,
           content: texto.contenido,
-          timestamp: new Date(texto.fecha),
+          timestamp: texto.fecha ? new Date(texto.fecha) : (fechaEntrevista || new Date()),
         }));
         // Ordenar por fecha descendente
         notasFormateadas.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
         setNotes(notasFormateadas);
+        if (fechaEntrevista) setEntrevistaFecha(fechaEntrevista);
       } catch (error) {
         console.error('Error al cargar notas:', error);
       } finally {
@@ -123,17 +137,22 @@ export function NoteEditor({
     
     try {
       // Guardar en el backend
+      const fechaBase = entrevistaFecha
+        ? entrevistaFecha
+        : new Date();
+
       const textoGuardado = await entrevistaService.addTexto(entrevistaId, {
         nombre_etiqueta: sectionTitle,
         contenido: newNote.trim(),
-        contexto: `Entrevista con ${estudiante.nombre || estudiante.nombres}`
+        contexto: `Entrevista con ${estudiante.nombre || estudiante.nombres}`,
+        fecha: fechaBase.toISOString(),
       });
       
       // Añadir a la lista local
       const note: Note = {
         id: textoGuardado.id,
         content: textoGuardado.contenido,
-        timestamp: new Date(textoGuardado.fecha),
+        timestamp: fechaBase,
       };
       
       setNotes(prev => [note, ...prev]);
@@ -296,10 +315,8 @@ export function NoteEditor({
                 {/* Header de la nota */}
                 <div className="flex items-center justify-between mb-2">
                   <div className="text-[11px] text-gray-500 flex items-center gap-2">
-                    <span>🕒</span>
+                    <span>🗓️</span>
                     <span>{formatDate(note.timestamp)}</span>
-                    <span>•</span>
-                    <span>{formatTime(note.timestamp)}</span>
                   </div>
                   <div className="flex gap-2 text-xs">
                     {editingNoteId === note.id ? (

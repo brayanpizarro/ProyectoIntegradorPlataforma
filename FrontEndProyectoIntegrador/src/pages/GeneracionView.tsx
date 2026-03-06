@@ -35,7 +35,11 @@ export default function GeneracionViewSimple(){
 
   const normalizeNumber = (value?: number | string | null) => {
     if (value === null || value === undefined) return undefined;
-    const num = typeof value === 'number' ? value : Number(value);
+
+    if (typeof value === 'number') return Number.isFinite(value) ? value : undefined;
+
+    const cleaned = String(value).replace(',', '.').trim();
+    const num = Number(cleaned);
     return Number.isFinite(num) ? num : undefined;
   };
 

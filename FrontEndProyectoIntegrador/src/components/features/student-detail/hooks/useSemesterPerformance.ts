@@ -192,38 +192,45 @@ export const useSemesterPerformanceData = (
 
 export const useSemesterStats = (ramosSemestre: any[], historialSemestre: any) => {
   return useMemo(() => {
-    if (historialSemestre) {
-      const promedioHist = Number(historialSemestre.promedio_semestre);
-      return {
-        total:
-          (historialSemestre.ramos_aprobados || 0) +
-          (historialSemestre.ramos_reprobados || 0) +
-          (historialSemestre.ramos_eliminados || 0),
-        aprobados: historialSemestre.ramos_aprobados || 0,
-        reprobados: historialSemestre.ramos_reprobados || 0,
-        eliminados: historialSemestre.ramos_eliminados || 0,
-        promedio: Number.isFinite(promedioHist) ? promedioHist : null,
-      };
-    }
+    // Stats basados en ramos visibles (fuente primaria)
+    const totalRamos = ramosSemestre.length;
+    const aprobadosR = ramosSemestre.filter((r) => r.estado === 'aprobado' || r.estado === 'A').length;
+    const reprobadosR = ramosSemestre.filter((r) => r.estado === 'reprobado' || r.estado === 'R').length;
+    const eliminadosR = ramosSemestre.filter((r) => r.estado === 'eliminado' || r.estado === 'E').length;
 
-    const total = ramosSemestre.length;
-    const aprobados = ramosSemestre.filter((r) => r.estado === 'aprobado' || r.estado === 'A').length;
-    const reprobados = ramosSemestre.filter((r) => r.estado === 'reprobado' || r.estado === 'R').length;
-    const eliminados = ramosSemestre.filter((r) => r.estado === 'eliminado' || r.estado === 'E').length;
+    const notas = ramosSemestre
+      .map((r) => Number(r.promedio_final))
+      .filter((n) => Number.isFinite(n));
 
-    const ramosConNota = ramosSemestre.filter(
-      (r) => r.promedio_final && !isNaN(parseFloat(r.promedio_final))
-    );
-    const promedioCalculado =
-      ramosConNota.length > 0
-        ? ramosConNota.reduce((sum, r) => sum + parseFloat(r.promedio_final), 0) /
-          ramosConNota.length
-        : null;
-
-    const promedio = Number.isFinite(promedioCalculado as number)
-      ? Number(promedioCalculado)
+    const promedioRamos = notas.length > 0
+      ? notas.reduce((sum, n) => sum + n, 0) / notas.length
       : null;
 
-    return { total, aprobados, reprobados, eliminados, promedio };
+    // Si hay historial, usarlo solo cuando tenga datos; de lo contrario, fallback a cálculo por ramos
+    if (historialSemestre) {
+      const aprobadosH = Number(historialSemestre.ramos_aprobados) || 0;
+      const reprobadosH = Number(historialSemestre.ramos_reprobados) || 0;
+      const eliminadosH = Number(historialSemestre.ramos_eliminados) || 0;
+      const totalH = aprobadosH + reprobadosH + eliminadosH;
+      const promedioHist = Number(historialSemestre.promedio_semestre);
+
+      const total = totalH > 0 ? totalH : totalRamos;
+      const aprobados = totalH > 0 ? aprobadosH : aprobadosR;
+      const reprobados = totalH > 0 ? reprobadosH : reprobadosR;
+      const eliminados = totalH > 0 ? eliminadosH : eliminadosR;
+
+      // Si el historial trae promedio en 0 o null, usa el calculado por ramos
+      const promedio = Number.isFinite(promedioHist) && promedioHist > 0
+        ? promedioHist
+        : promedioRamos;
+
+      return { total, aprobados, reprobados, eliminados, promedio };
+    }
+
+    const promedio = Number.isFinite(promedioRamos as number)
+      ? Number(promedioRamos)
+      : null;
+
+    return { total: totalRamos, aprobados: aprobadosR, reprobados: reprobadosR, eliminados: eliminadosR, promedio };
   }, [ramosSemestre, historialSemestre]);
 };

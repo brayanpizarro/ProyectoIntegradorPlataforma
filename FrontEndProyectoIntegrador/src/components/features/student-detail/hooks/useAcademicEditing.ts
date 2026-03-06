@@ -69,6 +69,17 @@ export const useAcademicEditing = ({ estudiante }: UseAcademicEditingProps) => {
             delete datosInfoAcademica.puntajes_paes;
         }
 
+        // Limpiar valores vacíos para evitar 500 del backend
+        Object.keys(datosInfoAcademica).forEach((k) => {
+            const v = datosInfoAcademica[k];
+            const isEmptyObj = v && typeof v === 'object' && Object.keys(v).length === 0;
+            if (v === '' || v === undefined || v === null || isEmptyObj) {
+                delete datosInfoAcademica[k];
+            }
+        });
+
+        if (Object.keys(datosInfoAcademica).length === 0) return;
+
         // Usar el servicio para actualizar
         await informacionAcademicaService.upsertByEstudiante(estudianteId, datosInfoAcademica);
         logger.log('✅ Información académica actualizada');

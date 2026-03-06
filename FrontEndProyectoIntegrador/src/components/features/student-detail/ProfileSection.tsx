@@ -91,6 +91,19 @@ export function ProfileSection({ estudiante, seccionActiva }: ProfileSectionProp
     { label: 'Tipo de Estudiante', value: estudiante.tipo_de_estudiante }
   ];
 
+  const semestreActualDisplay = () => {
+    const numero = Number(estudiante.semestre);
+    if (!Number.isFinite(numero) || numero <= 0) return 'N/A';
+    const year = new Date().getFullYear();
+    return `${year}-${numero}`;
+  };
+
+  const promedioGeneralDisplay = () => {
+    const numero = Number((estudiante as any)?.promedio);
+    if (!Number.isFinite(numero)) return 'N/A';
+    return Number(numero.toFixed(2));
+  };
+
   return (
     <Box>
       {/* Tarjeta de Perfil */}
@@ -225,13 +238,13 @@ export function ProfileSection({ estudiante, seccionActiva }: ProfileSectionProp
           <StatCard
             icon="📊"
             label="Promedio General"
-            value={estudiante.promedio || 'N/A'}
+            value={promedioGeneralDisplay()}
             accentColor="#2196f3"
           />
           <StatCard
             icon="📚"
             label="Semestre Actual"
-            value={estudiante.semestre || 'N/A'}
+            value={semestreActualDisplay()}
             accentColor="#4caf50"
           />
           <StatCard

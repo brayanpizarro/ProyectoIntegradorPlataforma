@@ -8,12 +8,12 @@ import {
   Link,
   CircularProgress
 } from '@mui/material';
-import { Shield as ShieldIcon } from '@mui/icons-material';
 import { authService } from '../../../../services/authService';
 import type { LoginCredentials } from '../../../../types';
 import { logger } from '../../../../config';
 import { isValidEmail } from '../../../../utils/validators';
 import { LoginFormContainer } from '../shared';
+import logoFundacion from '../../../../assets/logos/logo-fundacion.png';
 
 interface LoginAdminFormProps {
   onAuthChange?: (authenticated: boolean) => void;
@@ -79,7 +79,14 @@ export function LoginAdminForm({ onAuthChange }: LoginAdminFormProps) {
     <LoginFormContainer
       title="Panel de Administración"
       subtitle="Acceso exclusivo para administradores"
-      icon={<ShieldIcon sx={{ fontSize: 64, color: '#4db6ac' }} />}
+      icon={(
+        <Box
+          component="img"
+          src={logoFundacion}
+          alt="Logo Fundación"
+          sx={{ height: 160, width: 'auto', borderRadius: 3, boxShadow: 4, backgroundColor: 'rgba(255,255,255,0.98)', p: 2, mx: 'auto' }}
+        />
+      )}
       gradientColors={{ from: '#4db6ac', to: '#ff6f61' }}
     >
       <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>

@@ -20,11 +20,13 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
   const [observaciones, setObservaciones] = useState('');
   const [temas, setTemas] = useState('');
   const [duracionMinutos, setDuracionMinutos] = useState<number>(60);
-  const [tipoEntrevista, setTipoEntrevista] = useState<'presencial' | 'virtual' | 'mixta'>('presencial');
+  const [tipoEntrevista, setTipoEntrevista] = useState<'presencial' | 'virtual' | 'info_adicional'>('presencial');
   const [estadoEntrevista, setEstadoEntrevista] = useState<'programada' | 'completada' | 'cancelada' | 'reprogramada'>('completada');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const user = authService.getCurrentUser();
-  const nombreEntrevistador = user ? `${user.nombres || ''} ${user.apellidos || ''}`.trim() || user.email || 'Entrevistador' : 'Usuario Actual';
+  const [nombreEntrevistador, setNombreEntrevistador] = useState(
+    user ? `${user.nombres || ''} ${user.apellidos || ''}`.trim() || user.email || 'Entrevistador' : 'Usuario Actual'
+  );
 
   const handleCrearEntrevista = async () => {
     // Prevenir múltiples envíos
@@ -64,18 +66,21 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
 
       console.log('📌 ID Usuario para entrevista:', userIdStr, 'Usuario completo:', user);
 
+      // Normalizar fecha a mediodía local para evitar desfase de zona horaria al convertir a ISO
+      const fechaLocal = new Date(`${fecha}T12:00:00`);
+
       // Valores requeridos por el DTO del backend
       const payload = {
         id_estudiante: String(estudianteId),
         id_usuario: userIdStr,
-        fecha: new Date(fecha).toISOString(),
-        nombre_tutor: `${user.nombres || ''} ${user.apellidos || ''}`.trim() || user.email || 'Entrevistador',
-        año: new Date(fecha).getFullYear(),
+        fecha: fechaLocal.toISOString(),
+        nombre_tutor: nombreEntrevistador.trim() || `${user.nombres || ''} ${user.apellidos || ''}`.trim() || user.email || 'Entrevistador',
+        año: fechaLocal.getFullYear(),
         numero_entrevista: maxNumero + 1,
         duracion_minutos: duracionMinutos,
         tipo_entrevista: tipoEntrevista,
         estado: estadoEntrevista,
-        observaciones: observaciones || undefined,
+        observaciones: observaciones.trim() ? observaciones.trim() : undefined,
         temas_abordados: temas
           ? temas.split(',').map((t) => t.trim()).filter(Boolean)
           : [],
@@ -120,11 +125,11 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
             value={nombreEntrevistador}
             required
             fullWidth
-            InputProps={{ readOnly: true }}
+            onChange={(e) => setNombreEntrevistador(e.target.value)}
           />
 
           <TextField
-            label="Temas Tratados (opcional)"
+            label="Temas a tratar (opcional)"
             placeholder="Ej: Rendimiento académico, situación familiar..."
             fullWidth
             value={temas}
@@ -161,7 +166,7 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
           >
             <option value="presencial">Presencial</option>
             <option value="virtual">Virtual</option>
-            <option value="mixta">Mixta</option>
+            <option value="info_adicional">Información Adicional</option>
           </TextField>
 
           <TextField

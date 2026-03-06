@@ -351,11 +351,13 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
       const creditosPendientes = totalCreditos - creditosAprobados;
       const porcentajeAvance = totalCreditos > 0 ? (creditosAprobados / totalCreditos) * 100 : 0;
 
-      const notasAprobadas = mallaCurricular.flatMap(sem => 
-        sem.ramos.filter(r => r.estado === 'aprobado' && r.nota).map(r => r.nota!)
+      const notasFinales = mallaCurricular.flatMap(sem => 
+        sem.ramos
+          .map(r => Number(r.nota))
+          .filter(n => Number.isFinite(n) && n > 0)
       );
-      const promedioGeneral = notasAprobadas.length > 0 
-        ? notasAprobadas.reduce((sum, nota) => sum + nota, 0) / notasAprobadas.length 
+      const promedioGeneral = notasFinales.length > 0
+        ? notasFinales.reduce((sum, nota) => sum + nota, 0) / notasFinales.length
         : 0;
 
       setProgreso({
@@ -931,9 +933,10 @@ export const AvanceCurricularSection: React.FC<AvanceCurricularSectionProps> = (
               const idToUse = editingSubject?.backendId || (updatedSubject as any).id;
               
               if (idToUse) {
+                const promedio = Number(updatedSubject.nota);
                 const ramoData = {
                   estado: updatedSubject.estado,
-                  promedio_final: updatedSubject.nota ?? undefined,
+                  promedio_final: Number.isFinite(promedio) ? promedio : undefined,
                   oportunidad: updatedSubject.oportunidad || 1
                 };
                 

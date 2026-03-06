@@ -62,9 +62,7 @@ export const EntrevistaReportGenerator: React.FC<EntrevistaReportGeneratorProps>
     const fechaFormateada = new Date(entrevista.fecha).toLocaleDateString('es-CL', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      day: 'numeric'
     });
     doc.text(`Fecha: ${fechaFormateada}`, margin, yPosition);
     yPosition += 6;
@@ -140,7 +138,8 @@ export const EntrevistaReportGenerator: React.FC<EntrevistaReportGeneratorProps>
 
         textosDeEtiqueta.forEach((texto: any) => {
           checkPageBreak(18);
-          const fechaTxt = texto.fecha ? new Date(texto.fecha).toLocaleDateString('es-CL') : 'Sin fecha';
+          const fechaBase = texto.fecha || entrevista.fecha;
+          const fechaTxt = fechaBase ? new Date(fechaBase).toLocaleDateString('es-CL') : 'Sin fecha';
           const contexto = texto.contexto ? `Contexto: ${texto.contexto}` : '';
 
           doc.setFontSize(10);

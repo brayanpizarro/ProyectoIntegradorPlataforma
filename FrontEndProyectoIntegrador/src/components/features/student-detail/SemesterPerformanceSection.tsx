@@ -118,13 +118,16 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
     const doc = new jsPDF();
     let y = 15;
 
-    const addLine = (text: string, gap = 6) => {
-      doc.text(text, 14, y);
-      y += gap;
-      if (y > 280) {
-        doc.addPage();
-        y = 15;
-      }
+    const addLine = (text: string, gap = 6, maxWidth = 180) => {
+      const lines = doc.splitTextToSize(text, maxWidth);
+      lines.forEach((line: string) => {
+        doc.text(line, 14, y);
+        y += gap;
+        if (y > 280) {
+          doc.addPage();
+          y = 15;
+        }
+      });
     };
 
     const nombreEstudiante = estudiante.nombre || estudiante.nombres || 'Estudiante';
@@ -148,18 +151,39 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
       const headers = ['#', 'Ramo', 'Oport.', 'Notas parciales', 'Promedio', 'Aprobacion', 'Comentarios'];
 
       const drawRow = (values: string[], isHeader = false) => {
-        let x = startX;
-        const height = isHeader ? 8 : 9;
-        values.forEach((val, idx) => {
-          doc.rect(x, y, colWidths[idx], height);
-          doc.text(val, x + 2, y + (isHeader ? 5 : 6));
-          x += colWidths[idx];
+        const paddingX = 2;
+        const paddingY = isHeader ? 3 : 3;
+        const lineHeight = 5;
+
+        // Calcular alto de cada celda con wrap
+        const cellTexts = values.map((val, idx) => {
+          const width = colWidths[idx] - paddingX * 2;
+          const text = isHeader ? val : (val || '-');
+          const lines = doc.splitTextToSize(text, width);
+          return { lines, width };
         });
-        y += height;
-        if (y > 280) {
+
+        const maxLines = Math.max(...cellTexts.map((c) => c.lines.length || 1));
+        const rowHeight = Math.max((maxLines * lineHeight) + paddingY * 2, isHeader ? 8 : 9);
+
+        // Salto de página si no cabe
+        if (y + rowHeight > 280) {
           doc.addPage();
           y = 15;
         }
+
+        let x = startX;
+        cellTexts.forEach((cell, idx) => {
+          doc.rect(x, y, colWidths[idx], rowHeight);
+          const lines = cell.lines;
+          lines.forEach((line: string, lineIdx: number) => {
+            const textY = y + paddingY + lineHeight * (lineIdx + 1) - (lineHeight - 4);
+            doc.text(line, x + paddingX, textY);
+          });
+          x += colWidths[idx];
+        });
+
+        y += rowHeight;
       };
 
       drawRow(headers, true);
@@ -187,13 +211,13 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
     );
 
     addLine('Comentarios generales:', 8);
-    addLine(`   ${historialEditable?.comentarios_generales || '-'}`, 8);
+    addLine(`   ${historialEditable?.comentarios_generales || '-'}`, 8, 180);
 
     addLine('Principales dificultades:', 8);
-    addLine(`   ${historialEditable?.dificultades || '-'}`, 8);
+    addLine(`   ${historialEditable?.dificultades || '-'}`, 8, 180);
 
     addLine('Principales aprendizajes:', 8);
-    addLine(`   ${historialEditable?.aprendizajes || '-'}`, 10);
+    addLine(`   ${historialEditable?.aprendizajes || '-'}`, 8, 180);
 
     const fileSafeName = nombreEstudiante.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
     doc.save(`informe-desempeno-${fileSafeName}-${semestreActual.año}-${semestreActual.semestre}s.pdf`);
@@ -398,12 +422,10 @@ export const SemesterPerformanceSection: React.FC<SemesterPerformanceSectionProp
                 <div className="text-sm text-gray-600 mt-1">Total eliminados</div>
               </div>
 
-              {promedio !== null && (
-                <div className="text-center p-4 bg-purple-50 rounded-lg">
-                  <div className="text-3xl font-bold text-purple-600">{promedio.toFixed(1)}</div>
-                  <div className="text-sm text-gray-600 mt-1">Promedio semestre</div>
-                </div>
-              )}
+              <div className="text-center p-4 bg-purple-50 rounded-lg">
+                <div className="text-3xl font-bold text-purple-600">{promedio !== null ? promedio.toFixed(1) : '-'}</div>
+                <div className="text-sm text-gray-600 mt-1">Promedio semestre</div>
+              </div>
 
               {historialSemestre && (
                 <div className="text-center p-2 bg-gray-50 rounded-lg">

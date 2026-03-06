@@ -42,7 +42,7 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
     ultimaActualizacionPor?: string;
   }>>([]);
 
-  const [guardandoFila, setGuardandoFila] = useState<number | null>(null);
+  const [accionFila, setAccionFila] = useState<{ index: number; tipo: 'guardar' | 'eliminar' } | null>(null);
   const [mensajeGlobal, setMensajeGlobal] = useState<string>('');
   const [errorGlobal, setErrorGlobal] = useState<string>('');
 
@@ -89,17 +89,14 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
   const [resumenManual, setResumenManual] = useState<Record<string, any>>(construirResumenBase());
 
   const adaptarHistoriales = (items: HistorialAcademico[]) => {
-    const porPeriodo = new Map<string, typeof filas[number]>();
-
-    items
+    const registros = items
       .filter((historial: HistorialAcademico) => getHistorialAño(historial) || getHistorialSemestre(historial))
-      .forEach((historial: HistorialAcademico) => {
-        const key = `${getHistorialAño(historial) ?? 'sin-año'}-${getHistorialSemestre(historial) ?? 'sin-sem'}`;
+      .map((historial: HistorialAcademico) => {
         const obs = typeof historial.observaciones === 'string'
           ? historial.observaciones
           : String(historial.observaciones ?? '');
-        // Tomar siempre el último registro para el período (sobrescribe si viene duplicado)
-        porPeriodo.set(key, {
+
+        return {
           id: (historial as any)?.id_historial_academico,
           año: getHistorialAño(historial) ?? null,
           semestre: getHistorialSemestre(historial) ?? null,
@@ -112,10 +109,10 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
           promedioSemestre: historial.promedio_semestre ?? null,
           nivelEducativo: historial.nivel_educativo,
           ultimaActualizacionPor: historial.ultima_actualizacion_por || '',
-        });
+        } as typeof filas[number];
       });
 
-    return ordenarFilas(Array.from(porPeriodo.values()));
+    return normalizarFilas(registros, { ordenar: true });
   };
 
   const calcularResumenDesdeFilas = (items: typeof filas) => {
@@ -144,13 +141,30 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
   
   // Helper para ordenar y numerar semestres de carrera
   const ordenarFilas = (items: typeof filas) => {
-    return [...items]
-      .filter((f) => f.año !== null && f.semestre !== null)
-      .sort((a, b) => {
-        if ((a.año ?? 0) !== (b.año ?? 0)) return (a.año ?? 0) - (b.año ?? 0);
-        return (a.semestre ?? 0) - (b.semestre ?? 0);
-      })
-      .map((item, idx) => ({ ...item, nSemestreCarrera: idx + 1 }));
+    // Solo ordena para la carga inicial sin recalcular la numeración manual
+    return [...items].sort((a, b) => {
+      if (a.año === null || a.semestre === null) return 1;
+      if (b.año === null || b.semestre === null) return -1;
+      if ((a.año ?? 0) !== (b.año ?? 0)) return (a.año ?? 0) - (b.año ?? 0);
+      return (a.semestre ?? 0) - (b.semestre ?? 0);
+    });
+  };
+
+  const calcularTotalFila = (fila: typeof filas[number]) =>
+    (fila.ramosAprobados || 0) + (fila.ramosReprobados || 0) + (fila.ramosEliminados || 0);
+
+  const normalizarFilas = (items: typeof filas, opts: { ordenar?: boolean } = {}) => {
+    const base = opts.ordenar ? ordenarFilas(items) : [...items];
+
+    const recalculadas = base.map(fila => ({
+      ...fila,
+      totalRamos: calcularTotalFila(fila),
+    }));
+
+    return recalculadas.map((fila, idx) => ({
+      ...fila,
+      nSemestreCarrera: idx + 1,
+    }));
   };
 
   const cargarFilasDesdeApi = async (estudianteId?: string) => {
@@ -180,37 +194,33 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
 
   const handleChangeFila = (index: number, campo: string, valor: string) => {
     setFilas(prev => {
-      return ordenarFilas(prev.map((fila, i) => {
+      const numeroCampos = ['año', 'semestre', 'nSemestreCarrera', 'ramosAprobados', 'ramosReprobados', 'ramosEliminados', 'promedioSemestre'];
+      const actualizadas = prev.map((fila, i) => {
         if (i !== index) return fila;
 
-        const numeroCampos = ['año', 'semestre', 'nSemestreCarrera', 'ramosAprobados', 'ramosReprobados', 'ramosEliminados', 'totalRamos', 'promedioSemestre'];
         const nuevoValor = numeroCampos.includes(campo)
           ? (valor === '' ? null : Number(valor))
           : valor;
 
-        const ramosAprobados = campo === 'ramosAprobados' ? (Number(valor) || 0) : fila.ramosAprobados;
-        const ramosReprobados = campo === 'ramosReprobados' ? (Number(valor) || 0) : fila.ramosReprobados;
-        const ramosEliminados = campo === 'ramosEliminados' ? (Number(valor) || 0) : fila.ramosEliminados;
-        const totalRamos = ramosAprobados + ramosReprobados + ramosEliminados;
-
         return {
           ...fila,
           [campo]: nuevoValor,
-          totalRamos,
         };
-      }));
+      });
+
+      return normalizarFilas(actualizadas);
     });
   };
 
   const handleAgregarFila = () => {
     const añoActual = new Date().getFullYear();
     const semestreActual = new Date().getMonth() < 6 ? 1 : 2;
-    setFilas(prev => ordenarFilas([
+    setFilas(prev => normalizarFilas([
       ...prev,
       {
         año: añoActual,
         semestre: semestreActual,
-        nSemestreCarrera: 0,
+        nSemestreCarrera: prev.length + 1,
         ramosAprobados: 0,
         ramosReprobados: 0,
         ramosEliminados: 0,
@@ -226,7 +236,11 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
   const handleGuardarFila = async (index: number) => {
     const fila = filas[index];
     if (!estudiante.id_estudiante) return;
-    setGuardandoFila(index);
+    if (fila.año === null || fila.semestre === null) {
+      setErrorGlobal('Completa año y semestre antes de guardar.');
+      return;
+    }
+    setAccionFila({ index, tipo: 'guardar' });
     setMensajeGlobal('');
     setErrorGlobal('');
 
@@ -259,7 +273,7 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
       );
 
       if (fila.id) {
-        await historialAcademicoService.update(Number(fila.id), sanitized);
+        await historialAcademicoService.update(String(fila.id), sanitized);
       } else {
         await historialAcademicoService.create({
           id_estudiante: String(estudiante.id_estudiante),
@@ -274,7 +288,27 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
     } catch (err: any) {
       setErrorGlobal(err?.message || 'No se pudo guardar la fila');
     } finally {
-      setGuardandoFila(null);
+      setAccionFila(null);
+    }
+  };
+
+  const handleEliminarFila = async (index: number) => {
+    const fila = filas[index];
+    setAccionFila({ index, tipo: 'eliminar' });
+    setMensajeGlobal('');
+    setErrorGlobal('');
+
+    try {
+      if (fila?.id !== undefined && fila?.id !== null) {
+        await historialAcademicoService.delete(String(fila.id));
+      }
+
+      setFilas(prev => normalizarFilas(prev.filter((_, i) => i !== index)));
+      setMensajeGlobal('Fila eliminada');
+    } catch (err: any) {
+      setErrorGlobal(err?.message || 'No se pudo eliminar la fila');
+    } finally {
+      setAccionFila(null);
     }
   };
   
@@ -549,8 +583,8 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
                     <input
                       type="number"
                       value={fila.totalRamos}
-                      onChange={(e) => handleChangeFila(idx, 'totalRamos', e.target.value)}
-                      className="w-full px-2 py-1 border border-gray-300 rounded text-center"
+                      readOnly
+                      className="w-full px-2 py-1 border border-gray-300 rounded text-center bg-gray-100"
                     />
                   ) : fila.totalRamos}
                 </td>
@@ -570,10 +604,18 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
                     <button
                       type="button"
                       onClick={() => handleGuardarFila(idx)}
-                      disabled={guardandoFila === idx}
-                      className="px-3 py-1 bg-[var(--color-turquoise)] text-white rounded hover:opacity-90 disabled:opacity-60"
+                      disabled={accionFila?.index === idx}
+                      className="px-3 py-1 bg-[var(--color-turquoise)] text-white rounded hover:opacity-90 disabled:opacity-60 mr-2"
                     >
-                      {guardandoFila === idx ? 'Guardando...' : 'Guardar'}
+                      {accionFila?.index === idx && accionFila?.tipo === 'guardar' ? 'Guardando...' : 'Guardar'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleEliminarFila(idx)}
+                      disabled={accionFila?.index === idx}
+                      className="px-3 py-1 bg-red-600 text-white rounded hover:opacity-90 disabled:opacity-60"
+                    >
+                      {accionFila?.index === idx && accionFila?.tipo === 'eliminar' ? 'Eliminando...' : 'Eliminar'}
                     </button>
                   </td>
                 )}
