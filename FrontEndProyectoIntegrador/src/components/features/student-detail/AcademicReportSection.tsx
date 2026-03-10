@@ -273,7 +273,8 @@ export const AcademicReportSection: React.FC<AcademicReportSectionProps> = ({ es
       );
 
       if (fila.id) {
-        await historialAcademicoService.update(String(fila.id), sanitized);
+        const targetId = Number(fila.id);
+        await historialAcademicoService.update(Number.isFinite(targetId) ? targetId : (fila.id as any), sanitized);
       } else {
         await historialAcademicoService.create({
           id_estudiante: String(estudiante.id_estudiante),

@@ -86,8 +86,18 @@ export function NoteEditor({
           } catch (err) {
             console.warn('No se pudo cargar la fecha de la entrevista', err);
           }
-          // Para una entrevista específica, obtener solo sus textos
-          textos = await entrevistaService.getTextos(entrevistaId);
+          const textosActuales = await entrevistaService.getTextos(entrevistaId);
+          const textosHistoricos = estudiante?.id_estudiante
+            ? await entrevistaService.getAllTextosByEstudiante(estudiante.id_estudiante.toString())
+            : [];
+          // Unificar textos actuales e históricos sin duplicados
+          const vistos = new Set<string>();
+          textos = [...textosActuales, ...textosHistoricos].filter((t: any) => {
+            if (!t?.id) return true;
+            if (vistos.has(t.id)) return false;
+            vistos.add(t.id);
+            return true;
+          });
         } else if (estudiante?.id_estudiante) {
           // Fallback: textos históricos del estudiante (vista consolidada)
           textos = await entrevistaService.getAllTextosByEstudiante(estudiante.id_estudiante.toString());
@@ -239,12 +249,6 @@ export function NoteEditor({
     return date.toLocaleDateString('es-CL');
   };
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('es-CL', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
 
   return (
     <div className="h-full flex flex-col bg-white">

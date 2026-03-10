@@ -20,13 +20,18 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
   const [observaciones, setObservaciones] = useState('');
   const [temas, setTemas] = useState('');
   const [duracionMinutos, setDuracionMinutos] = useState<number>(60);
-  const [tipoEntrevista, setTipoEntrevista] = useState<'presencial' | 'virtual' | 'info_adicional'>('presencial');
+  const [informacionAdicional, setInformacionAdicional] = useState('');
   const [estadoEntrevista, setEstadoEntrevista] = useState<'programada' | 'completada' | 'cancelada' | 'reprogramada'>('completada');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const user = authService.getCurrentUser();
+  const initialUserId = (() => {
+    const candidate = (user as any)?.id ?? (user as any)?.userId ?? (user as any)?.sub;
+    return candidate ? String(candidate) : '';
+  })();
   const [nombreEntrevistador, setNombreEntrevistador] = useState(
     user ? `${user.nombres || ''} ${user.apellidos || ''}`.trim() || user.email || 'Entrevistador' : 'Usuario Actual'
   );
+  const [idEntrevistador] = useState(initialUserId);
 
   const handleCrearEntrevista = async () => {
     // Prevenir múltiples envíos
@@ -51,36 +56,20 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
         return typeof n === 'number' ? Math.max(max, n) : max;
       }, 0);
 
-      // Obtener el ID del usuario actual
-      const userId = (user as any)?.id ?? (user as any)?.userId ?? (user as any)?.sub;
-      const userIdStr = userId ? String(userId) : '';
-
-      // Validar UUID simple; si no es válido, avisar y detener
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(userIdStr)) {
-        console.error('❌ id_usuario inválido para entrevista:', userIdStr, user);
-        alert('No se pudo obtener un id de usuario válido (UUID). Cierra sesión y vuelve a entrar para intentar nuevamente.');
-        setIsSubmitting(false);
-        return;
-      }
-
-      console.log('📌 ID Usuario para entrevista:', userIdStr, 'Usuario completo:', user);
-
       // Normalizar fecha a mediodía local para evitar desfase de zona horaria al convertir a ISO
       const fechaLocal = new Date(`${fecha}T12:00:00`);
 
       // Valores requeridos por el DTO del backend
       const payload = {
         id_estudiante: String(estudianteId),
-        id_usuario: userIdStr,
         fecha: fechaLocal.toISOString(),
         nombre_tutor: nombreEntrevistador.trim() || `${user.nombres || ''} ${user.apellidos || ''}`.trim() || user.email || 'Entrevistador',
         año: fechaLocal.getFullYear(),
         numero_entrevista: maxNumero + 1,
         duracion_minutos: duracionMinutos,
-        tipo_entrevista: tipoEntrevista,
         estado: estadoEntrevista,
         observaciones: observaciones.trim() ? observaciones.trim() : undefined,
+        informacion_adicional: informacionAdicional.trim() ? informacionAdicional.trim() : undefined,
         temas_abordados: temas
           ? temas.split(',').map((t) => t.trim()).filter(Boolean)
           : [],
@@ -129,6 +118,14 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
           />
 
           <TextField
+            label="Entrevistador"
+            value={nombreEntrevistador}
+            disabled
+            fullWidth
+            helperText="Se usará tu usuario autenticado como entrevistador"
+          />
+
+          <TextField
             label="Temas a tratar (opcional)"
             placeholder="Ej: Rendimiento académico, situación familiar..."
             fullWidth
@@ -148,6 +145,17 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
           />
 
           <TextField
+            label="Información adicional (opcional)"
+            placeholder="Notas o información relevante que no provenga de una entrevista"
+            multiline
+            rows={4}
+            fullWidth
+            value={informacionAdicional}
+            onChange={(e) => setInformacionAdicional(e.target.value)}
+            helperText="No es obligatoria y puedes editarla luego"
+          />
+
+          <TextField
             label="Duración (minutos)"
             type="number"
             fullWidth
@@ -155,19 +163,6 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
             value={duracionMinutos}
             onChange={(e) => setDuracionMinutos(Number(e.target.value) || 60)}
           />
-
-          <TextField
-            label="Tipo de entrevista"
-            select
-            fullWidth
-            value={tipoEntrevista}
-            onChange={(e) => setTipoEntrevista(e.target.value as any)}
-            SelectProps={{ native: true }}
-          >
-            <option value="presencial">Presencial</option>
-            <option value="virtual">Virtual</option>
-            <option value="info_adicional">Información Adicional</option>
-          </TextField>
 
           <TextField
             label="Estado"

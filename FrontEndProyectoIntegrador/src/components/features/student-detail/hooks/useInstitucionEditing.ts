@@ -56,7 +56,7 @@ export const useInstitucionEditing = ({ estudiante }: UseInstitucionEditingProps
         } else {
             // Crear nueva institución y asociarla al estudiante con la clave esperada por el backend
             const nueva = await institucionService.create(datosInstitucion);
-            await estudianteService.update(estudianteId, { institucionId: nueva.id_institucion, id_institucion: nueva.id_institucion });
+            await estudianteService.update(estudianteId, { id_institucion: nueva.id_institucion });
             logger.log('✅ Institución creada y asociada al estudiante');
         }
     };

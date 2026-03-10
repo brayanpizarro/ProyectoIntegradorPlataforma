@@ -7,8 +7,8 @@ import {
   ValidateNested,
   Min,
   Max,
-  IsEnum,
   IsNotEmpty,
+  IsEnum,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Exclude, Expose } from 'class-transformer';
@@ -81,12 +81,6 @@ export class UpdateEntrevistaDto {
   @Expose()
   @IsString()
   @IsOptional()
-  @IsEnum(['presencial', 'virtual', 'mixta'])
-  tipo_entrevista?: string;
-
-  @Expose()
-  @IsString()
-  @IsOptional()
   @IsEnum(['programada', 'completada', 'cancelada', 'reprogramada'])
   estado?: string;
 
@@ -95,6 +89,11 @@ export class UpdateEntrevistaDto {
   @IsOptional()
   @Min(10)
   observaciones?: string;
+
+  @Expose()
+  @IsString()
+  @IsOptional()
+  informacion_adicional?: string;
 
   @Expose()
   @IsArray()

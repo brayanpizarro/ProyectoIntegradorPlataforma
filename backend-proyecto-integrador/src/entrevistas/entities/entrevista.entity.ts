@@ -14,12 +14,6 @@ import { User } from '../../users/entities/user.entity';
 import { Texto } from './texto.entity';
 import { v4 as uuidv4 } from 'uuid';
 
-export enum TipoEntrevista {
-  PRESENCIAL = 'presencial',
-  VIRTUAL = 'virtual',
-  MIXTA = 'mixta',
-}
-
 export enum EstadoEntrevista {
   PROGRAMADA = 'programada',
   COMPLETADA = 'completada',
@@ -70,22 +64,17 @@ export class Entrevista {
   duracion_minutos: number;
 
   @Column({
-    name: 'tipo_entrevista',
-    type: 'enum',
-    enum: TipoEntrevista,
-    default: TipoEntrevista.PRESENCIAL,
-  })
-  tipo_entrevista: TipoEntrevista;
-
-  @Column({
     type: 'enum',
     enum: EstadoEntrevista,
     default: EstadoEntrevista.PROGRAMADA,
   })
   estado: EstadoEntrevista;
 
-  @Column({ type: 'text' })
-  observaciones: string;
+  @Column({ type: 'text', nullable: true, default: '' })
+  observaciones: string | null;
+
+  @Column({ type: 'text', nullable: true, default: '' })
+  informacion_adicional: string | null;
 
   @Column({ name: 'temas_abordados', type: 'simple-array' })
   temas_abordados: string[];

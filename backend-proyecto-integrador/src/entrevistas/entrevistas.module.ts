@@ -5,10 +5,12 @@ import { Etiqueta } from './entities/etiqueta.entity';
 import { Texto } from './entities/texto.entity';
 import { EntrevistasService } from './entrevistas.service';
 import { EntrevistasController } from './entrevistas.controller';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Entrevista, Etiqueta, Texto]),
+    AuthModule,
   ],
   providers: [EntrevistasService],
   controllers: [EntrevistasController],

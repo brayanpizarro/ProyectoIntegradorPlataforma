@@ -8,18 +8,31 @@ import {
   Param,
   UsePipes,
   ValidationPipe,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { EntrevistasService } from './entrevistas.service';
 import { CreateEntrevistaDto } from './dto/create-entrevista.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '../users/entities/user.entity';
+import type { Request } from 'express';
 
 @Controller('entrevistas')
 @UsePipes(new ValidationPipe({ transform: true }))
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.ADMIN, UserRole.TUTOR)
 export class EntrevistasController {
   constructor(private readonly entrevistasService: EntrevistasService) {}
 
   @Post()
-  async create(@Body() createEntrevistaDto: CreateEntrevistaDto) {
-    return this.entrevistasService.create(createEntrevistaDto);
+  async create(
+    @Req() req: Request,
+    @Body() createEntrevistaDto: CreateEntrevistaDto,
+  ) {
+    const userId = (req as any).user.id as string;
+    return this.entrevistasService.create(createEntrevistaDto, userId);
   }
 
   @Delete(':id')
@@ -61,7 +74,7 @@ export class EntrevistasController {
   @Post(':id/textos')
   async addTexto(
     @Param('id') id: string,
-    @Body() textoData: { nombre_etiqueta: string; contenido: string; contexto?: string },
+    @Body() textoData: { nombre_etiqueta: string; contenido: string; contexto?: string; fecha?: string },
   ) {
     return this.entrevistasService.addTexto(id, textoData);
   }

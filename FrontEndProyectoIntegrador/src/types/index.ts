@@ -222,9 +222,9 @@ export interface Entrevista {
   año: number;
   numero_Entrevista: number;
   duracion_minutos: number;
-  tipo_entrevista: string;
   estado: string;
-  observaciones: string;
+  observaciones?: string;
+  informacion_adicional?: string;
   temas_abordados: string[];
   etiquetas: EtiquetaEntrevista[];
   textos: TextoEtiqueta[];

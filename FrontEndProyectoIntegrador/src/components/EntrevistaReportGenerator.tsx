@@ -110,6 +110,22 @@ export const EntrevistaReportGenerator: React.FC<EntrevistaReportGeneratorProps>
       yPosition += 5;
     }
 
+    // INFORMACIÓN ADICIONAL
+    if (entrevista.informacion_adicional) {
+      doc.setFont('helvetica', 'bold');
+      doc.text('Información adicional:', margin, yPosition);
+      yPosition += 6;
+
+      doc.setFont('helvetica', 'normal');
+      const infoLineas = splitText(entrevista.informacion_adicional, maxWidth);
+      infoLineas.forEach(linea => {
+        checkPageBreak(6);
+        doc.text(linea, margin, yPosition);
+        yPosition += 6;
+      });
+      yPosition += 5;
+    }
+
     checkPageBreak(20);
 
     // TEXTOS AGRUPADOS POR ETIQUETA

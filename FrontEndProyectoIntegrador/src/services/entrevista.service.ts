@@ -58,7 +58,8 @@ class EntrevistaService extends BaseHttpClient {
   async addTexto(entrevistaId: string, textoData: { 
     nombre_etiqueta: string; 
     contenido: string; 
-    contexto?: string 
+    contexto?: string;
+    fecha?: string; // Permite forzar la fecha de la nota (p.ej. fecha de la entrevista)
   }): Promise<any> {
     return this.request<any>(`/entrevistas/${entrevistaId}/textos`, {
       method: 'POST',

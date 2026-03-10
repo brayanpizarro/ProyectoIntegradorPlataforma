@@ -24,6 +24,7 @@ export function InterviewsSection({ estudianteId, estudiante }: InterviewsSectio
   const [error, setError] = useState<string | null>(null);
   const [editandoId, setEditandoId] = useState<string | null>(null);
   const [textoEdicion, setTextoEdicion] = useState('');
+  const [textoInfoAdicional, setTextoInfoAdicional] = useState('');
 
   // Cargar entrevistas del backend
   useEffect(() => {
@@ -58,14 +59,19 @@ export function InterviewsSection({ estudianteId, estudiante }: InterviewsSectio
   const handleIniciarEdicionComentario = (entrevista: Entrevista) => {
     setEditandoId(entrevista.id);
     setTextoEdicion(entrevista.observaciones || '');
+    setTextoInfoAdicional(entrevista.informacion_adicional || '');
   };
 
   const handleGuardarComentario = async (entrevista: Entrevista) => {
     try {
-      await entrevistaService.update(entrevista.id, { observaciones: textoEdicion });
-      setEntrevistas((prev) => prev.map((e) => (e.id === entrevista.id ? { ...e, observaciones: textoEdicion } : e)));
+      await entrevistaService.update(entrevista.id, {
+        observaciones: textoEdicion,
+        informacion_adicional: textoInfoAdicional,
+      });
+      setEntrevistas((prev) => prev.map((e) => (e.id === entrevista.id ? { ...e, observaciones: textoEdicion, informacion_adicional: textoInfoAdicional } : e)));
       setEditandoId(null);
       setTextoEdicion('');
+      setTextoInfoAdicional('');
     } catch (err) {
       console.error('Error guardando comentario', err);
       alert('No se pudo guardar el comentario');
@@ -201,7 +207,7 @@ export function InterviewsSection({ estudianteId, estudiante }: InterviewsSectio
                     <Box sx={{ flex: 1 }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <Typography variant="subtitle2" fontWeight={600}>
-                          {entrevista.tipo_entrevista || 'Entrevista'}
+                          {entrevista.informacion_adicional?.trim() ? 'Información' : 'Entrevista'}
                         </Typography>
                         <Chip 
                           label={entrevista.estado || 'Completada'} 
@@ -212,18 +218,43 @@ export function InterviewsSection({ estudianteId, estudiante }: InterviewsSectio
                       </Box>
 
                         {editandoId === entrevista.id ? (
-                          <Box sx={{ mt: 0.25 }}>
+                          <Box sx={{ mt: 0.25, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                              Información
+                            </Typography>
+                            <textarea
+                              value={textoInfoAdicional}
+                              onChange={(e) => setTextoInfoAdicional(e.target.value)}
+                              rows={3}
+                              placeholder="Información"
+                              style={{ width: '100%', resize: 'vertical', padding: '8px', borderRadius: '8px', border: '1px solid #ccc' }}
+                            />
+                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                              Observaciones
+                            </Typography>
                             <textarea
                               value={textoEdicion}
                               onChange={(e) => setTextoEdicion(e.target.value)}
                               rows={3}
+                              placeholder="Observaciones"
                               style={{ width: '100%', resize: 'vertical', padding: '8px', borderRadius: '8px', border: '1px solid #ccc' }}
                             />
                           </Box>
                         ) : (
-                          <Typography variant="body2" color="text.primary" sx={{ mt: 0.25 }}>
-                            {entrevista.observaciones || 'Sin observaciones'}
-                          </Typography>
+                          <Box sx={{ mt: 0.25, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                              Información
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {entrevista.informacion_adicional?.trim() || 'Sin información'}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                              Observaciones
+                            </Typography>
+                            <Typography variant="body2" color="text.primary">
+                              {entrevista.observaciones || 'Sin observaciones'}
+                            </Typography>
+                          </Box>
                         )}
 
                       {entrevista.temas_abordados && entrevista.temas_abordados.length > 0 && (

@@ -21,7 +21,7 @@ export class EntrevistasService {
   ) {}
 
   // MÉTODO PARA CREAR ENTREVISTA
-  async create(createEntrevistaDto: CreateEntrevistaDto): Promise<Entrevista> {
+  async create(createEntrevistaDto: CreateEntrevistaDto, userId: string): Promise<Entrevista> {
     // 1. Verificar que no existe ya esta entrevista para este estudiante
     const existe = await this.entrevistaRepository.findOne({
       where: {
@@ -37,18 +37,27 @@ export class EntrevistasService {
       );
     }
 
-    // 2. Crear la nueva entrevista
+    // 2. Normalizar fecha al mediodía local para evitar desfaces de huso horario
+    const fechaBase = new Date(createEntrevistaDto.fecha);
+    const fechaEntrevista = new Date(
+      fechaBase.getFullYear(),
+      fechaBase.getMonth(),
+      fechaBase.getDate(),
+      12, 0, 0, 0,
+    );
+
+    // 3. Crear la nueva entrevista
     const nuevaEntrevista = this.entrevistaRepository.create({
       estudianteId: createEntrevistaDto.id_estudiante.toString(),
-      usuarioId: createEntrevistaDto.id_usuario,
-      fecha: new Date(createEntrevistaDto.fecha),
+      usuarioId: userId,
+      fecha: fechaEntrevista,
       nombre_Tutor: createEntrevistaDto.nombre_tutor,
       año: createEntrevistaDto.año,
       numero_Entrevista: createEntrevistaDto.numero_entrevista,
       duracion_minutos: createEntrevistaDto.duracion_minutos,
-      tipo_entrevista: createEntrevistaDto.tipo_entrevista as any,
       estado: createEntrevistaDto.estado as any,
-      observaciones: createEntrevistaDto.observaciones,
+      observaciones: createEntrevistaDto.observaciones ?? '',
+      informacion_adicional: createEntrevistaDto.informacion_adicional ?? '',
       temas_abordados: createEntrevistaDto.temas_abordados,
     });
 
@@ -147,7 +156,7 @@ export class EntrevistasService {
 
   async updateEntrevista(
     id: string,
-    data: Partial<Pick<Entrevista, 'observaciones' | 'estado' | 'temas_abordados' | 'fecha' | 'nombre_Tutor' | 'duracion_minutos'>>,
+    data: Partial<Pick<Entrevista, 'observaciones' | 'estado' | 'temas_abordados' | 'fecha' | 'nombre_Tutor' | 'duracion_minutos' | 'informacion_adicional'>>,
   ): Promise<Entrevista> {
     const entrevista = await this.entrevistaRepository.findOne({ where: { id } });
     if (!entrevista) {
@@ -157,6 +166,9 @@ export class EntrevistasService {
     if (data.observaciones !== undefined) {
       entrevista.observaciones = data.observaciones;
     }
+    if (data.informacion_adicional !== undefined) {
+      entrevista.informacion_adicional = data.informacion_adicional;
+    }
     if (data.estado) {
       entrevista.estado = data.estado as any;
     }
@@ -164,7 +176,13 @@ export class EntrevistasService {
       entrevista.temas_abordados = data.temas_abordados;
     }
     if (data.fecha) {
-      entrevista.fecha = new Date(data.fecha as any);
+      const base = new Date(data.fecha as any);
+      entrevista.fecha = new Date(
+        base.getFullYear(),
+        base.getMonth(),
+        base.getDate(),
+        12, 0, 0, 0,
+      );
     }
     if (data.nombre_Tutor) {
       entrevista.nombre_Tutor = data.nombre_Tutor;
@@ -178,7 +196,7 @@ export class EntrevistasService {
 
   async addTexto(
     entrevistaId: string,
-    textoData: { nombre_etiqueta: string; contenido: string; contexto?: string },
+    textoData: { nombre_etiqueta: string; contenido: string; contexto?: string; fecha?: string },
   ): Promise<Texto> {
     // Verificar que la entrevista existe
     const entrevista = await this.entrevistaRepository.findOne({
@@ -202,12 +220,15 @@ export class EntrevistasService {
       await this.etiquetaRepository.save(etiqueta);
     }
 
+    // Determinar fecha del texto: usar la provista o la de la entrevista
+    const fechaTexto = textoData.fecha ? new Date(textoData.fecha) : new Date(entrevista.fecha);
+
     // Crear el texto
     const texto = this.textoRepository.create({
       entrevistaId: entrevistaId,
       nombre_etiqueta: textoData.nombre_etiqueta,
       contenido: textoData.contenido,
-      fecha: new Date(),
+      fecha: fechaTexto,
       contexto: textoData.contexto,
     });
 
@@ -229,8 +250,6 @@ export class EntrevistasService {
     if (typeof data.contexto === 'string') {
       texto.contexto = data.contexto;
     }
-    // Actualizar fecha a ahora para reflejar edición
-    texto.fecha = new Date();
     return this.textoRepository.save(texto);
   }
 

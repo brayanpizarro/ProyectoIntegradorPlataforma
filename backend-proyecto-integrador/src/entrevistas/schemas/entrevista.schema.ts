@@ -61,13 +61,13 @@ export class Entrevista {
   duracion_minutos: number;
 
   @Prop()
-  tipo_entrevista: string;
-
-  @Prop()
   estado: string;
 
-  @Prop()
+  @Prop({ default: '' })
   observaciones: string;
+
+  @Prop({ default: '' })
+  informacion_adicional: string;
 
   @Prop({ type: [String], default: [] })
   temas_abordados: string[];

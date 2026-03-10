@@ -43,8 +43,8 @@ export interface TemaRecurrente {
 export interface EntrevistaFilters {
   estudianteId?: number;
   año?: number;
-  tipo_entrevista?: string;
   estado?: string;
+  informacion_adicional?: string;
 }
 
 // Interface para la respuesta de preparar nueva entrevista

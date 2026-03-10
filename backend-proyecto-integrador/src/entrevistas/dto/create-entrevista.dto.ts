@@ -8,7 +8,6 @@ import {
   ValidateNested,
   Min,
   Max,
-  IsEnum,
 } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 import { Exclude, Expose } from 'class-transformer';
@@ -43,10 +42,6 @@ export class CreateEntrevistaDto {
   @IsNotEmpty()
   id_estudiante: string;
 
-  @IsString()
-  @IsNotEmpty()
-  id_usuario: string;
-
   @IsDateString()
   @IsNotEmpty()
   fecha: string;
@@ -77,15 +72,15 @@ export class CreateEntrevistaDto {
 
   @IsString()
   @IsNotEmpty()
-  tipo_entrevista: 'presencial' | 'virtual' | 'mixta';
-
-  @IsString()
-  @IsNotEmpty()
   estado: 'programada' | 'completada' | 'cancelada' | 'reprogramada';
 
   @IsString()
   @IsOptional()
   observaciones?: string;
+
+  @IsString()
+  @IsOptional()
+  informacion_adicional?: string;
 
   @IsArray()
   @IsString({ each: true })
