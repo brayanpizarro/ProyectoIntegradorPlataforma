@@ -28,6 +28,17 @@ export const EntrevistaReportGenerator: React.FC<EntrevistaReportGeneratorProps>
       return doc.splitTextToSize(text, maxWidth);
     };
 
+    const formatMultiline = (text: string): string[] => {
+      return text
+        .split(/\r?\n/)
+        .map((block) => block.trim())
+        .flatMap((block, index) => {
+          if (block.length === 0) return index === 0 ? [] : [''];
+          const lines = splitText(block, maxWidth);
+          return index === 0 ? lines : [''].concat(lines);
+        });
+    };
+
     // ENCABEZADO
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
@@ -67,6 +78,23 @@ export const EntrevistaReportGenerator: React.FC<EntrevistaReportGeneratorProps>
     doc.text(`Fecha: ${fechaFormateada}`, margin, yPosition);
     yPosition += 6;
 
+    // Número y estado
+    const numeroEntrevista = entrevista.numero_entrevista ?? entrevista.numero_Entrevista;
+    if (numeroEntrevista) {
+      doc.text(`N° entrevista: ${numeroEntrevista}`, margin, yPosition);
+      yPosition += 6;
+    }
+
+    if (entrevista.estado) {
+      doc.text(`Estado: ${entrevista.estado}`, margin, yPosition);
+      yPosition += 6;
+    }
+
+    if (entrevista.duracion_minutos) {
+      doc.text(`Duración: ${entrevista.duracion_minutos} minutos`, margin, yPosition);
+      yPosition += 6;
+    }
+
     // Tutor
     if (entrevista.tutor || entrevista.nombre_Tutor) {
       doc.text(`Tutor: ${entrevista.tutor || entrevista.nombre_Tutor}`, margin, yPosition);
@@ -83,7 +111,10 @@ export const EntrevistaReportGenerator: React.FC<EntrevistaReportGeneratorProps>
       yPosition += 6;
 
       doc.setFont('helvetica', 'normal');
-      const temasLineas = splitText(entrevista.temas_abordados, maxWidth);
+      const temasTexto = Array.isArray(entrevista.temas_abordados)
+        ? entrevista.temas_abordados.join(', ')
+        : entrevista.temas_abordados;
+      const temasLineas = splitText(temasTexto, maxWidth);
       temasLineas.forEach(linea => {
         checkPageBreak(6);
         doc.text(linea, margin, yPosition);
@@ -95,35 +126,98 @@ export const EntrevistaReportGenerator: React.FC<EntrevistaReportGeneratorProps>
     checkPageBreak(20);
 
     // OBSERVACIONES
-    if (entrevista.observaciones) {
-      doc.setFont('helvetica', 'bold');
-      doc.text('Observaciones:', margin, yPosition);
-      yPosition += 6;
+    const observacionesTexto = (entrevista.observaciones && String(entrevista.observaciones).trim()) || 'Sin observaciones';
+    doc.setFont('helvetica', 'bold');
+    doc.text('Observaciones:', margin, yPosition);
+    yPosition += 6;
 
-      doc.setFont('helvetica', 'normal');
-      const observacionesLineas = splitText(entrevista.observaciones, maxWidth);
-      observacionesLineas.forEach(linea => {
-        checkPageBreak(6);
-        doc.text(linea, margin, yPosition);
-        yPosition += 6;
-      });
-      yPosition += 5;
-    }
+    doc.setFont('helvetica', 'normal');
+    const observacionesLineas = formatMultiline(observacionesTexto);
+    observacionesLineas.forEach(linea => {
+      checkPageBreak(6);
+      doc.text(linea, margin, yPosition);
+      yPosition += 6;
+    });
+    yPosition += 5;
 
     // INFORMACIÓN ADICIONAL
-    if (entrevista.informacion_adicional) {
-      doc.setFont('helvetica', 'bold');
-      doc.text('Información adicional:', margin, yPosition);
-      yPosition += 6;
+    const infoTexto = (entrevista.informacion_adicional && String(entrevista.informacion_adicional).trim()) || 'Sin información adicional';
+    doc.setFont('helvetica', 'bold');
+    doc.text('Información adicional:', margin, yPosition);
+    yPosition += 6;
 
-      doc.setFont('helvetica', 'normal');
-      const infoLineas = splitText(entrevista.informacion_adicional, maxWidth);
-      infoLineas.forEach(linea => {
-        checkPageBreak(6);
-        doc.text(linea, margin, yPosition);
+    doc.setFont('helvetica', 'normal');
+    const infoLineas = formatMultiline(infoTexto);
+    infoLineas.forEach(linea => {
+      checkPageBreak(6);
+      doc.text(linea, margin, yPosition);
+      yPosition += 6;
+    });
+    yPosition += 5;
+
+    // DETALLE POR ENTREVISTA
+    const detalleEntrevistas = Array.isArray(entrevista.detalleEntrevistas) ? entrevista.detalleEntrevistas : [];
+    if (detalleEntrevistas.length > 0) {
+      checkPageBreak(20);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('Detalle de entrevistas:', margin, yPosition);
+      yPosition += 10;
+
+      detalleEntrevistas.forEach((det: any, index: number) => {
+        checkPageBreak(24);
+        doc.setFontSize(11);
+        doc.text(`Entrevista ${det.numero_entrevista || index + 1}`, margin, yPosition);
         yPosition += 6;
+
+        const fechaTxt = det.fecha ? new Date(det.fecha).toLocaleDateString('es-CL') : 'Sin fecha';
+        const estadoTxt = det.estado || 'Sin estado';
+        const duracionTxt = det.duracion_minutos ? `${det.duracion_minutos} minutos` : 'Sin duración registrada';
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Fecha: ${fechaTxt}`, margin, yPosition);
+        yPosition += 6;
+        doc.text(`Estado: ${estadoTxt}`, margin, yPosition);
+        yPosition += 6;
+        doc.text(`Duración: ${duracionTxt}`, margin, yPosition);
+        yPosition += 6;
+
+        doc.setFont('helvetica', 'bold');
+        doc.text('Observaciones:', margin, yPosition);
+        yPosition += 6;
+        doc.setFont('helvetica', 'normal');
+        formatMultiline(det.observaciones || 'Sin observaciones').forEach((linea) => {
+          checkPageBreak(6);
+          doc.text(linea, margin, yPosition);
+          yPosition += 6;
+        });
+
+        doc.setFont('helvetica', 'bold');
+        doc.text('Información adicional:', margin, yPosition);
+        yPosition += 6;
+        doc.setFont('helvetica', 'normal');
+        formatMultiline(det.informacion_adicional || 'Sin información adicional').forEach((linea) => {
+          checkPageBreak(6);
+          doc.text(linea, margin, yPosition);
+          yPosition += 6;
+        });
+
+        if (det.temas_abordados && det.temas_abordados.length) {
+          doc.setFont('helvetica', 'bold');
+          doc.text('Temas:', margin, yPosition);
+          yPosition += 6;
+          doc.setFont('helvetica', 'normal');
+          splitText(Array.isArray(det.temas_abordados) ? det.temas_abordados.join(', ') : det.temas_abordados, maxWidth).forEach((linea) => {
+            checkPageBreak(6);
+            doc.text(linea, margin, yPosition);
+            yPosition += 6;
+          });
+        }
+
+        yPosition += 4;
       });
-      yPosition += 5;
+      yPosition += 4;
     }
 
     checkPageBreak(20);

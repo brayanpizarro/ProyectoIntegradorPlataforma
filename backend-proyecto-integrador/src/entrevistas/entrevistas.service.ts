@@ -37,14 +37,11 @@ export class EntrevistasService {
       );
     }
 
-    // 2. Normalizar fecha al mediodía local para evitar desfaces de huso horario
-    const fechaBase = new Date(createEntrevistaDto.fecha);
-    const fechaEntrevista = new Date(
-      fechaBase.getFullYear(),
-      fechaBase.getMonth(),
-      fechaBase.getDate(),
-      12, 0, 0, 0,
-    );
+    // 2. Respetar fecha y hora provistas (ya vienen en ISO desde el frontend)
+    const fechaEntrevista = new Date(createEntrevistaDto.fecha);
+    if (Number.isNaN(fechaEntrevista.getTime())) {
+      throw new BadRequestException('Fecha de entrevista inválida');
+    }
 
     // 3. Crear la nueva entrevista
     const nuevaEntrevista = this.entrevistaRepository.create({

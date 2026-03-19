@@ -1,69 +1,52 @@
-# React + TypeScript + Vite
+# Frontend (React + TypeScript + Vite)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación web del proyecto integrador. Usa Vite, React 18, TypeScript y Tailwind/MUI (theme en `src/theme.ts`).
 
-Currently, two official plugins are available:
+## Requisitos
+- Node 18+
+- npm 9+ (o pnpm/yarn si prefieres)
+- Backend corriendo en http://localhost:3000 por defecto (ajustable con variables Vite)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Variables de entorno
+Crear `.env.local` en `FrontEndProyectoIntegrador/` si necesitas apuntar a otro backend:
+```
+VITE_API_BASE=http://localhost:3000
+```
+Si no la defines, usa los valores por defecto del código.
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Instalación
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+
+## Scripts
+- `npm run dev`     → servidor de desarrollo (HMR) en `http://localhost:5173`
+- `npm run build`   → build de producción en `dist`
+- `npm run preview` → sirve el build para verificación local
+- `npm run lint`    → lint según la config de ESLint
+
+## Estilos / UI
+- Tailwind configurado en `tailwind.config.js` y `src/index.css`.
+- Theme adicional en `src/theme.ts`.
+
+## Notas de dominio
+- Las entrevistas se crean con fecha y hora exacta; el backend persiste la hora sin normalizar.
+- Reportes PDF incluyen observaciones e información adicional por entrevista.
+
+## Estructura (resumen)
+- `src/main.tsx` / `src/App.tsx`: arranque de React y ruteo principal.
+- `src/pages/`: vistas completas
+	- `Dashboard.tsx`: panel principal y generaciones.
+	- `EntrevistaWorkspace.tsx`: workspace de entrevista por ID.
+	- `EstudianteDetail.tsx`: detalle de estudiante con sección de entrevistas.
+- `src/components/`: componentes UI y features
+	- `features/entrevista-workspace/`: loader y error del workspace.
+	- `features/interview-workspace/`: gestor de tabs y data table del workspace.
+	- `features/student-detail/`: sección de entrevistas (lista, modal NuevaEntrevista).
+	- `EntrevistaReportGenerator.tsx`: generador de PDF de entrevista.
+- `src/services/`: clientes HTTP (authService, entrevistaService, estudianteService, etc.).
+- `src/types/`: tipos/DTOs usados por el frontend.
+- `src/config/`: config de logger, workspaceSections, etc.
+- `src/hooks/`: hooks reutilizables (ej. pestañas del workspace).
+- `public/`: assets estáticos.
+

@@ -60,7 +60,6 @@ export class CreateEntrevistaDto {
   @IsNumber()
   @IsNotEmpty()
   @Min(1)
-  @Max(6)
   numero_entrevista: number;
 
   @Type(() => Number)

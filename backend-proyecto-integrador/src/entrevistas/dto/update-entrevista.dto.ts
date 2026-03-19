@@ -68,7 +68,6 @@ export class UpdateEntrevistaDto {
   @IsNumber()
   @IsOptional()
   @Min(1)
-  @Max(6)
   numero_entrevista?: number;
 
   @Expose()

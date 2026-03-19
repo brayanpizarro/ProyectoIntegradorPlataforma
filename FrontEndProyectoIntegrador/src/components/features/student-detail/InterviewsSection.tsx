@@ -33,7 +33,8 @@ export function InterviewsSection({ estudianteId, estudiante }: InterviewsSectio
         setLoading(true);
         setError(null);
         const data = await entrevistaService.getByEstudiante(estudianteId.toString());
-        setEntrevistas(data);
+        const entrevistasSeguras = Array.isArray(data) ? data : [];
+        setEntrevistas(entrevistasSeguras);
       } catch (err) {
         console.error('Error al cargar entrevistas:', err);
         setError('Error al cargar las entrevistas');
@@ -100,7 +101,22 @@ export function InterviewsSection({ estudianteId, estudiante }: InterviewsSectio
     }
   };
 
+  // Agrupar por fecha (solo día) y ordenar desc
+  const entrevistasOrdenadas = (Array.isArray(entrevistas) ? [...entrevistas] : []).sort(
+    (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+  );
+
   // Generar entrevista consolidada con datos reales
+  const detalleEntrevistas = entrevistasOrdenadas.map((ent) => ({
+    fecha: ent.fecha,
+    numero_entrevista: (ent as any).numero_entrevista ?? (ent as any).numero_Entrevista,
+    estado: ent.estado,
+    duracion_minutos: (ent as any).duracion_minutos,
+    observaciones: ent.observaciones || 'Sin observaciones',
+    informacion_adicional: ent.informacion_adicional || 'Sin información adicional',
+    temas_abordados: ent.temas_abordados,
+  }));
+
   const entrevistaConsolidada = {
     id: 'consolidado',
     fecha: new Date(),
@@ -123,14 +139,10 @@ export function InterviewsSection({ estudianteId, estudiante }: InterviewsSectio
     observaciones: `Este documento contiene el historial completo de entrevistas del estudiante.`,
     etiquetas: entrevistas.flatMap((ent) => Array.isArray(ent.etiquetas) ? ent.etiquetas : []),
     textos: entrevistas.flatMap((ent) => Array.isArray(ent.textos) ? ent.textos : []),
+    detalleEntrevistas,
     created_at: new Date(),
     updated_at: new Date()
   };
-
-  // Agrupar por fecha (solo día) y ordenar desc
-  const entrevistasOrdenadas = [...entrevistas].sort(
-    (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
-  );
 
   // Agrupar por fecha local (string dd/mm/aaaa) para asegurar una sola tarjeta por día
   const entrevistasPorFecha = entrevistasOrdenadas.reduce<Record<string, Entrevista[]>>((acc, ent) => {
@@ -196,10 +208,7 @@ export function InterviewsSection({ estudianteId, estudiante }: InterviewsSectio
             <Stack spacing={1} divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'grey.200' }} />}> 
               {entrevistasDia.map((entrevista) => {
                 const fechaObj = new Date(entrevista.fecha);
-                const hasHoraRegistrada = !(fechaObj.getUTCHours() === 0 && fechaObj.getUTCMinutes() === 0);
-                const hora = hasHoraRegistrada
-                  ? fechaObj.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })
-                  : '--:--';
+                const hora = fechaObj.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false });
 
                 return (
                   <Box key={entrevista.id} sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>

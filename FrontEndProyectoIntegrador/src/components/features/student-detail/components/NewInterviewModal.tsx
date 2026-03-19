@@ -22,6 +22,12 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
   const [duracionMinutos, setDuracionMinutos] = useState<number>(60);
   const [informacionAdicional, setInformacionAdicional] = useState('');
   const [estadoEntrevista, setEstadoEntrevista] = useState<'programada' | 'completada' | 'cancelada' | 'reprogramada'>('completada');
+  const [hora, setHora] = useState<string>(() => {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    return `${hh}:${mm}`;
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const user = authService.getCurrentUser();
   const initialUserId = (() => {
@@ -49,15 +55,30 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
     }
 
     try {
-      // Calcular siguiente número de entrevista del estudiante
+      // Construir fecha y hora local sin desfases de zona
+      const [yearStr, monthStr, dayStr] = fecha.split('-');
+      const [hourStr, minuteStr] = (hora || '12:00').split(':');
+      const fechaLocal = new Date(
+        Number(yearStr),
+        Number(monthStr) - 1,
+        Number(dayStr),
+        Number(hourStr),
+        Number(minuteStr) || 0,
+        0,
+        0
+      );
+
+      // Calcular siguiente número de entrevista del estudiante considerando solo el año de la nueva fecha
       const entrevistasPrevias = await entrevistaService.getByEstudiante(String(estudianteId));
-      const maxNumero = entrevistasPrevias.reduce((max, ent) => {
+      const entrevistasDelAnio = entrevistasPrevias.filter((ent) => {
+        const fechaEnt = new Date((ent as any).fecha);
+        return !Number.isNaN(fechaEnt.getTime()) && fechaEnt.getFullYear() === fechaLocal.getFullYear();
+      });
+
+      const maxNumero = entrevistasDelAnio.reduce((max, ent) => {
         const n = (ent as any).numero_entrevista ?? (ent as any).numero_Entrevista;
         return typeof n === 'number' ? Math.max(max, n) : max;
       }, 0);
-
-      // Normalizar fecha a mediodía local para evitar desfase de zona horaria al convertir a ISO
-      const fechaLocal = new Date(`${fecha}T12:00:00`);
 
       // Valores requeridos por el DTO del backend
       const payload = {
@@ -104,6 +125,16 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
             type="date"
             value={fecha}
             onChange={(e) => setFecha(e.target.value)}
+            required
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+          />
+
+          <TextField
+            label="Hora"
+            type="time"
+            value={hora}
+            onChange={(e) => setHora(e.target.value)}
             required
             fullWidth
             InputLabelProps={{ shrink: true }}
