@@ -30,14 +30,9 @@ export function NuevaEntrevistaModal({ open, onClose, estudianteId }: NuevaEntre
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const user = authService.getCurrentUser();
-  const initialUserId = (() => {
-    const candidate = (user as any)?.id ?? (user as any)?.userId ?? (user as any)?.sub;
-    return candidate ? String(candidate) : '';
-  })();
   const [nombreEntrevistador, setNombreEntrevistador] = useState(
     user ? `${user.nombres || ''} ${user.apellidos || ''}`.trim() || user.email || 'Entrevistador' : 'Usuario Actual'
   );
-  const [idEntrevistador] = useState(initialUserId);
 
   const handleCrearEntrevista = async () => {
     // Prevenir múltiples envíos
